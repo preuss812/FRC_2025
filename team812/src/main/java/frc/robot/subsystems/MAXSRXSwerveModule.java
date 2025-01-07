@@ -83,17 +83,10 @@ public class MAXSRXSwerveModule {
     // Configure the driving Spark Max
     m_drivingConfig
       .inverted(false)
-      .idleMode(ModuleConstants.kDrivingMotorIdleMode); // Should this be brake or coast?
-    
-    // TODO: Handle the following configuration parameters
-    // m_drivingPIDController.setFF(ModuleConstants.kDrivingFF);
-    // m_drivingPIDController.setOutputRange(ModuleConstants.kDrivingMinOutput,
-    //     ModuleConstants.kDrivingMaxOutput);
-    // m_drivingSparkMax.setSmartCurrentLimit(ModuleConstants.kDrivingMotorCurrentLimit);
-    // m_turningSparkMax.setSmartCurrentLimit(ModuleConstants.kTurningMotorCurrentLimit);
-    // These next two lines did nothing!!!
-    //m_drivingSparkMax.setClosedLoopRampRate(10.0);
-    //m_drivingSparkMax.setOpenLoopRampRate(10.0);
+      .idleMode(ModuleConstants.kDrivingMotorIdleMode)
+      //.closedLoopRampRate(10.0) # did nothing
+      //.openLoopRampRate(10.0)   # did nothing
+      ;
 
     // Apply position and velocity conversion factors for the driving encoder. The
     // native units for position and velocity are rotations and RPM, respectively,
@@ -102,17 +95,22 @@ public class MAXSRXSwerveModule {
       .positionConversionFactor(ModuleConstants.kDrivingEncoderPositionFactor)
       .velocityConversionFactor(ModuleConstants.kDrivingEncoderVelocityFactor);
 
+    m_drivingConfig.smartCurrentLimit(ModuleConstants.kDrivingMotorCurrentLimit);
+
     // Set the PID related parameters for the driving motor.
     m_drivingConfig.closedLoop
     .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-    .pid(ModuleConstants.kTurningP, ModuleConstants.kTurningI, ModuleConstants.kTurningD);
+    .pidf(ModuleConstants.kDrivingP, ModuleConstants.kDrivingI, ModuleConstants.kDrivingD, ModuleConstants.kDrivingFF)
+    .outputRange(ModuleConstants.kDrivingMinOutput, ModuleConstants.kDrivingMaxOutput);
+  
     m_drivingSparkMax.configure(m_drivingConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     
     // Configure the turning Spark Max
     m_turningConfig
       .inverted(false)
       .idleMode(ModuleConstants.kDrivingMotorIdleMode); // Should this be brake or coast?
-    
+      m_turningConfig.smartCurrentLimit(ModuleConstants.kTurningMotorCurrentLimit);
+
     m_turningSparkMax.configure(m_turningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     m_chassisAngularOffset = chassisAngularOffset;
@@ -198,7 +196,8 @@ public class MAXSRXSwerveModule {
     correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
     correctedDesiredState.angle = desiredState.angle.plus(Rotation2d.fromRadians(m_chassisAngularOffset));
 
-    // Optimize the reference state to avoid spinning further than 90 degrees.
+   // TODO: Rework the optimize function to use the non-deprecated version
+   // Optimize the reference state to avoid spinning further than 90 degrees.
     SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState,
         new Rotation2d(currentTurningAngleInRadians));
 
