@@ -18,8 +18,9 @@ import edu.wpi.first.math.util.Units;
 //import frc.robot.Constants.CANConstants;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import com.revrobotics.CANSparkBase.IdleMode;
-
+//import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants.  This class should not be used for any other purpose.  All constants should be

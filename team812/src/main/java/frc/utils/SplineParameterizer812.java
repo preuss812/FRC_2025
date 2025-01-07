@@ -32,7 +32,9 @@ package frc.utils;
  import java.util.ArrayDeque;
  import java.util.ArrayList;
  import java.util.List;
- import edu.wpi.first.math.spline.PoseWithCurvature;
+import java.util.Optional;
+
+import edu.wpi.first.math.spline.PoseWithCurvature;
  import edu.wpi.first.math.spline.Spline;
 
  /** Class used to parameterize a spline by its arc length. */
@@ -102,7 +104,7 @@ package frc.utils;
      var splinePoints = new ArrayList<PoseWithCurvature>();
  
      // The parameterization does not add the initial point. Let's add that.
-     splinePoints.add(spline.getPoint(t0));
+     splinePoints.add(spline.getPoint(t0).get());
  
      // We use an "explicit stack" to simulate recursion, instead of a recursive function call
      // This give us greater control, instead of a stack overflow
@@ -110,25 +112,26 @@ package frc.utils;
      stack.push(new StackContents(t0, t1));
  
      StackContents current;
-     PoseWithCurvature start;
-     PoseWithCurvature end;
+     Optional<PoseWithCurvature> start;
+     Optional<PoseWithCurvature> end;
      int iterations = 0;
  
      while (!stack.isEmpty()) {
        current = stack.removeFirst();
        start = spline.getPoint(current.t0);
        end = spline.getPoint(current.t1);
- 
-       final var twist = start.poseMeters.log(end.poseMeters);
-       if (Math.abs(twist.dy) > kMaxDy
-           || Math.abs(twist.dx) > kMaxDx
-           || Math.abs(twist.dtheta) > kMaxDtheta) {
-         stack.addFirst(new StackContents((current.t0 + current.t1) / 2, current.t1));
-         stack.addFirst(new StackContents(current.t0, (current.t0 + current.t1) / 2));
-       } else {
-         splinePoints.add(spline.getPoint(current.t1));
+       if (start.isPresent() && end.isPresent()) {
+        final var twist = start.get().poseMeters.log(end.get().poseMeters);
+        if (Math.abs(twist.dy) > kMaxDy
+            || Math.abs(twist.dx) > kMaxDx
+            || Math.abs(twist.dtheta) > kMaxDtheta) {
+          stack.addFirst(new StackContents((current.t0 + current.t1) / 2, current.t1));
+          stack.addFirst(new StackContents(current.t0, (current.t0 + current.t1) / 2));
+        } else {
+          splinePoints.add(spline.getPoint(current.t1).get());
+        }
        }
- 
+
        iterations++;
        if (iterations >= kMaxIterations) {
          throw new MalformedSplineException(
