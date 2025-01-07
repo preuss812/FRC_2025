@@ -1,7 +1,5 @@
 # First Robotics Team 812
 
-# 2024 preliminary repo
-
 ## Robot Start Up Checklist
 1. Power up the robot by attaching a well charged battery and closing the breaker
 2. Power up both laptops
@@ -13,7 +11,7 @@
 ## How to check in the code
 
 1. Open Visual Code
-2. Open the current folder, FRC_2024
+2. Open the current folder, FRC_2025
 3. Select the Source Control icon from the left menu
 4. Hover on the files to be Staged and click the '+' sign to stage the file, continue to do this for all files to be staged
 5. Click the '...' menu and select Commit Staged
@@ -23,12 +21,12 @@
 ## Game resources
 * [FIRST Robotics Competition Control System](https://docs.wpilib.org/en/latest/#)
 * [Game & Season Materials](https://www.firstinspires.org/resource-library/frc/competition-manual-qa-system)
-* [FRC Game Season Manual](https://firstfrc.blob.core.windows.net/frc2023/Manual/2023FRCGameManual.pdf)
+* [FRC Game Season Manual](https://firstfrc.blob.core.windows.net/frc2025/Manual/2025GameManual.pdf)
 
 ## Technical resources
 * [Java Command Based Programming reference](https://docs.wpilib.org/en/stable/docs/software/commandbased/index.html)
 * [New for 2023](https://docs.wpilib.org/en/stable/docs/yearly-overview/yearly-changelog.html)
-* [NI Game Tools Download](https://www.ni.com/en-us/support/downloads/drivers/download.frc-game-tools.html#473762)
+* [NI FRC Game Tools Download](https://www.ni.com/en/support/downloads/drivers/download.frc-game-tools.html)
 * [Radio Configuration Instructions](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-3/radio-programming.html)
 * CTRE Firmware is located in C:\Users\Public\Documents\FRC
 * [CTRE Phoenix Tuner](https://github.com/CrossTheRoadElec/Phoenix-Releases)
@@ -39,7 +37,7 @@
 * PhotonVision Pi [http://photonvision.local/](http://photonvision.local/) -or- [http://10.8.12.100](http://10.8.12.100)
 
 ## Vision Processing 
-* For 2023 we use PhotonVision [https://photonvision.org/](https://photonvision.org/)
+* PhotonVision [https://photonvision.org/](https://photonvision.org/)
 
 ## Accelerometer / Gyro documents
 * [WPILib Using Gyroscopes](https://docs.wpilib.org/en/stable/docs/software/hardware-apis/sensors/gyros-software.html)
