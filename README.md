@@ -25,7 +25,8 @@
 
 ## Technical resources
 * [Java Command Based Programming reference](https://docs.wpilib.org/en/stable/docs/software/commandbased/index.html)
-* [New for 2023](https://docs.wpilib.org/en/stable/docs/yearly-overview/yearly-changelog.html)
+* [New for this year](https://docs.wpilib.org/en/stable/docs/yearly-overview/yearly-changelog.html)
+* [NI Beta Release Game Tools Download](https://github.com/wpilibsuite/2025Beta/releases/tag/NI_GAME_TOOLS_BETA_2)
 * [NI FRC Game Tools Download](https://www.ni.com/en/support/downloads/drivers/download.frc-game-tools.html)
 * [Radio Configuration Instructions](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-3/radio-programming.html)
 * CTRE Firmware is located in C:\Users\Public\Documents\FRC
