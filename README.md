@@ -31,6 +31,7 @@
 * [Radio Configuration Instructions](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-3/radio-programming.html)
 * CTRE Firmware is located in C:\Users\Public\Documents\FRC
 * [CTRE Phoenix Tuner](https://github.com/CrossTheRoadElec/Phoenix-Releases)
+* [WPIlib field image data](https://github.com/wpilibsuite/allwpilib/tree/main/fieldImages/src/main/native/resources/edu/wpi/first/fields)
 
 # Robot Network Devices
 * WiFi AP [http://10.8.12.1](http://10.8.12.1)
