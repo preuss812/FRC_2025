@@ -152,6 +152,93 @@ public class DriveSubsystemSRX extends SubsystemBase {
         },
         pose);
   }
+
+  /**
+  * This slew rate limiter uses a different slew rate for increasing or descreasing velocity.
+  * Form the 2024 robot we saw that it was easier for the robot drivers to control the robot
+  * when the robot acceleration was ramped up more slowly to allow finer control of the robot.
+  * However, drivers had trouble controlling the robot when the decelaration was ramped slowly.
+  * That is what led us to the asymmetrical ramp rates.
+  * Note that we are slewing the inputs to the drive motors, not the actual motor speeds.
+  * Note also that we are using the nominal cycle time, 20ms, instead of the actual.
+  * Note MAXSPEED is the maximum allowed speed of the robot in meters/sec.
+  *
+  * Parameters:
+    @param last - the last output to the drive motors.  Must be between MAXSPEED and MAXSPEED as it represents the percent motor output.
+    @param delta - the change to the output to the drive motors.  (last+delta) ust be between MAXSPEED and MAXSPEED as it represents the percent motor output.
+    @param maxDecrease - the maximum decrease in output in percent/second.  Must be positive.  e.g. 0.5 indications 2.0 seconds to go from +/-MAXSPEED to 0.0.
+    @param maxIncrease - the maximum increase in output in percent/second.  Must be positive.  e.g. 0.5 indications 2.0 seconds to go from 0.0 to +/-MAXSPEED.
+    @param elapsedTime - the nominal time between calls to this method in seconds.  e.g. 0.02 for 50Hz.
+                         This is used to convert the maxDecrease and maxIncrease to the actual change in output for this one periodic cycle.
+  * @return the slew rate limited output  Must be between -MAXSPEED and MAXSPEED as it represents the desired robot speed in meters/sec.
+  *
+  * There is an edge case where the delta would cross through 0.  That would be a problem because we should shift from deceleration to acceleration
+  * and use the different slew rate for the deceleration and acceleration regions.   Because the nominal period is 20ms we are ignoring that edge case.
+  */
+  public double slewRateLimiter(double last, double delta, double maxDecrease, double maxIncrease, double elapsedTime) {
+    double next = last;
+    int lastSign = (int)Math.signum(last);
+    int deltaSign = (int)Math.signum(delta);
+
+    // Branch on the sign of the last value
+    // In retrospect it would be slightly less code to branch on the sign of the delta as when delta is 0,
+    // we will carry over the last value regardless of what the last value was.
+    switch(lastSign) {
+      case -1:
+        switch(deltaSign) {
+          case -1:
+            next = last + Math.max(delta, last - maxIncrease) * elapsedTime;
+            break;
+          case 0:
+            next = last;
+            break;
+          case 1:
+            next = last + Math.max(delta, last + maxDecrease) * elapsedTime;
+            break;
+          default:
+            next = last; // Should never happen
+            break;
+        }
+        break ;
+      case 0:
+        switch(deltaSign) {
+          case -1:
+            next = last + Math.max(delta, last - maxIncrease) * elapsedTime;
+            break;
+          case 0:
+            next = last;
+            break;
+          case 1:
+            next = last + Math.max(delta, last + maxIncrease) * elapsedTime;
+            break;
+          default:
+            next = last; // Should never happen
+            break;
+        }
+        break;
+      case 1:
+        switch(deltaSign) {
+          case -1:
+            next = last + Math.max(delta, last + maxDecrease) * elapsedTime;
+            break;
+          case 0:
+            next = last;
+            break;
+          case 1:
+            next = last + Math.max(delta, last + maxIncrease) * elapsedTime;
+            break;
+          default:
+            next = last; // Should never happen
+            break;
+        }
+        break;
+      default:
+        next = last; // Should never happen
+        break;
+    }
+
+    return next;
+  }
   public void allianceRelativeDrive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean rateLimit) {
       
       if (Utilities.isBlueAlliance())
@@ -170,9 +257,10 @@ public class DriveSubsystemSRX extends SubsystemBase {
    * @param rateLimit     Whether to enable rate limiting for smoother control.
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean rateLimit) {
-    
+    boolean simpler2025SlewRateLimited = true;
     double xSpeedCommanded;
     double ySpeedCommanded;
+    double nominalElapsedTime = 0.02; // 50Hz loop time
 
     if (debug) SmartDashboard.putNumber("DT x input", xSpeed);
     if (debug) SmartDashboard.putNumber("DT y input", ySpeed);
@@ -185,8 +273,10 @@ public class DriveSubsystemSRX extends SubsystemBase {
       // Calculate the direction slew rate based on an estimate of the lateral acceleration
       double directionSlewRate;
       if (m_currentTranslationMag != 0.0) {
+        // This slows the rotation to reserve speed for translation.
         directionSlewRate = Math.abs(this.directionSlewRate / m_currentTranslationMag);
       } else {
+        // If we are not moving in x,y, we can rotate as fast as we want.
         directionSlewRate = 500.0; //some high number that means the slew rate is effectively instantaneous
       }
       
@@ -194,7 +284,9 @@ public class DriveSubsystemSRX extends SubsystemBase {
 
       double currentTime = WPIUtilJNI.now() * 1e-6;
       double elapsedTime = currentTime - m_prevTime;
-      double angleDif = SwerveUtils.AngleDifference(inputTranslationDir, m_currentTranslationDir);
+      // Calculate the angle difference between the current and desired direction
+      double angleDif = SwerveUtils.AngleDifference(inputTranslationDir, m_currentTranslationDir);  // Returns a number betwen -pi .. pi
+      // if the change in angle is less than ~90 degrees, we can change the direction
       if (angleDif < 0.45*Math.PI) {
         m_currentTranslationDir = SwerveUtils.StepTowardsCircular(m_currentTranslationDir, inputTranslationDir, directionSlewRate * elapsedTime);
         m_currentTranslationMag = m_magLimiter.calculate(inputTranslationMag);
@@ -218,7 +310,19 @@ public class DriveSubsystemSRX extends SubsystemBase {
       ySpeedCommanded = m_currentTranslationMag * Math.sin(m_currentTranslationDir);
       m_currentRotation = m_rotLimiter.calculate(rot);
 
+    } else if (simpler2025SlewRateLimited) {
+      // TODO handle fieldRelative here:
+      // Would make sense to just memorize the last x,y speed commanded.
+      double lastXSpeedCommanded = m_currentTranslationMag * Math.cos(m_currentTranslationDir);
+      double lastYSpeedCommanded = m_currentTranslationMag * Math.sin(m_currentTranslationDir);
+      double newXSpeedRequested = lastXSpeedCommanded + xSpeed * maxSpeedMetersPerSecond;
+      double newYSpeedRequested = lastYSpeedCommanded + ySpeed * maxSpeedMetersPerSecond;
+      double deltaXSpeedRequested = newXSpeedRequested - lastXSpeedCommanded;
+      double deltaYSpeedRequested = newYSpeedRequested - lastYSpeedCommanded;
 
+      xSpeedCommanded = slewRateLimiter(lastXSpeedCommanded, deltaXSpeedRequested, DriveConstants.kMagnitudeDecreaseSlewRate, DriveConstants.kMagnitudeIncreaseSlewRate*0.1, nominalElapsedTime);
+      ySpeedCommanded = slewRateLimiter(lastYSpeedCommanded, deltaYSpeedRequested, DriveConstants.kMagnitudeDecreaseSlewRate, DriveConstants.kMagnitudeIncreaseSlewRate, nominalElapsedTime);
+      m_currentRotation = rot;
     } else {
       xSpeedCommanded = xSpeed;
       ySpeedCommanded = ySpeed;
@@ -230,9 +334,11 @@ public class DriveSubsystemSRX extends SubsystemBase {
     double ySpeedDelivered = ySpeedCommanded * maxSpeedMetersPerSecond;
     double rotDelivered = m_currentRotation * maxAngularSpeed;
 
-    //SmartDashboard.putNumber("DTxSpeedDelivered", xSpeedDelivered);
-    //SmartDashboard.putNumber("DTySpeedDelivered", ySpeedDelivered);
-    //SmartDashboard.putNumber("DTrotDelivered", rotDelivered);
+    SmartDashboard.putNumber("DTxSpeed", xSpeed);
+    SmartDashboard.putNumber("DTySpeed", ySpeed);
+    SmartDashboard.putNumber("DTxSpeedDelivered", xSpeedDelivered);
+    SmartDashboard.putNumber("DTySpeedDelivered", ySpeedDelivered);
+    SmartDashboard.putNumber("DTrotDelivered", rot);
     
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative

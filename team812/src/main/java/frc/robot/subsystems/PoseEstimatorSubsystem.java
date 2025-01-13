@@ -72,7 +72,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     this.drivetrainSubsystem = drivetrainSubsystem;
     AprilTagFieldLayout layout;
     try {
-      layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
+      layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2025Reefscape.m_resourceFile);
       //var alliance = DriverStation.getAlliance();
       //isBlueAlliance = (alliance.get() == Alliance.Blue);  // Remember which alliance we are in.
       // TODO: Figure out if this is needed and fix if necessary
