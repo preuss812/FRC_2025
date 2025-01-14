@@ -56,9 +56,14 @@ public class DriveSubsystemSRX extends SubsystemBase {
   private double m_currentRotation = 0.0;
   private double m_currentTranslationDir = 0.0;
   private double m_currentTranslationMag = 0.0;
+  private double m_currentXSpeed = 0.0;
+  private double m_currentYSpeed = 0.0;
 
-  private ModifiedSlewRateLimiter m_magLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRate, DriveConstants.kMagnitudeDecreaseSlewRate, 0);
-  private ModifiedSlewRateLimiter m_rotLimiter = new ModifiedSlewRateLimiter(DriveConstants.kRotationalIncreaseSlewRate, DriveConstants.kRotationalDecreaseSlewRate, 0);
+  private ModifiedSlewRateLimiter m_xSpeedLimiter;
+  private ModifiedSlewRateLimiter m_ySpeedLimiter;
+
+  private ModifiedSlewRateLimiter m_magLimiter; //  = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRate, DriveConstants.kMagnitudeDecreaseSlewRate, 0);
+  private ModifiedSlewRateLimiter m_rotLimiter; //  = new ModifiedSlewRateLimiter(DriveConstants.kRotationalIncreaseSlewRate, DriveConstants.kRotationalDecreaseSlewRate, 0);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
   // Odometry class for tracking robot pose
@@ -258,22 +263,27 @@ public class DriveSubsystemSRX extends SubsystemBase {
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean rateLimit) {
     boolean simpler2025SlewRateLimited = true;
-    double xSpeedCommanded;
-    double ySpeedCommanded;
-    double nominalElapsedTime = 0.02; // 50Hz loop time
 
     if (debug) SmartDashboard.putNumber("DT x input", xSpeed);
     if (debug) SmartDashboard.putNumber("DT y input", ySpeed);
 
     if (rateLimit) {
-      // Convert XY to polar for rate limiting
+      // This mode is the most complicate and I'm not sure about the origin of this code or the quality of it.
+      // It creates a vector from the x and y inputs and controls the slew rate on the direction and magnitude of the vector.
+      // This is the code that was used in the 2024 season, Crescendo.
+
+      // find the direcction (in radians) and the magniture of the joystick inputs.
+      // Note that the magnitude can be as hight as 1.41 because the x and y inputs are normalized to 1.0.
       double inputTranslationDir = Math.atan2(ySpeed, xSpeed);
       double inputTranslationMag = Math.sqrt(Math.pow(xSpeed, 2) + Math.pow(ySpeed, 2));
 
       // Calculate the direction slew rate based on an estimate of the lateral acceleration
+      // We will possible limit the rotation if the motors are using all their power to move the robot in x,y.
       double directionSlewRate;
       if (m_currentTranslationMag != 0.0) {
         // This slows the rotation to reserve speed for translation.
+        // Note that the direction slew rate gets larger as the translation speed decreases.
+        // TODO: It currently allows faster rotation than really specified so it needs some rework.
         directionSlewRate = Math.abs(this.directionSlewRate / m_currentTranslationMag);
       } else {
         // If we are not moving in x,y, we can rotate as fast as we want.
@@ -284,7 +294,9 @@ public class DriveSubsystemSRX extends SubsystemBase {
 
       double currentTime = WPIUtilJNI.now() * 1e-6;
       double elapsedTime = currentTime - m_prevTime;
+
       // Calculate the angle difference between the current and desired direction
+      // This section is dubious - DPH 2025-01-14
       double angleDif = SwerveUtils.AngleDifference(inputTranslationDir, m_currentTranslationDir);  // Returns a number betwen -pi .. pi
       // if the change in angle is less than ~90 degrees, we can change the direction
       if (angleDif < 0.45*Math.PI) {
@@ -292,6 +304,7 @@ public class DriveSubsystemSRX extends SubsystemBase {
         m_currentTranslationMag = m_magLimiter.calculate(inputTranslationMag);
       }
       else if (angleDif > 0.85*Math.PI) {
+        // TODO: this seems liek the wrong branch is taken.  Need to try reversing from greater than to less than 1e-4.
         if (m_currentTranslationMag > 1e-4) { //some small number to avoid floating-point errors with equality checking
           // keep currentTranslationDir unchanged
           m_currentTranslationMag = m_magLimiter.calculate(0.0);
@@ -306,32 +319,27 @@ public class DriveSubsystemSRX extends SubsystemBase {
         m_currentTranslationMag = m_magLimiter.calculate(0.0);
       }
       m_prevTime = currentTime;
-      xSpeedCommanded = m_currentTranslationMag * Math.cos(m_currentTranslationDir);
-      ySpeedCommanded = m_currentTranslationMag * Math.sin(m_currentTranslationDir);
+      m_currentXSpeed = m_currentTranslationMag * Math.cos(m_currentTranslationDir);
+      m_currentYSpeed = m_currentTranslationMag * Math.sin(m_currentTranslationDir);
       m_currentRotation = m_rotLimiter.calculate(rot);
 
-    } else if (simpler2025SlewRateLimited) {
-      // TODO handle fieldRelative here:
-      // Would make sense to just memorize the last x,y speed commanded.
-      double lastXSpeedCommanded = m_currentTranslationMag * Math.cos(m_currentTranslationDir);
-      double lastYSpeedCommanded = m_currentTranslationMag * Math.sin(m_currentTranslationDir);
-      double newXSpeedRequested = lastXSpeedCommanded + xSpeed * maxSpeedMetersPerSecond;
-      double newYSpeedRequested = lastYSpeedCommanded + ySpeed * maxSpeedMetersPerSecond;
-      double deltaXSpeedRequested = newXSpeedRequested - lastXSpeedCommanded;
-      double deltaYSpeedRequested = newYSpeedRequested - lastYSpeedCommanded;
-
-      xSpeedCommanded = slewRateLimiter(lastXSpeedCommanded, deltaXSpeedRequested, DriveConstants.kMagnitudeDecreaseSlewRate, DriveConstants.kMagnitudeIncreaseSlewRate*0.1, nominalElapsedTime);
-      ySpeedCommanded = slewRateLimiter(lastYSpeedCommanded, deltaYSpeedRequested, DriveConstants.kMagnitudeDecreaseSlewRate, DriveConstants.kMagnitudeIncreaseSlewRate, nominalElapsedTime);
-      m_currentRotation = rot;
+    } else if (simpler2025SlewRateLimited) {      
+      // In this mode thte x, y, and rotation inputs are treated independently.
+      // This is the same as putting slew rate limiters on the joystick outputs.
+      m_currentXSpeed = m_xSpeedLimiter.calculate(xSpeed);
+      m_currentYSpeed = m_ySpeedLimiter.calculate(ySpeed);
+      m_currentRotation = m_rotLimiter.calculate(rot);
     } else {
-      xSpeedCommanded = xSpeed;
-      ySpeedCommanded = ySpeed;
+      // In this mode, the inputs are passed directly to the Swerrve module without any slew rate limiting.
+      // This is the most responsive mode but can be difficult to control.
+      m_currentXSpeed = xSpeed;
+      m_currentYSpeed = ySpeed;
       m_currentRotation = rot;
     }
 
     // Convert the commanded speeds into the correct units for the drivetrain
-    double xSpeedDelivered = xSpeedCommanded * maxSpeedMetersPerSecond;
-    double ySpeedDelivered = ySpeedCommanded * maxSpeedMetersPerSecond;
+    double xSpeedDelivered = m_currentXSpeed * maxSpeedMetersPerSecond;
+    double ySpeedDelivered = m_currentYSpeed * maxSpeedMetersPerSecond;
     double rotDelivered = m_currentRotation * maxAngularSpeed;
 
     SmartDashboard.putNumber("DTxSpeed", xSpeed);
@@ -470,7 +478,8 @@ public class DriveSubsystemSRX extends SubsystemBase {
   }
 
   /**
-   * setDrivingMode
+   * setDrivingMode - Select the driving mode for the robot.  The driving mode is either SPEED or PRECISION.
+   * in PRECISION mode the robot will drive and accelerate more slowly and with more control.
    * @param drivingMode - SPEED or PRECISION
    * @return the previous drivingMode
    */
@@ -481,24 +490,22 @@ public class DriveSubsystemSRX extends SubsystemBase {
       maxSpeedMetersPerSecond = DriveConstants.kMaxSpeedMetersPerSecond;
       maxAngularSpeed = DriveConstants.kMaxAngularSpeed;
       directionSlewRate = DriveConstants.kDirectionSlewRate;
-      //magnitudeIncreaseSlewRate = DriveConstants.kMagnitudeIncreaseSlewRate;
-      //magnitudeDecreaseSlewRate = DriveConstants.kMagnitudeDecreaseSlewRate;
-      //rotationalIncreaseSlewRate = DriveConstants.kRotationalIncreaseSlewRate;
-      //rotationalDecreaseSlewRate = DriveConstants.kRotationalDecreaseSlewRate;
-      m_magLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRate, DriveConstants.kMagnitudeDecreaseSlewRate, 0);
-      m_rotLimiter = new ModifiedSlewRateLimiter(DriveConstants.kRotationalIncreaseSlewRate, DriveConstants.kRotationalDecreaseSlewRate, 0);
+      
+      m_rotLimiter    = new ModifiedSlewRateLimiter(DriveConstants.kRotationalIncreaseSlewRate, DriveConstants.kRotationalDecreaseSlewRate, 0);
+      m_magLimiter    = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRate,  DriveConstants.kMagnitudeDecreaseSlewRate,  0);
+      m_xSpeedLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRate,  DriveConstants.kMagnitudeDecreaseSlewRate,  0);
+      m_ySpeedLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRate,  DriveConstants.kMagnitudeDecreaseSlewRate,  0);
+
       SmartDashboard.putString("DriveMode", "SPEED");
     } else /* if (drivingMode == DrivingMode.PRECISION) */ {
       maxSpeedMetersPerSecond = DriveConstants.kMaxSpeedMetersPerSecondPM;
       maxAngularSpeed = DriveConstants.kMaxAngularSpeedPM;
       directionSlewRate = DriveConstants.kDirectionSlewRatePM;
-      //magnitudeIncreaseSlewRate = DriveConstants.kMagnitudeIncreaseSlewRatePM;
-      //magnitudeDecreaseSlewRate = DriveConstants.kMagnitudeDecreaseSlewRatePM;
-      //rotationalIncreaseSlewRate = DriveConstants.kRotationalIncreaseSlewRatePM;
-      //rotationalDecreaseSlewRate = DriveConstants.kRotationalDecreaseSlewRatePM;
-      m_magLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRatePM, DriveConstants.kMagnitudeDecreaseSlewRatePM, 0);
-      m_rotLimiter = new ModifiedSlewRateLimiter(DriveConstants.kRotationalIncreaseSlewRatePM, DriveConstants.kRotationalDecreaseSlewRatePM, 0);
-
+      
+      m_rotLimiter    = new ModifiedSlewRateLimiter(DriveConstants.kRotationalIncreaseSlewRatePM, DriveConstants.kRotationalDecreaseSlewRatePM, 0);
+      m_magLimiter    = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRatePM,  DriveConstants.kMagnitudeDecreaseSlewRatePM,  0);
+      m_xSpeedLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRatePM,  DriveConstants.kMagnitudeDecreaseSlewRatePM,  0);
+      m_ySpeedLimiter = new ModifiedSlewRateLimiter(DriveConstants.kMagnitudeIncreaseSlewRatePM,  DriveConstants.kMagnitudeDecreaseSlewRatePM,  0);
       SmartDashboard.putString("DriveMode", "PRECISION");
     }
     return result;
