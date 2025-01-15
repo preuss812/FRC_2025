@@ -20,8 +20,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
-//import edu.wpi.first.wpilibj.PowerDistribution;
-//import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
@@ -40,7 +38,6 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.NoteIntakeConstants;
 import frc.robot.Constants.OIConstants;
-//import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.UltrasonicConstants;
 //import frc.robot.Constants.VisionConstants.AprilTag;
 //import frc.robot.Constants.WinchConstants;
@@ -205,7 +202,7 @@ public class RobotContainer {
             -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
             -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
             -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-            true,  false),
+            true,  true),
         m_robotDrive)
     );
 
