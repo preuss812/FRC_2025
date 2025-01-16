@@ -6,15 +6,15 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.NoteIntakeSubsystem;
+import frc.robot.subsystems.AlgaeIntakeSubsystem;
 
-public class NoteIntakeCommand extends Command {
+public class AlgaeIntakeCommand extends Command {
   /** Creates a new ArmCommand. */
-  private final NoteIntakeSubsystem m_noteIntakeSubsystem;
+  private final AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem;
   private final boolean debug = false;
 
-  public NoteIntakeCommand(NoteIntakeSubsystem subsystem) {
-    m_noteIntakeSubsystem = subsystem;
+  public AlgaeIntakeCommand(AlgaeIntakeSubsystem subsystem) {
+    m_AlgaeIntakeSubsystem = subsystem;
     addRequirements(subsystem);
   }
 
@@ -22,8 +22,8 @@ public class NoteIntakeCommand extends Command {
   @Override
   public void initialize() {
 
-    if (debug) SmartDashboard.putString("NoteIntakeCommand", "started");
-    m_noteIntakeSubsystem.pickUpNote();    
+    if (debug) SmartDashboard.putString("AlgaeIntakeCommand", "started");
+    m_AlgaeIntakeSubsystem.pickUpAlgae();    
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -34,8 +34,8 @@ public class NoteIntakeCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    if (debug) SmartDashboard.putString("NoteIntakeCommand", "end");
-    m_noteIntakeSubsystem.stop();
+    if (debug) SmartDashboard.putString("AlgaeIntakeCommand", "end");
+    m_AlgaeIntakeSubsystem.stop();
 
   }
 

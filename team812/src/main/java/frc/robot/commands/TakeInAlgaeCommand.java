@@ -6,25 +6,25 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ColorDetectionSubsytem;
-import frc.robot.subsystems.NoteIntakeSubsystem;
+import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
-public class TakeInNoteCommand extends Command {
-  private final NoteIntakeSubsystem m_NoteIntakeSubsystem;
+public class TakeInAlgaeCommand extends Command {
+  private final AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem;
   private final ShooterSubsystem m_ShooterSubsystem;
   private final ColorDetectionSubsytem m_colorDetectionSubsytem;
 
-  /** Creates a new TakeInNoteCommand. */
-  public TakeInNoteCommand(
-    NoteIntakeSubsystem noteIntakeSubsystem,
+  /** Creates a new TakeInAlgaeCommand. */
+  public TakeInAlgaeCommand(
+    AlgaeIntakeSubsystem AlgaeIntakeSubsystem,
     ShooterSubsystem shooterSubsystem,
     ColorDetectionSubsytem colorDetectionSubsytem
   ) {
     // Use addRequirements() here to declare subsystem dependencies.
-    m_NoteIntakeSubsystem = noteIntakeSubsystem;
+    m_AlgaeIntakeSubsystem = AlgaeIntakeSubsystem;
     m_ShooterSubsystem = shooterSubsystem;
     m_colorDetectionSubsytem = colorDetectionSubsytem;
-    addRequirements(noteIntakeSubsystem, shooterSubsystem);
+    addRequirements(AlgaeIntakeSubsystem, shooterSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -34,14 +34,14 @@ public class TakeInNoteCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_NoteIntakeSubsystem.pickUpNote();
+    m_AlgaeIntakeSubsystem.pickUpAlgae();
     m_ShooterSubsystem.intake();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-      m_NoteIntakeSubsystem.stop();
+      m_AlgaeIntakeSubsystem.stop();
       m_ShooterSubsystem.stop();
   }
 

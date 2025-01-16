@@ -237,7 +237,7 @@ public class ArmRotationSubsystem extends SubsystemBase {
       ControlMode controlMode = m_arm.getControlMode();
       SmartDashboard.putString("ARM ctlrmode", controlMode.toString());
     }
-    // If the forward limit switch is closed, we are fully rotated to the note intake position.
+    // If the forward limit switch is closed, we are fully rotated to the Algae intake position.
     // If we have not done so already, reset the encoder coordinates to the fully rotated value.
    
   }

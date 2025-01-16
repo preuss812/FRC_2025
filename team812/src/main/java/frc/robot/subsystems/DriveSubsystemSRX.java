@@ -164,9 +164,9 @@ public class DriveSubsystemSRX extends SubsystemBase {
   * when the robot acceleration was ramped up more slowly to allow finer control of the robot.
   * However, drivers had trouble controlling the robot when the decelaration was ramped slowly.
   * That is what led us to the asymmetrical ramp rates.
-  * Note that we are slewing the inputs to the drive motors, not the actual motor speeds.
-  * Note also that we are using the nominal cycle time, 20ms, instead of the actual.
-  * Note MAXSPEED is the maximum allowed speed of the robot in meters/sec.
+  * Algae that we are slewing the inputs to the drive motors, not the actual motor speeds.
+  * Algae also that we are using the nominal cycle time, 20ms, instead of the actual.
+  * Algae MAXSPEED is the maximum allowed speed of the robot in meters/sec.
   *
   * Parameters:
     @param last - the last output to the drive motors.  Must be between MAXSPEED and MAXSPEED as it represents the percent motor output.
@@ -273,7 +273,7 @@ public class DriveSubsystemSRX extends SubsystemBase {
       // This is the code that was used in the 2024 season, Crescendo.
 
       // find the direcction (in radians) and the magniture of the joystick inputs.
-      // Note that the magnitude can be as hight as 1.41 because the x and y inputs are normalized to 1.0.
+      // Algae that the magnitude can be as hight as 1.41 because the x and y inputs are normalized to 1.0.
       double inputTranslationDir = Math.atan2(ySpeed, xSpeed);
       double inputTranslationMag = Math.sqrt(Math.pow(xSpeed, 2) + Math.pow(ySpeed, 2));
 
@@ -282,7 +282,7 @@ public class DriveSubsystemSRX extends SubsystemBase {
       double directionSlewRate;
       if (m_currentTranslationMag != 0.0) {
         // This slows the rotation to reserve speed for translation.
-        // Note that the direction slew rate gets larger as the translation speed decreases.
+        // Algae that the direction slew rate gets larger as the translation speed decreases.
         // TODO: It currently allows faster rotation than really specified so it needs some rework.
         directionSlewRate = Math.abs(this.directionSlewRate / m_currentTranslationMag);
       } else {

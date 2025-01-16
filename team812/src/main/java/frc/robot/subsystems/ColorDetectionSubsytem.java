@@ -20,10 +20,10 @@ public class ColorDetectionSubsytem {
     final ColorMatch   m_colorMatcher = new ColorMatch();
 	private final boolean debug = false;
 
-    public final Color kNoteTarget = new Color(
-    	ColorConstants.kNoteTargetRBG[0], 
-		ColorConstants.kNoteTargetRBG[1],
-		ColorConstants.kNoteTargetRBG[2]
+    public final Color kAlgaeTarget = new Color(
+    	ColorConstants.kAlgaeTargetRBG[0], 
+		ColorConstants.kAlgaeTargetRBG[1],
+		ColorConstants.kAlgaeTargetRBG[2]
     );
 
 	public final Color kBlack = new Color(
@@ -31,7 +31,7 @@ public class ColorDetectionSubsytem {
 	);
 
     public ColorDetectionSubsytem() {
-		m_colorMatcher.addColorMatch(kNoteTarget);
+		m_colorMatcher.addColorMatch(kAlgaeTarget);
 		m_colorMatcher.addColorMatch(kBlack);
 		m_colorMatcher.setConfidenceThreshold(ColorConstants.kColorConfidenceThreshold);
     }
@@ -50,7 +50,7 @@ public class ColorDetectionSubsytem {
 		String colorString;
 
 		if (proximity >= 100) {
-			if (match.color == kNoteTarget) {
+			if (match.color == kAlgaeTarget) {
 				colorString = "Orange";
 			} else if (match.color == kBlack) {
 				colorString = "Black";
@@ -74,6 +74,6 @@ public class ColorDetectionSubsytem {
 
 
     public boolean isOrange(Color color) {
-		return (color == kNoteTarget);
+		return (color == kAlgaeTarget);
     }
 }

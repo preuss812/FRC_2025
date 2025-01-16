@@ -5,21 +5,21 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.NoteIntakeSubsystem;
+import frc.robot.subsystems.AlgaeIntakeSubsystem;
 
-public class ExpelNoteCommand extends Command {
-  /** Creates a new ExpelNoteCommand. */
-  private final NoteIntakeSubsystem noteIntakeSubsystem;
-  public ExpelNoteCommand(NoteIntakeSubsystem noteIntakeSubsystem) {
+public class ExpelAlgaeCommand extends Command {
+  /** Creates a new ExpelAlgaeCommand. */
+  private final AlgaeIntakeSubsystem AlgaeIntakeSubsystem;
+  public ExpelAlgaeCommand(AlgaeIntakeSubsystem AlgaeIntakeSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.noteIntakeSubsystem = noteIntakeSubsystem;
-    addRequirements(noteIntakeSubsystem);
+    this.AlgaeIntakeSubsystem = AlgaeIntakeSubsystem;
+    addRequirements(AlgaeIntakeSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    noteIntakeSubsystem.expelNote(); // This sets the motor speed.
+    AlgaeIntakeSubsystem.expelAlgae(); // This sets the motor speed.
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -29,7 +29,7 @@ public class ExpelNoteCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    noteIntakeSubsystem.stop();
+    AlgaeIntakeSubsystem.stop();
   }
 
   // Returns true when the command should end.

@@ -49,7 +49,7 @@ public final class Constants {
 
         public static final int kWinchMotor = 41;
         public static final int kArmMotor = 43;
-        public static final int kNoteIntakeMotor = 40;
+        public static final int kAlgaeIntakeMotor = 40;
         public static final int kShooterMotor = 42;
 
         public static final int kPDP = 0; // was 50 until 3/12/2024
@@ -61,7 +61,6 @@ public final class Constants {
         public static final int kLeftJoystick = 0;
         public static final int kRightJoystick = 1;
         public static final int kControlBox = 2;
-        public static final int kXboxController = 3;
         
 
         // Controlbox interfaces
@@ -121,10 +120,10 @@ public final class Constants {
         public static final double kArmExtension_rampRate = 0.5;
         public static final double kPorportionalBalanceForward = 0.05;
         public static final double kProportionalBalanceBackward = 0.05;
-        public static final double kNoteIntake_kP = 2.7; // TODO are these needed and tuned?
-        public static final double kNoteIntake_kI = 0.0;
-        public static final double kNoteIntake_kD = 0.0;
-        public static final double kNoteIntake_kF = 0.0;
+        public static final double kAlgaeIntake_kP = 2.7; // TODO are these needed and tuned?
+        public static final double kAlgaeIntake_kI = 0.0;
+        public static final double kAlgaeIntake_kD = 0.0;
+        public static final double kAlgaeIntake_kF = 0.0;
         public static final double kWinch_kP = 2.7; // TODO are these needed and tuned?
         public static final double kWinch_kI = 0.0;
         public static final double kWinch_kD = 0.0;
@@ -152,10 +151,10 @@ public final class Constants {
         public static final double kArmMaxPosition = 2800; // Largest encoder value the software will rotote to.
         public static final double kArmRange = kArmMaxPosition - kArmMinPosition; // The number of ticks in the active range of arm motion between limits.
 
-        public static final double kArmStartingPosition = kArmMaxPosition;  // We should start at the max position with the arm rotated down to intake notes.
+        public static final double kArmStartingPosition = kArmMaxPosition;  // We should start at the max position with the arm rotated down to intake Algaes.
         public static final double kArmIntakePosition = kArmMaxPosition;
         public static final double kArmHookChainPosition = kArmMaxPosition;
-        public static final double kArmScoringPosition = kArmMinPosition;  // Rotated upward to score a note.
+        public static final double kArmScoringPosition = kArmMinPosition;  // Rotated upward to score a Algae.
 
         public static final double kArmPeakOutputForward =  0.80; // Limit output voltage to +/- 80% of the available voltage range.
         public static final double kArmPeakOutputReverse = -0.80; // Limit output voltage to +/- 80% of the available voltage range.
@@ -189,22 +188,22 @@ public final class Constants {
         public static Translation2d NearBlueSource = new Translation2d(15.08, 0.88);
         public static Translation2d NearRedSource = new Translation2d(1.46, 0.88);
         
-        // Preloaded notes along the center line of the field.
-        public static Translation2d CenterNote1 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*0.0));
-        public static Translation2d CenterNote2 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*1.0));
-        public static Translation2d CenterNote3 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*2.0));
-        public static Translation2d CenterNote4 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*3.0));
-        public static Translation2d CenterNote5 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*4.0));
+        // Preloaded Algaes along the center line of the field.
+        public static Translation2d CenterAlgae1 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*0.0));
+        public static Translation2d CenterAlgae2 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*1.0));
+        public static Translation2d CenterAlgae3 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*2.0));
+        public static Translation2d CenterAlgae4 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*3.0));
+        public static Translation2d CenterAlgae5 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*4.0));
 
         // From bottom of the field to the top (lowest Y coordinate to highest Y cooordinate).
-        public static Translation2d BlueNote1 = new Translation2d(Units.inchesToMeters(114.0), yCenter);
-        public static Translation2d BlueNote2 = new Translation2d(Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
-        public static Translation2d BlueNote3 = new Translation2d(Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
+        public static Translation2d BlueAlgae1 = new Translation2d(Units.inchesToMeters(114.0), yCenter);
+        public static Translation2d BlueAlgae2 = new Translation2d(Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
+        public static Translation2d BlueAlgae3 = new Translation2d(Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
 
         // From bottom of the field to the top (lowest Y coordinate to highest Y cooordinate).
-        public static Translation2d RedNote1 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter);
-        public static Translation2d RedNote2 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
-        public static Translation2d RedNote3 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
+        public static Translation2d RedAlgae1 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter);
+        public static Translation2d RedAlgae2 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
+        public static Translation2d RedAlgae3 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
 
         // For Testing at Preuss
         public static Translation2d NearBandSaw = new Translation2d(NearBlueAmp.getX(), NearBlueAmp.getY() - 5.0);
@@ -221,9 +220,9 @@ public final class Constants {
         };
     }
     
-    public static final class NoteIntakeConstants {
-        public static final double kPickUpNoteSpeed = 1.0; // TODO needs tuning.
-        public static final double kExpelNoteSpeed = -1.0; // TODO needs tuning.
+    public static final class AlgaeIntakeConstants {
+        public static final double kPickUpAlgaeSpeed = 1.0; // TODO needs tuning.
+        public static final double kExpelAlgaeSpeed = -1.0; // TODO needs tuning.
         public static final int kLimitSwitchChannel = 2;
     }
 
@@ -322,7 +321,7 @@ public final class Constants {
     // https://github.com/REVrobotics/MAXSwerve-Java-Template/blob/main/src/main/java/frc/robot/subsystems/MAXSwerveModule.java
     // Which is where I sourced the MAXSwerve template - dph - 2024-01-12
     public static final class DriveConstants {
-        // Driving Parameters - Note that these are not the maximum capable speeds of
+        // Driving Parameters - Algae that these are not the maximum capable speeds of
         // the robot, rather the allowed maximum speeds
         public static final double kMaxSpeedMetersPerSecond = 4.5; //4.5; 1.0 in the lab // Limit how violently swerve works
         public static final double kMaxAngularSpeed = 4 * Math.PI; // radians per second
@@ -487,7 +486,7 @@ public final class Constants {
             0 to 255 when passed as integers. Doubles are used so that we 
             can better control precision if needed.
         */
-        public static final double[] kNoteTargetRBG = { 248/255.0, 49/255.0, 116/255.0 }; // TODO Verify color code // 2020 code used RBG not RGB????
+        public static final double[] kAlgaeTargetRBG = { 248/255.0, 49/255.0, 116/255.0 }; // TODO Verify color code // 2020 code used RBG not RGB????
 
         public static final double kColorConfidenceThreshold = 0.90;
         public static final int     kColorProximityThreshold = 300; // higher closer, lower is further away

@@ -8,12 +8,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.RobotContainer;
 
-public class AdjustNoteInShooterCommand extends Command {
+public class AdjustAlgaeInShooterCommand extends Command {
   private final ShooterSubsystem m_ShooterSubsystem;
   private int remainingTicks = 0;
 
-  /** Creates a new TakeInNoteCommand. */
-  public AdjustNoteInShooterCommand(
+  /** Creates a new TakeInAlgaeCommand. */
+  public AdjustAlgaeInShooterCommand(
     ShooterSubsystem shooterSubsystem
   ) {
     // Use addRequirements() here to declare subsystem dependencies.

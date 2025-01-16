@@ -13,11 +13,11 @@ import frc.robot.subsystems.ArmRotationSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
- * This command raises the arm, shoots the note and lowers the arm sequentially.
+ * This command raises the arm, shoots the Algae and lowers the arm sequentially.
  */
-public class ScoreNoteInAmp extends SequentialCommandGroup {
-  /** Creates a new ScoreNoteInAmp. */
-  public ScoreNoteInAmp(ArmRotationSubsystem armRotationSubsystem, ShooterSubsystem shooterSubsystem) {
+public class ScoreAlgaeInAmp extends SequentialCommandGroup {
+  /** Creates a new ScoreAlgaeInAmp. */
+  public ScoreAlgaeInAmp(ArmRotationSubsystem armRotationSubsystem, ShooterSubsystem shooterSubsystem) {
     
     addCommands(
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmUP")),
@@ -27,7 +27,7 @@ public class ScoreNoteInAmp extends SequentialCommandGroup {
       new ShooterCommand(shooterSubsystem).withTimeout(ShooterConstants.kShootTimeout),
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmDown")),
       new ArmRotationCommand(armRotationSubsystem, ArmConstants.kArmMaxPosition).withTimeout(ArmConstants.kArmLowerTimeout),
-      new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreNoteDone"))
+      new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgaeDone"))
     );
 
   }

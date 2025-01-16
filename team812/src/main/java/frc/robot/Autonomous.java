@@ -25,7 +25,7 @@ import frc.robot.commands.ArmRotationCommand;
 import frc.robot.commands.AutonomousStartDelayCommand;
 import frc.robot.commands.DriveRobotCommand;
 import frc.robot.commands.FindAprilTagCommand;
-import frc.robot.commands.ScoreNoteInAmp;
+import frc.robot.commands.ScoreAlgaeInAmp;
 import frc.robot.commands.GotoAmpCommand;
 //import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.RotateRobotAutoCommand;
@@ -40,7 +40,7 @@ import frc.robot.Constants.FieldConstants;
 //import frc.robot.Constants.VisionConstants;
 //import frc.robot.Constants.VisionConstants.AprilTag;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
+// Algae:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/latest/docs/software/commandbased/convenience-features.html
 public class Autonomous extends SequentialCommandGroup {
@@ -82,7 +82,7 @@ public class Autonomous extends SequentialCommandGroup {
        * o Find an april tag (rotate slowly until one is found).  Ideally, seen immediately.
        * o SwerveDrive toward the Amp (if we are close, this is a NO-OP).
        * o GotoPoseDrive to the Amp
-       * o Score the Note.
+       * o Score the Algae.
        * o GotoPoseDrive out of the starting box toward field center.
        */
       final double firstMoveX = 1.84 + 0.50 - DriveConstants.kBackToCenterDistance;
@@ -167,12 +167,12 @@ public class Autonomous extends SequentialCommandGroup {
             new ArmRotationCommand(m_ArmRotationSubsystem, ArmConstants.kArmMinPosition)), // TODO raise arm in parallel. 100 fudge factor
             // TODO: Could try raising the arm in parallel with this move to the amp - dph 2024-03-06.
 
-            // Score the note.
+            // Score the Algae.
             // The StopRobotMotion keeps the swerve drive wheels from moving during the scoring.
             new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 9)),
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreNote")),
+            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgae")),
             new ParallelDeadlineGroup(
-              new ScoreNoteInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem),
+              new ScoreAlgaeInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem),
               new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem)
             ).withTimeout(10.0),
 
@@ -290,12 +290,12 @@ public class Autonomous extends SequentialCommandGroup {
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 6)),
         new InstantCommand(() -> robotContainer.alignDriveTrainToPoseEstimator()),
 
-        // Score the note.
+        // Score the Algae.
         // The StopRobotMotion keeps the swerve drive wheels from moving during the scoring.
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 9)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreNote")),
+        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgae")),
         new ParallelDeadlineGroup(
-          new ScoreNoteInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem),
+          new ScoreAlgaeInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem),
           new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem)
         ).withTimeout(10.0),
 

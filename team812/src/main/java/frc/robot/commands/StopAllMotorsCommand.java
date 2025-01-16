@@ -18,7 +18,7 @@ public class StopAllMotorsCommand extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(
       RobotContainer.m_ArmRotationSubsystem,
-      RobotContainer.m_NoteIntakeSubsystem,
+      RobotContainer.m_AlgaeIntakeSubsystem,
       RobotContainer.m_ShooterSubsystem,
       RobotContainer.m_WinchSubsystem,
       RobotContainer.m_robotDrive
@@ -29,7 +29,7 @@ public class StopAllMotorsCommand extends Command {
   @Override
   public void initialize() {
     RobotContainer.m_ArmRotationSubsystem.stop();
-    RobotContainer.m_NoteIntakeSubsystem.stop();
+    RobotContainer.m_AlgaeIntakeSubsystem.stop();
     RobotContainer.m_ShooterSubsystem.stop();
     RobotContainer.m_WinchSubsystem.stop();
     RobotContainer.m_robotDrive.drive(0,0,0,true,true);

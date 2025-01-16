@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.NoteIntakeConstants;
+import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.OIConstants;
 //import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.UltrasonicConstants;
@@ -47,14 +47,14 @@ import frc.robot.Constants.UltrasonicConstants;
 //import frc.robot.subsystems.AnalogUltrasonicDistanceSubsystem;
 import frc.robot.subsystems.ArmRotationSubsystem;
 //import frc.robot.subsystems.BlackBoxSubsystem;
-import frc.robot.subsystems.NoteIntakeSubsystem;
+import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 import frc.robot.subsystems.PingResponseUltrasonicSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
-import frc.robot.commands.AdjustNoteInShooterCommand;
+import frc.robot.commands.AdjustAlgaeInShooterCommand;
 //import frc.robot.subsystems.CameraVisionSubsystem;
 //import frc.robot.subsystems.ColorDetectionSubsytem;
 import frc.robot.commands.ArmHomeCommand;
@@ -62,17 +62,17 @@ import frc.robot.commands.ArmRotationCommand;
 //import frc.robot.commands.DetectColorCommand;
 import frc.robot.commands.DriveOnAprilTagProjectionCommand;
 import frc.robot.commands.DriveRobotCommand;
-import frc.robot.commands.ExpelNoteCommand;
+import frc.robot.commands.ExpelAlgaeCommand;
 import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.FindAprilTagCommand;
 //import com.revrobotics.CANSparkMax;
 //import com.revrobotics.CANSparkLowLevel.MotorType;
 //import frc.robot.commands.GotoAmpCommand;
 //import frc.robot.commands.GotoPoseCommand;
-//import frc.robot.commands.NoteIntakeCommand;
+//import frc.robot.commands.AlgaeIntakeCommand;
 //import frc.robot.commands.RotateRobotAutoCommand;
 import frc.robot.commands.RotateRobotCommand;
-//import frc.robot.commands.ScoreNoteInAmp;
+//import frc.robot.commands.ScoreAlgaeInAmp;
 //import frc.robot.commands.ShooterCommand;
 import frc.robot.commands.StartButtonCommand;
 import frc.robot.commands.StopAllMotorsCommand;
@@ -84,7 +84,7 @@ import frc.robot.commands.ShooterCommand;
 //import frc.robot.commands.SwerveToPoseTest;
 //import frc.robot.commands.SwerveToPoseTest2;
 import frc.robot.commands.SwerveToPoseTest3;
-import frc.robot.commands.TakeInNoteOLSCommand;
+import frc.robot.commands.TakeInAlgaeOLSCommand;
 import frc.robot.commands.UnshootCommand;
 import frc.robot.commands.WinchDownCommand;
 import frc.robot.commands.WinchUpCommand;
@@ -126,7 +126,7 @@ public class RobotContainer {
   public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( m_camera, m_robotDrive);
   public static ArmRotationSubsystem m_ArmRotationSubsystem = new ArmRotationSubsystem();
   public static ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
-  public static NoteIntakeSubsystem m_NoteIntakeSubsystem = new NoteIntakeSubsystem();
+  public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem();
   public static WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE); // TODO Enable this and add SmartDashboard for Winch.
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
@@ -138,7 +138,7 @@ public class RobotContainer {
       UltrasonicConstants.kEchoChannel,
       UltrasonicConstants.kOffsetToBumper
     );
-  public static final OpticalLimitSwitch m_OpticalLimitSwitch = new OpticalLimitSwitch(NoteIntakeConstants.kLimitSwitchChannel);
+  public static final OpticalLimitSwitch m_OpticalLimitSwitch = new OpticalLimitSwitch(AlgaeIntakeConstants.kLimitSwitchChannel);
 
   //public static DigitalIOSubsystem m_DigitalIOSubsystem = new DigitalIOSubsystem();
 
@@ -214,13 +214,13 @@ public class RobotContainer {
     );
     
     /* Switched to TriggerButton
-    // Default is to expel notes based on the percentage pulled of the left trigger.
-    m_NoteIntakeSubsystem.setDefaultCommand(
-      new RunCommand(()->m_NoteIntakeSubsystem.runMotor(-m_driverController.getLeftTriggerAxis()), m_NoteIntakeSubsystem)
+    // Default is to expel Algaes based on the percentage pulled of the left trigger.
+    m_AlgaeIntakeSubsystem.setDefaultCommand(
+      new RunCommand(()->m_AlgaeIntakeSubsystem.runMotor(-m_driverController.getLeftTriggerAxis()), m_AlgaeIntakeSubsystem)
     );
     */
 
-    // Default is to score notes based on the percentage pulled of the left trigger.
+    // Default is to score Algaes based on the percentage pulled of the left trigger.
     m_ShooterSubsystem.setDefaultCommand(
       new RunCommand(()->m_ShooterSubsystem.runMotor(m_driverController.getRightTriggerAxis()), m_ShooterSubsystem)
     );
@@ -254,7 +254,7 @@ public class RobotContainer {
 
     new JoystickButton(m_driverController, Button.kLeftBumper.value).onTrue(
         new SequentialCommandGroup(
-          new TakeInNoteOLSCommand(m_NoteIntakeSubsystem, m_ShooterSubsystem),
+          new TakeInAlgaeOLSCommand(m_AlgaeIntakeSubsystem, m_ShooterSubsystem),
           new ConditionalCommand(
             new RunCommand(()->m_ShooterSubsystem.unshoot()).withTimeout(0.8),
             new InstantCommand(),
@@ -264,7 +264,7 @@ public class RobotContainer {
     );
     
     new TriggerButton(m_driverController, Axis.kLeftTrigger).whileTrue(
-      new ExpelNoteCommand(m_NoteIntakeSubsystem)
+      new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
     );
 
     /*
@@ -292,7 +292,7 @@ public class RobotContainer {
       );
     
       new JoystickButton(m_driverController, Button.kB.value)
-      .onTrue(new AdjustNoteInShooterCommand(m_ShooterSubsystem));
+      .onTrue(new AdjustAlgaeInShooterCommand(m_ShooterSubsystem));
 
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new StartButtonCommand());
     //  .onTrue(new InstantCommand(()->m_ArmRotationSubsystem.setPosition(ArmConstants.kArmIntakePosition)));
@@ -333,7 +333,7 @@ public class RobotContainer {
     new JoystickButton(leftJoystick, 6).onTrue(new ArmRotationCommand(m_ArmRotationSubsystem, ArmConstants.kArmScoringPosition));
     new JoystickButton(leftJoystick, 7).onTrue(new StartButtonCommand());
     new JoystickButton(leftJoystick, 8).onTrue(new ArmHomeCommand(m_ArmRotationSubsystem));
-    new JoystickButton(leftJoystick, 9).onTrue(new TakeInNoteOLSCommand(m_NoteIntakeSubsystem, m_ShooterSubsystem));
+    new JoystickButton(leftJoystick, 9).onTrue(new TakeInAlgaeOLSCommand(m_AlgaeIntakeSubsystem, m_ShooterSubsystem));
     new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->Utilities.resetPoseAtAmp()));
     //new JoystickButton(leftJoystick, 11).whileTrue( new WinchUpCommand(m_WinchSubsystem));
     //new JoystickButton(leftJoystick, 12).whileTrue( new WinchDownCommand(m_WinchSubsystem));
@@ -350,7 +350,7 @@ public class RobotContainer {
     );
     
     new JoystickButton(leftJoystick, 1).onTrue(
-      new ScoreNoteInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem)
+      new ScoreAlgaeInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem)
     );
 
     new JoystickButton(leftJoystick, 4).whileTrue(
@@ -379,7 +379,7 @@ public class RobotContainer {
     );
 
     new JoystickButton(rightJoystick, 3).whileTrue(
-      new ExpelNoteCommand(m_NoteIntakeSubsystem)
+      new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
     );
     */
 
