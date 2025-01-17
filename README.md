@@ -18,6 +18,11 @@
 6. Enter a description of the change this commit makes to the code base
 7. Click the '...' menu and select Push
 
+## Robot URL's
+* [RoboRio](http://10.8.12.2)
+* [PhotonVision](http://10.8.12.100)
+* [VH-109 Radio on the robot (client mode)](http://10.8.12.1)
+* [VH-109 Radio at laptops (AP mode)](http://10.8.12.4)
 ## Game resources
 * [FIRST Robotics Competition Control System](https://docs.wpilib.org/en/latest/#)
 * [Game & Season Materials](https://www.firstinspires.org/resource-library/frc/competition-manual-qa-system)
