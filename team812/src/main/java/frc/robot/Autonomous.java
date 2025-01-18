@@ -48,7 +48,7 @@ public class Autonomous extends SequentialCommandGroup {
    * Creates a new Autonomous.
    */
   private final DriveSubsystemSRX m_robotDrive;
-  private final ArmRotationSubsystem m_ArmRotationSubsystem;
+  private final ElbowRotationSubsystem m_ArmRotationSubsystem;
   private final ShooterSubsystem m_ShooterSubsystem;
   private final PingResponseUltrasonicSubsystem m_PingResponseUltrasonicSubsystem;
   private final PoseEstimatorSubsystem m_PoseEstimatorSubsystem;

@@ -42,7 +42,7 @@ import frc.robot.Constants.UltrasonicConstants;
 //import frc.robot.Constants.VisionConstants.AprilTag;
 //import frc.robot.Constants.WinchConstants;
 //import frc.robot.subsystems.AnalogUltrasonicDistanceSubsystem;
-import frc.robot.subsystems.ArmRotationSubsystem;
+import frc.robot.subsystems.ElbowRotationSubsystem;
 //import frc.robot.subsystems.BlackBoxSubsystem;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -121,7 +121,7 @@ public class RobotContainer {
 
   //public static EncoderSubsystem m_EncoderSubsystem = new EncoderSubsystem();
   public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( m_camera, m_robotDrive);
-  public static ArmRotationSubsystem m_ArmRotationSubsystem = new ArmRotationSubsystem();
+  public static ElbowRotationSubsystem m_ArmRotationSubsystem = new ElbowRotationSubsystem();
   public static ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem();
   public static WinchSubsystem m_WinchSubsystem = new WinchSubsystem();

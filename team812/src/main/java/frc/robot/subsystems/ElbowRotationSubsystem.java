@@ -21,8 +21,10 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 
 import edu.wpi.first.math.MathUtil;
 
-public class ArmRotationSubsystem extends SubsystemBase {
-  public final WPI_TalonSRX m_arm = new WPI_TalonSRX(CANConstants.kArmMotor);
+public class ElbowRotationSubsystem extends SubsystemBase {
+  public final WPI_TalonSRX m_elbowLeft = new WPI_TalonSRX(CANConstants.kElbowMotor1);
+  public final WPI_TalonSRX m_elbowRight = new WPI_TalonSRX(CANConstants.kElbowMotor2);
+
   static Integer getPosition_timesCalled = 0;
   private static double targetPosition = 0;
   private boolean debug = false;
@@ -32,59 +34,61 @@ public class ArmRotationSubsystem extends SubsystemBase {
   
 
   /** Creates a new ArmSubsystem. */
-  public ArmRotationSubsystem() {
-    m_arm.configFactoryDefault();
-    m_arm.setNeutralMode(NeutralMode.Brake);
+  public ElbowRotationSubsystem() {
+    m_elbowLeft.configFactoryDefault();
+    m_elbowRight.configFactoryDefault();
+    
+    m_elbowLeft.setNeutralMode(NeutralMode.Brake);
 
     // This is a CLOSED loop system. Do not uncomment or enable
     // OpenloopRamp for the PID controlled arm.
-    // m_arm.configOpenloopRamp(PidConstants.xxx_kArm_rampRate_xxx);
+    // m_elbowLeft.configOpenloopRamp(PidConstants.xxx_kArm_rampRate_xxx);
 
     // Configure the feedback sensor with the type (QuadEncoder),
     // the PID identifier within the Talon (pid 0) and the timeout (50ms)
-    m_arm.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 50);
+    m_elbowLeft.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 50);
 
     // Invert motor (setInverted) so that the Talon LEDs are green when driving
     // forward (up)
     // Phase sensor should have a positive increment as the Talon drives the arm up
-    m_arm.setInverted(false);
-    m_arm.setSensorPhase(true); // Attempts to make it positive
+    m_elbowLeft.setInverted(false);
+    m_elbowLeft.setSensorPhase(true); // Attempts to make it positive
 
     // Set status frame period to 10ms with a timeout of 10ms
     // 10 sets timeouts for Motion Magic
     // 13 sets timeouts for PID 0
-    m_arm.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 10);
-    m_arm.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 10);
+    m_elbowLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 10);
+    m_elbowLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 10);
 
     // Configure low and high output levels to help remove any
     // stalling that might occur where stalling means that power is being
     // applied, but the motor isn't moving due to friction or inertia. This
     // can help the motor not burn itself out.
-    m_arm.configNominalOutputForward(0, 10);
-    m_arm.configNominalOutputReverse(0, 10);
-    m_arm.configPeakOutputForward(ArmConstants.kArmPeakOutputForward, 10);
-    m_arm.configPeakOutputReverse(ArmConstants.kArmPeakOutputReverse, 10);
+    m_elbowLeft.configNominalOutputForward(0, 10);
+    m_elbowLeft.configNominalOutputReverse(0, 10);
+    m_elbowLeft.configPeakOutputForward(ArmConstants.kArmPeakOutputForward, 10);
+    m_elbowLeft.configPeakOutputReverse(ArmConstants.kArmPeakOutputReverse, 10);
 
     // Configure the Motion Magic parameters for PID 0 within the Talon
     // The values for P, I, D, and F will need to be determined emperically
-    m_arm.selectProfileSlot(0, 0);
-    m_arm.config_kP(0, PidConstants.kArm_kP, 10);
-    m_arm.config_kI(0, PidConstants.kArm_kI, 10);
-    m_arm.config_kD(0, PidConstants.kArm_kD, 10);
-    m_arm.config_kF(0, PidConstants.kArm_kF, 10);
-    m_arm.config_IntegralZone(0, PidConstants.kArm_IntegralZone, 10);
+    m_elbowLeft.selectProfileSlot(0, 0);
+    m_elbowLeft.config_kP(0, PidConstants.kArm_kP, 10);
+    m_elbowLeft.config_kI(0, PidConstants.kArm_kI, 10);
+    m_elbowLeft.config_kD(0, PidConstants.kArm_kD, 10);
+    m_elbowLeft.config_kF(0, PidConstants.kArm_kF, 10);
+    m_elbowLeft.config_IntegralZone(0, PidConstants.kArm_IntegralZone, 10);
 
     // The next to configuration settings are for MotionMagic and are not used by the ControlMode.Position
     // Velocity in sensor units per 100ms
-    m_arm.configMotionCruiseVelocity(150.0, 10);
+    m_elbowLeft.configMotionCruiseVelocity(150.0, 10);
     // Acceleration in sensor units per 100ms per second
-    m_arm.configMotionAcceleration(150.0, 10);
+    m_elbowLeft.configMotionAcceleration(150.0, 10);
 
     // Make sure the forward and reverse limit switches are enabled and configured
     // normally open
-    m_arm.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, 0);
-    m_arm.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, 0);
-    m_arm.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
+    m_elbowLeft.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, 0);
+    m_elbowLeft.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, 0);
+    m_elbowLeft.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
   }
 
@@ -124,13 +128,13 @@ public class ArmRotationSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    m_arm.set(ControlMode.PercentOutput, 0);
+    m_elbowLeft.set(ControlMode.PercentOutput, 0);
   }
 
   public void runMotor(double speed) {
 
     double clampedSpeed = MathUtil.clamp(speed, ArmConstants.kArmPeakOutputReverse, ArmConstants.kArmPeakOutputForward);
-    m_arm.set(ControlMode.PercentOutput, clampedSpeed);
+    m_elbowLeft.set(ControlMode.PercentOutput, clampedSpeed);
   }
 
   // Set the arm target position after checking that it is safe to do so.
@@ -138,7 +142,7 @@ public class ArmRotationSubsystem extends SubsystemBase {
     // position will be zero in tucked position
     if (isHome() && position >= ArmConstants.kArmMinPosition && position <= ArmConstants.kArmMaxPosition) {
       if (debug) SmartDashboard.putNumber("ArmSubPos", position);
-      m_arm.set(ControlMode.Position, position);
+      m_elbowLeft.set(ControlMode.Position, position);
       targetPosition = position;
     }
     return getPosition();
@@ -147,13 +151,13 @@ public class ArmRotationSubsystem extends SubsystemBase {
   // Only to be used when homing the robot
   // This sets the goal encoder value without checking to see if it is reasonable.
   public double setHomePosition(double position) {
-    m_arm.set(ControlMode.Position, position);
+    m_elbowLeft.set(ControlMode.Position, position);
     m_capturedLimitPosition = false;
     return getPosition();
   }
 
   public double getPosition() {
-    double position = m_arm.getSelectedSensorPosition(0);
+    double position = m_elbowLeft.getSelectedSensorPosition(0);
     return position;
   }
 
@@ -167,25 +171,25 @@ public class ArmRotationSubsystem extends SubsystemBase {
 
   // Sets the target encoder value.  The PID in the TalonSRX will drive the arm to this position.
   public void setSensorPosition(double position) {
-    m_arm.setSelectedSensorPosition(position, 0, 10);
+    m_elbowLeft.setSelectedSensorPosition(position, 0, 10);
   }
 
   // This function sets the arm encoder to the expected arm starting position
   public void setSensorReference() {
     double l_position = ArmConstants.kArmStartingPosition;
-    m_arm.setSelectedSensorPosition(l_position, 0, 10);
+    m_elbowLeft.setSelectedSensorPosition(l_position, 0, 10);
     setHomePosition(l_position);
     setHome(); 
   }
 
   // Returns true if the arm is fully lowered.
   public boolean isFwdLimitSwitchClosed() {
-    return (m_arm.isFwdLimitSwitchClosed() == 1 ? true : false);
+    return (m_elbowLeft.isFwdLimitSwitchClosed() == 1 ? true : false);
   }
 
   // Returns true if the arm is fully raised.
   public boolean isRevLimitSwitchClosed() {
-    return (m_arm.isRevLimitSwitchClosed() == 1 ? true : false);
+    return (m_elbowLeft.isRevLimitSwitchClosed() == 1 ? true : false);
   }
 
   public void setHome() {
@@ -229,12 +233,12 @@ public class ArmRotationSubsystem extends SubsystemBase {
 
     if (debug) {
       SmartDashboard.putNumber("ARM rotate calls", rotateTimesCalled);
-      //SmartDashboard.putNumber("ARM Output%", m_arm.getMotorOutputPercent());
-      //SmartDashboard.putNumber("ARM Voltage", m_arm.getMotorOutputVoltage());
-      SmartDashboard.putNumber("ARM Output%", m_arm.getMotorOutputPercent());
-      SmartDashboard.putNumber("ARM Voltage", m_arm.getMotorOutputVoltage());
-      SmartDashboard.putNumber("ARM error", m_arm.getClosedLoopError(0));
-      ControlMode controlMode = m_arm.getControlMode();
+      //SmartDashboard.putNumber("ARM Output%", m_elbowLeft.getMotorOutputPercent());
+      //SmartDashboard.putNumber("ARM Voltage", m_elbowLeft.getMotorOutputVoltage());
+      SmartDashboard.putNumber("ARM Output%", m_elbowLeft.getMotorOutputPercent());
+      SmartDashboard.putNumber("ARM Voltage", m_elbowLeft.getMotorOutputVoltage());
+      SmartDashboard.putNumber("ARM error", m_elbowLeft.getClosedLoopError(0));
+      ControlMode controlMode = m_elbowLeft.getControlMode();
       SmartDashboard.putString("ARM ctlrmode", controlMode.toString());
     }
     // If the forward limit switch is closed, we are fully rotated to the Algae intake position.

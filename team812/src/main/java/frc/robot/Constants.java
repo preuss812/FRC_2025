@@ -48,9 +48,10 @@ public final class Constants {
         public static final int kSwerveLeftFrontCANCoder = 38;
 
         public static final int kWinchMotor = 41;
-        public static final int kArmMotor = 43;
+        public static final int kElbowMotor1 = 43;
+        public static final int kElbowMotor2 = 44;
         public static final int kAlgaeIntakeMotor = 40;
-        public static final int kShooterMotor = 42;
+        public static final int kShoulderMotor = 42;
 
         public static final int kPDP = 0; // was 50 until 3/12/2024
         public static final int kPCM = 51;

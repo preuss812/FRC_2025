@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.subsystems.ArmRotationSubsystem;
+import frc.robot.subsystems.ElbowRotationSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
@@ -17,7 +17,7 @@ import frc.robot.subsystems.ShooterSubsystem;
  */
 public class ScoreAlgaeInAmp extends SequentialCommandGroup {
   /** Creates a new ScoreAlgaeInAmp. */
-  public ScoreAlgaeInAmp(ArmRotationSubsystem armRotationSubsystem, ShooterSubsystem shooterSubsystem) {
+  public ScoreAlgaeInAmp(ElbowRotationSubsystem armRotationSubsystem, ShooterSubsystem shooterSubsystem) {
     
     addCommands(
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmUP")),
