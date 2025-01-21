@@ -21,6 +21,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 //import com.revrobotics.CANSparkBase.IdleMode;
 //import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import frc.utils.PreussMotorConfig;
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants.  This class should not be used for any other purpose.  All constants should be
@@ -499,4 +500,17 @@ public final class Constants {
         public static int kEchoChannel = 1;
         public static double kOffsetToBumper = 0.157; // Meters
     }
+
+    public static PreussMotorConfig algaeMotorConfig = new PreussMotorConfig(CANConstants.kAlgaeIntakeMotor)
+        .setP(PidConstants.kAlgaeIntake_kP)
+        .setI(PidConstants.kAlgaeIntake_kI)
+        .setD(PidConstants.kAlgaeIntake_kD)
+        .setF(PidConstants.kAlgaeIntake_kF);
+
+    public static final PreussMotorConfig shoulderMotor = new PreussMotorConfig(CANConstants.kShoulderMotor);
+    public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1);
+    public static final PreussMotorConfig elbowMotor2 = new PreussMotorConfig(CANConstants.kElbowMotor2)
+        .setP(0.0);
+
+
 }

@@ -20,7 +20,7 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 
 
 public class ShooterSubsystem extends SubsystemBase {
-  public final WPI_TalonSRX m_shooter = new WPI_TalonSRX(CANConstants.kShooterMotor);
+  public final WPI_TalonSRX m_shooter = new WPI_TalonSRX(0/*CANConstants.kShooterMotor*/);  // TODO Delete this module.
 
   /** Creates a new ShooterSubsystem. */
   public ShooterSubsystem() {
