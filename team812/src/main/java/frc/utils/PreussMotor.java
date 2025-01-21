@@ -1,8 +1,7 @@
 package frc.utils;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
-import frc.robot.Constants.PidConstants;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 
 /**
  * Create a TalonSRX motor object using config
@@ -31,4 +30,14 @@ public class PreussMotor extends WPI_TalonSRX{
         config_kF(config.slotIdx, config.F, config.timeout);
         config_IntegralZone(config.slotIdx, config.integralZone, config.timeout);
     }
+    
+    /* Stop the motor */
+    public void stop() {
+        this.set(ControlMode.PercentOutput, 0);
+    }
+
+    public void runMotor(double speed) {
+        this.set(ControlMode.PercentOutput, speed);
+    }
+
 }

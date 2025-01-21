@@ -21,7 +21,7 @@ public class PreussMotorConfig {
     public double nominalOutputForward = 0.0;
     public double nominalOutputReverse = 0.0;
     public double peakOutputForward = 0.8;  // 80%
-    public double peakOutputReverse = 0.8;  // 80%
+    public double peakOutputReverse = -0.8;  // -80%
     public double P = 0.0;
     public double I = 0.0;
     public double D = 0.0;
@@ -41,7 +41,7 @@ public class PreussMotorConfig {
     public PreussMotorConfig(int canID) {
         this.canID = canID;
     }
-    
+
     public int getCanID() {
         return canID;
     }

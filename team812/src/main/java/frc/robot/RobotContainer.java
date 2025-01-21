@@ -45,6 +45,7 @@ import frc.robot.Constants.UltrasonicConstants;
 import frc.robot.subsystems.ElbowRotationSubsystem;
 //import frc.robot.subsystems.BlackBoxSubsystem;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
+import frc.robot.subsystems.AlternateAlgaeIntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
@@ -124,6 +125,7 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ArmRotationSubsystem = new ElbowRotationSubsystem();
   public static ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem();
+  public static AlternateAlgaeIntakeSubsystem m_AlternateAlgaeIntakeSubsystem = new AlternateAlgaeIntakeSubsystem(Constants.algaeMotorConfig);
   public static WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE); // TODO Enable this and add SmartDashboard for Winch.
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
