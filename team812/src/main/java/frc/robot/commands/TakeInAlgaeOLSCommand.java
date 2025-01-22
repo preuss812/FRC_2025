@@ -7,22 +7,16 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.RobotContainer;
 
 public class TakeInAlgaeOLSCommand extends Command {
   private final AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem;
-  private final ShooterSubsystem m_ShooterSubsystem;
 
   /** Creates a new TakeInAlgaeCommand. */
-  public TakeInAlgaeOLSCommand(
-    AlgaeIntakeSubsystem AlgaeIntakeSubsystem,
-    ShooterSubsystem shooterSubsystem
-  ) {
+  public TakeInAlgaeOLSCommand(AlgaeIntakeSubsystem AlgaeIntakeSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_AlgaeIntakeSubsystem = AlgaeIntakeSubsystem;
-    m_ShooterSubsystem = shooterSubsystem;
-    addRequirements(AlgaeIntakeSubsystem, shooterSubsystem);
+    addRequirements(AlgaeIntakeSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -33,14 +27,12 @@ public class TakeInAlgaeOLSCommand extends Command {
   @Override
   public void execute() {
     m_AlgaeIntakeSubsystem.pickUpAlgae();
-    m_ShooterSubsystem.intake();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
       m_AlgaeIntakeSubsystem.stop();
-      m_ShooterSubsystem.stop();
   }
 
   // Returns true when the command should end.

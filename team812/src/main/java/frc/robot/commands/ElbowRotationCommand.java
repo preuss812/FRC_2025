@@ -8,16 +8,16 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElbowRotationSubsystem;
-import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ElbowConstants;
 
-public class ArmRotationCommand extends Command {
+public class ElbowRotationCommand extends Command {
   /** Creates a new ArmCommand. */
   private final ElbowRotationSubsystem m_armSubsystem;
   private final double m_position;
   private double setPoint;
   private final boolean debug = false;
 
-  public ArmRotationCommand(ElbowRotationSubsystem subsystem, double position) {
+  public ElbowRotationCommand(ElbowRotationSubsystem subsystem, double position) {
     m_armSubsystem = subsystem;
     m_position = position;
     System.out.println("ArmCommand class setPoint is " + m_position);
@@ -30,21 +30,21 @@ public class ArmRotationCommand extends Command {
 
     if (debug) SmartDashboard.putString("armcmd", "started");
 
-    setPoint = MathUtil.clamp(m_position, ArmConstants.kArmMinPosition, ArmConstants.kArmMaxPosition);
+    setPoint = MathUtil.clamp(m_position, ElbowConstants.kElbowMinPosition, ElbowConstants.kElbowMaxPosition);
     
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_armSubsystem.setPosition(setPoint);   // TODO: Does this need to be here? - dph 2023-03-01
+    m_armSubsystem.setTargetPosition(setPoint);   // TODO: Does this need to be here? - dph 2023-03-01
   }
 
   public boolean onTarget() {
     double error = m_armSubsystem.getPosition() - setPoint;
     if (debug) SmartDashboard.putNumber("armcmderr", error);
 
-    if (Math.abs(error) < ArmConstants.kArmThreshold) {
+    if (Math.abs(error) < ElbowConstants.kElbowThreshold) {
       return true;
     } else if (m_armSubsystem.getPosition() > setPoint && m_armSubsystem.isRevLimitSwitchClosed()) {
       // We are hear because the arm was rotating up (to lower encoder values) and we hit the limit switch.

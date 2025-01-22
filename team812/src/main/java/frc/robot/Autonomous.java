@@ -20,19 +20,20 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
-import frc.robot.commands.ArmHomeCommand;
-import frc.robot.commands.ArmRotationCommand;
+import frc.robot.commands.ShoulderHomeCommand;
+import frc.robot.commands.ElbowRotationCommand;
 import frc.robot.commands.AutonomousStartDelayCommand;
 import frc.robot.commands.DriveRobotCommand;
+import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.FindAprilTagCommand;
-import frc.robot.commands.ScoreAlgaeInAmp;
+import frc.robot.commands.ScoreAlgaeInProcessor;
 import frc.robot.commands.GotoAmpCommand;
 //import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.RotateRobotAutoCommand;
 //import frc.robot.commands.StopRobotMotion;
 //import frc.robot.commands.PushTowardsWall;
 import frc.robot.commands.PushTowardsWallUltrasonic;
-import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ElbowConstants;
 //import frc.robot.commands.SwerveToPoseCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
@@ -48,16 +49,18 @@ public class Autonomous extends SequentialCommandGroup {
    * Creates a new Autonomous.
    */
   private final DriveSubsystemSRX m_robotDrive;
-  private final ElbowRotationSubsystem m_ArmRotationSubsystem;
-  private final ShooterSubsystem m_ShooterSubsystem;
+  private final AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem;
+  private final ElbowRotationSubsystem m_ElbowRotationSubsystem;
+  private final ShoulderRotationSubsystem m_ShoulderRotationSubsystem;
   private final PingResponseUltrasonicSubsystem m_PingResponseUltrasonicSubsystem;
   private final PoseEstimatorSubsystem m_PoseEstimatorSubsystem;
 
   public Autonomous(RobotContainer robotContainer) {
 
     m_robotDrive = RobotContainer.m_robotDrive;
-    m_ArmRotationSubsystem = RobotContainer.m_ArmRotationSubsystem;
-    m_ShooterSubsystem = RobotContainer.m_ShooterSubsystem;
+    m_AlgaeIntakeSubsystem = RobotContainer.m_AlgaeIntakeSubsystem;
+    m_ElbowRotationSubsystem = RobotContainer.m_ElbowRotationSubsystem;
+    m_ShoulderRotationSubsystem = RobotContainer.m_ShoulderRotationSubsystem;
     m_PoseEstimatorSubsystem = RobotContainer.m_PoseEstimatorSubsystem;
     m_PingResponseUltrasonicSubsystem = RobotContainer.m_PingResponseUltrasonicSubsystem;
 
@@ -118,7 +121,8 @@ public class Autonomous extends SequentialCommandGroup {
         // Home the arm (should already be homed but this sets the encoder coordinates)
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 2)),
         new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmHome")),
-        new ArmHomeCommand(RobotContainer.m_ArmRotationSubsystem).withTimeout(3.0),
+        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(3.0),
+        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(3.0),
 
         // Wait if requested to allow other robots to clear the area.
         //new AutonomousStartDelayCommand(),
@@ -164,7 +168,7 @@ public class Autonomous extends SequentialCommandGroup {
             new ParallelCommandGroup(
               new GotoAmpCommand(m_PoseEstimatorSubsystem, m_robotDrive).withTimeout(3.0),
               
-            new ArmRotationCommand(m_ArmRotationSubsystem, ArmConstants.kArmMinPosition)), // TODO raise arm in parallel. 100 fudge factor
+            new ElbowRotationCommand(m_ElbowRotationSubsystem, ElbowConstants.kElbowMinPosition)), // TODO raise arm in parallel. 100 fudge factor
             // TODO: Could try raising the arm in parallel with this move to the amp - dph 2024-03-06.
 
             // Score the Algae.
@@ -172,7 +176,7 @@ public class Autonomous extends SequentialCommandGroup {
             new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 9)),
             new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgae")),
             new ParallelDeadlineGroup(
-              new ScoreAlgaeInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem),
+              new ScoreAlgaeInProcessor(m_AlgaeIntakeSubsystem, m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem),
               new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem)
             ).withTimeout(10.0),
 
@@ -220,7 +224,8 @@ public class Autonomous extends SequentialCommandGroup {
         // Home the arm (should already be homed but this sets the encoder coordinates)
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 2)),
         new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmHome")),
-        new ArmHomeCommand(RobotContainer.m_ArmRotationSubsystem).withTimeout(3.0),
+        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(3.0),
+        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(3.0),
 
         // Wait if requested to allow other robots to clear the area.
         new AutonomousStartDelayCommand(),
@@ -271,7 +276,8 @@ public class Autonomous extends SequentialCommandGroup {
         // Home the arm (should already be homed but this sets the encoder coordinates)
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 2)),
         new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmHome")),
-        new ArmHomeCommand(RobotContainer.m_ArmRotationSubsystem).withTimeout(3.0),
+        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(3.0),
+        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(3.0),
 
         // Wait if requested to allow other robots to clear the area.
         //new AutonomousStartDelayCommand(),
@@ -279,7 +285,7 @@ public class Autonomous extends SequentialCommandGroup {
         // Start the arm rising to the shooting position.
                 new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "raise")),
 
-        new InstantCommand(()->RobotContainer.m_ArmRotationSubsystem.setPosition(ArmConstants.kArmScoringPosition)),
+        new InstantCommand(()->RobotContainer.m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowScoringPosition)),
 
         // Drive out based on drivetrain encoders to align with and face the Amp
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 3)),
@@ -295,7 +301,7 @@ public class Autonomous extends SequentialCommandGroup {
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 9)),
         new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgae")),
         new ParallelDeadlineGroup(
-          new ScoreAlgaeInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem),
+          new ScoreAlgaeInProcessor(m_AlgaeIntakeSubsystem, m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem),
           new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem)
         ).withTimeout(10.0),
 

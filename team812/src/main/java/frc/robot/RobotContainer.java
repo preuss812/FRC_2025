@@ -33,11 +33,12 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ElbowConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.ShoulderConstants;
 import frc.robot.Constants.UltrasonicConstants;
 //import frc.robot.Constants.VisionConstants.AprilTag;
 //import frc.robot.Constants.WinchConstants;
@@ -45,21 +46,21 @@ import frc.robot.Constants.UltrasonicConstants;
 import frc.robot.subsystems.ElbowRotationSubsystem;
 //import frc.robot.subsystems.BlackBoxSubsystem;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
-import frc.robot.subsystems.AlternateAlgaeIntakeSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ShoulderRotationSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 import frc.robot.subsystems.PingResponseUltrasonicSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
-import frc.robot.commands.AdjustAlgaeInShooterCommand;
+import frc.robot.commands.AlgaeIntakeCommand;
 //import frc.robot.subsystems.CameraVisionSubsystem;
 //import frc.robot.subsystems.ColorDetectionSubsytem;
-import frc.robot.commands.ArmHomeCommand;
-import frc.robot.commands.ArmRotationCommand;
+import frc.robot.commands.ShoulderHomeCommand;
+import frc.robot.commands.ElbowRotationCommand;
 //import frc.robot.commands.DetectColorCommand;
 import frc.robot.commands.DriveOnAprilTagProjectionCommand;
 import frc.robot.commands.DriveRobotCommand;
+import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.ExpelAlgaeCommand;
 import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.FindAprilTagCommand;
@@ -74,7 +75,7 @@ import frc.robot.commands.RotateRobotCommand;
 //import frc.robot.commands.ShooterCommand;
 import frc.robot.commands.StartButtonCommand;
 import frc.robot.commands.StopAllMotorsCommand;
-import frc.robot.commands.ShooterCommand;
+import frc.robot.commands.ShoulderRotationCommand;
 //import frc.robot.commands.StopRobotMotion;
 //import frc.robot.commands.SwerveToAmpCommand;
 //import frc.robot.commands.SwerveToPoseCommand;
@@ -83,7 +84,6 @@ import frc.robot.commands.ShooterCommand;
 //import frc.robot.commands.SwerveToPoseTest2;
 import frc.robot.commands.SwerveToPoseTest3;
 import frc.robot.commands.TakeInAlgaeOLSCommand;
-import frc.robot.commands.UnshootCommand;
 import frc.robot.commands.WinchDownCommand;
 import frc.robot.commands.WinchUpCommand;
 //import frc.robot.commands.GotoSourceCommand;
@@ -122,10 +122,9 @@ public class RobotContainer {
 
   //public static EncoderSubsystem m_EncoderSubsystem = new EncoderSubsystem();
   public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( m_camera, m_robotDrive);
-  public static ElbowRotationSubsystem m_ArmRotationSubsystem = new ElbowRotationSubsystem();
-  public static ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
-  public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem();
-  public static AlternateAlgaeIntakeSubsystem m_AlternateAlgaeIntakeSubsystem = new AlternateAlgaeIntakeSubsystem(Constants.algaeMotorConfig);
+  public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
+  public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
+  public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
   public static WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE); // TODO Enable this and add SmartDashboard for Winch.
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
@@ -143,7 +142,7 @@ public class RobotContainer {
 
   // Controller definitions
   private final Joystick leftJoystick = new Joystick(OIConstants.kLeftJoystick);
-  //private final Joystick rightJoystick = new Joystick(OIConstants.kRightJoystick);
+  private final Joystick rightJoystick = new Joystick(OIConstants.kRightJoystick);
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
   
   //public static CANcoder m_enctest = new CANcoder(38);
@@ -193,12 +192,11 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
 
-    // SmartDashboard.putData("HomeArmRotation", new ArmHomeCommand(m_ArmRotationSubsystem));
-
     // Configure default commands
+
+    // The xBox controller left stick controls translation of the robot.
+    // The xBox controller right stick controls the direction the robot is facing (spinning).
     m_robotDrive.setDefaultCommand(
-      // The left stick controls translation of the robot.
-      // Turning is controlled by the X axis of the right stick.
       new RunCommand(
         () -> m_robotDrive.allianceRelativeDrive(
             -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
@@ -208,8 +206,14 @@ public class RobotContainer {
         m_robotDrive)
     );
 
-    m_ArmRotationSubsystem.setDefaultCommand(
-      new RunCommand(() -> m_ArmRotationSubsystem.rotate(-leftJoystick.getY()), m_ArmRotationSubsystem)
+    // The left joystick controls the rotation of the elbow.
+    m_ElbowRotationSubsystem.setDefaultCommand(
+      new RunCommand(() -> m_ElbowRotationSubsystem.rotate(-leftJoystick.getY()), m_ElbowRotationSubsystem)
+    );
+    
+    // The left joystick controls the rotation of the shoulder.
+    m_ShoulderRotationSubsystem.setDefaultCommand(
+      new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
     
     /* Switched to TriggerButton
@@ -220,8 +224,8 @@ public class RobotContainer {
     */
 
     // Default is to score Algaes based on the percentage pulled of the left trigger.
-    m_ShooterSubsystem.setDefaultCommand(
-      new RunCommand(()->m_ShooterSubsystem.runMotor(m_driverController.getRightTriggerAxis()), m_ShooterSubsystem)
+    m_AlgaeIntakeSubsystem.setDefaultCommand(
+      new RunCommand(()->m_AlgaeIntakeSubsystem.runMotor(m_driverController.getRightTriggerAxis()), m_AlgaeIntakeSubsystem)
     );
 
     Ultrasonic.setAutomaticMode(true);
@@ -238,33 +242,21 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be
-   * created by
-   * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
-   * subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
-   * passing it to a
-   * {@link JoystickButton}.
-   */
-  
-    new JoystickButton(m_driverController, Button.kRightBumper.value)
-      .whileTrue(new ShooterCommand(m_ShooterSubsystem));
-
-    new JoystickButton(m_driverController, Button.kLeftBumper.value).onTrue(
-        new SequentialCommandGroup(
-          new TakeInAlgaeOLSCommand(m_AlgaeIntakeSubsystem, m_ShooterSubsystem),
-          new ConditionalCommand(
-            new RunCommand(()->m_ShooterSubsystem.unshoot()).withTimeout(0.8),
-            new InstantCommand(),
-            Utilities.endGame
-          )
-        )
-    );
+    /**
+     * Use this method to define your button->command mappings. Buttons can be
+     * created by
+     * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
+     * subclasses ({@link
+     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
+     * passing it to a
+     * {@link JoystickButton}.
+     */
     
-    new TriggerButton(m_driverController, Axis.kLeftTrigger).whileTrue(
-      new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-    );
+    new JoystickButton(m_driverController, Button.kRightBumper.value)
+      .whileTrue(new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem));
+
+    new TriggerButton(m_driverController, Axis.kRightTrigger)
+      .whileTrue(new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem));
 
     /*
      * Not using the swerve motion so disabling the buttons
@@ -285,21 +277,21 @@ public class RobotContainer {
     );
     */
 
+    // Xbox A button spits out the algae
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
-        new UnshootCommand(m_ShooterSubsystem)
+        new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
       );
     
-      new JoystickButton(m_driverController, Button.kB.value)
-      .onTrue(new AdjustAlgaeInShooterCommand(m_ShooterSubsystem));
-
+    // Xbox Y button resets the robot coorinate system
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new StartButtonCommand());
-    //  .onTrue(new InstantCommand(()->m_ArmRotationSubsystem.setPosition(ArmConstants.kArmIntakePosition)));
 
+    // Xbox start button puts thte robot in fast/speed driving mode.
     new JoystickButton(m_driverController, Button.kStart.value).onTrue(
       new InstantCommand(()->m_robotDrive.setDrivingMode(DrivingMode.SPEED))
     );
     
+        // Xbox start button puts thte robot in slow/precision driving mode.
     new JoystickButton(m_driverController, Button.kBack.value).onTrue(
       new InstantCommand(()->m_robotDrive.setDrivingMode(DrivingMode.PRECISION))
     );
@@ -317,39 +309,44 @@ public class RobotContainer {
     POVButton dPad270 = dPadButton(270);
     POVButton dPad315 = dPadButton(315);
 
+
+    // Debugging commands for the elbow and shoulder.
+    new JoystickButton(leftJoystick, 7).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.testSetHomed()));
+    new JoystickButton(rightJoystick, 7).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.testSetHomed()));
+   
+    new JoystickButton(leftJoystick, 8).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHomePosition)));
+    new JoystickButton(rightJoystick, 8).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHomePosition)));
     
-    /*  These 3 were for climbing but were not used:
-    new JoystickButton(leftJoystick, 1).onTrue(new InstantCommand(()->DriveOnAprilTagProjectionCommand.setAngle(0.0)));
-    new JoystickButton(leftJoystick, 2).onTrue(new InstantCommand(()->DriveOnAprilTagProjectionCommand.setAngle(Math.PI)));
-    new JoystickButton(leftJoystick, 3).onTrue(
-      //new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController)
-      new RunCommand(()->m_ShooterSubsystem.unshoot()).withTimeout(0.8)
-    );
-    */
-    new JoystickButton(leftJoystick, 4).onTrue(new ArmRotationCommand(m_ArmRotationSubsystem,ArmConstants.kArmIntakePosition));
-    // This command should just stop the robot from driving and stop the shooter and arm motors.
-    new JoystickButton(leftJoystick, 5).onTrue(new StopAllMotorsCommand());
-    new JoystickButton(leftJoystick, 6).onTrue(new ArmRotationCommand(m_ArmRotationSubsystem, ArmConstants.kArmScoringPosition));
-    new JoystickButton(leftJoystick, 7).onTrue(new StartButtonCommand());
-    new JoystickButton(leftJoystick, 8).onTrue(new ArmHomeCommand(m_ArmRotationSubsystem));
-    new JoystickButton(leftJoystick, 9).onTrue(new TakeInAlgaeOLSCommand(m_AlgaeIntakeSubsystem, m_ShooterSubsystem));
-    new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->Utilities.resetPoseAtAmp()));
+    new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowLowAlgaePosition)));
+    new JoystickButton(rightJoystick, 10).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderLowAlgaePosition)));
+    
+    new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHighAlgaePosition)));
+    new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHighAlgaePosition)));
+
+
+
+    //new JoystickButton(leftJoystick, 4).onTrue(new ElbowRotationCommand(m_ElbowRotationSubsystem,ElbowConstants.kElbowIntakePosition));
+    // This command should just stop the robot from driving and stop the shooter, shoulder, and elbow motors.
+    //new JoystickButton(leftJoystick, 5).onTrue(new StopAllMotorsCommand());
+
+    //new JoystickButton(leftJoystick, 6).onTrue(new ElbowRotationCommand(m_ElbowRotationSubsystem, ElbowConstants.kElbowScoringPosition));
+    //new JoystickButton(leftJoystick, 7).onTrue(new StartButtonCommand());
+    //new JoystickButton(leftJoystick, 8).onTrue(new ElbowHomeCommand(m_ElbowRotationSubsystem));
+    //new JoystickButton(leftJoystick, 8).onTrue(new ShoulderHomeCommand(m_ShoulderRotationSubsystem));
+    //new JoystickButton(leftJoystick, 9).onTrue(new TakeInAlgaeOLSCommand(m_AlgaeIntakeSubsystem));
+    //new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->Utilities.resetPoseAtAmp()));
     //new JoystickButton(leftJoystick, 11).whileTrue( new WinchUpCommand(m_WinchSubsystem));
     //new JoystickButton(leftJoystick, 12).whileTrue( new WinchDownCommand(m_WinchSubsystem));
     
-    new JoystickButton(leftJoystick, 11).onTrue(new InstantCommand(()->m_ArmRotationSubsystem.runMotor(0.2)));
-    new JoystickButton(leftJoystick, 11).onFalse(new InstantCommand(()->m_ArmRotationSubsystem.runMotor(0.0)));
-
-    new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(()->m_ArmRotationSubsystem.runMotor(-0.2)));
-    new JoystickButton(leftJoystick, 12).onFalse(new InstantCommand(()->m_ArmRotationSubsystem.runMotor(0.0)));
+    
 
 /*
     new JoystickButton(RightJoystick, 11).onTrue(
-      new ArmHomeCommand(m_ArmRotationSubsystem)
+      neElbowHomeCommand(m_ElbowRotationSubsystem)
     );
     
     new JoystickButton(leftJoystick, 1).onTrue(
-      new ScoreAlgaeInAmp(m_ArmRotationSubsystem, m_ShooterSubsystem)
+      new ScoreAlgaeInAmp(m_ElbowRotationSubsystem, m_ShooterSubsystem)
     );
 
     new JoystickButton(leftJoystick, 4).whileTrue(

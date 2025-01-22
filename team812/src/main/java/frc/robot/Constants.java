@@ -109,12 +109,12 @@ public final class Constants {
     public static final class PidConstants {
         public static final double kProportionalDriveStraight = 0.05;
      
-        public static final double kArm_kP = 2.7;
-        public static final double kArm_kI = 0.005;
-        public static final double kArm_IntegralZone=15;
-        public static final double kArm_kD = 0.0;
-        public static final double kArm_kF = 0.0;
-        public static final double kArm_rampRate = 0.5;
+        public static final double kElbow_kP = 2.7;
+        public static final double kElbow_kI = 0.005;
+        public static final double kElbow_IntegralZone=15;
+        public static final double kElbow_kD = 0.0;
+        public static final double kElbow_kF = 0.0;
+        public static final double kElbow_rampRate = 0.5;
         public static final double kArmExtension_kP = 0.3; //3.0;
         public static final double kArmExtension_kI = 0.0;
         public static final double kArmExtension_kD = 0.0;
@@ -137,35 +137,38 @@ public final class Constants {
         public static final double kShooter_kF = 0.0; 
     }
 
-    public static final class ArmConstants {
+    public static final class ElbowConstants {
    
-        public static final double kArmThreshold =2; // TODO - tune this value.  2 is too small but 10 may be too large - dph 2024-02-25.
-        public static final double kArmEncoderCountPerRevolution = 8192; 
-        public static final double kArmDegreesPerTick = 360.0/ArmConstants.kArmEncoderCountPerRevolution;
-        public static final double kArmTicksPerDegree = ArmConstants.kArmEncoderCountPerRevolution/360.0;
+        public static final double kElbowThreshold =2; // TODO - tune this value.  2 is too small but 10 may be too large - dph 2024-02-25.
+        public static final double kElbowEncoderCountPerRevolution = 8192; 
+        public static final double kElbowDegreesPerTick = 360.0/ElbowConstants.kElbowEncoderCountPerRevolution;
+        public static final double kElbowTicksPerDegree = ElbowConstants.kElbowEncoderCountPerRevolution/360.0;
         
         // Positions are in Encode Ticks.
         // Ticks increase as the arm move down to the intake position.
         // The '0' position is defined by the scoring position which is enforced by the upper/reverse.
         // The 'max' position is defined by the arm fully rotated which is  enforced the forward limit switch.
         // The proper starting position for the arm is in the fully down position with the forward limit switch activated.
-        public static final double kArmMinPosition = 0;    // Smallest encoder value the software will rotate to.
-        public static final double kArmMaxPosition = 2800; // Largest encoder value the software will rotote to.
-        public static final double kArmRange = kArmMaxPosition - kArmMinPosition; // The number of ticks in the active range of arm motion between limits.
+        public static final double kElbowMinPosition = 0;    // Smallest encoder value the software will rotate to.
+        public static final double kElbowMaxPosition = 2800; // Largest encoder value the software will rotote to.
+        public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of ticks in the active range of arm motion between limits.
 
-        public static final double kArmStartingPosition = kArmMaxPosition;  // We should start at the max position with the arm rotated down to intake Algaes.
-        public static final double kArmIntakePosition = kArmMaxPosition;
-        public static final double kArmHookChainPosition = kArmMaxPosition;
-        public static final double kArmScoringPosition = kArmMinPosition;  // Rotated upward to score a Algae.
+        public static final double kElbowStartingPosition = kElbowMaxPosition;  // We should start at the max position with the arm rotated down to intake Algaes.
+        public static final double kElbowIntakePosition = kElbowMaxPosition;
+        public static final double kElbowHookChainPosition = kElbowMaxPosition;
+        public static final double kElbowScoringPosition = kElbowMinPosition;  // Rotated upward to score a Algae.
 
-        public static final double kArmPeakOutputForward =  0.80; // Limit output voltage to +/- 80% of the available voltage range.
-        public static final double kArmPeakOutputReverse = -0.80; // Limit output voltage to +/- 80% of the available voltage range.
-        public static final double kArmSensorUnitsPer100ms = kArmRange*10.0;      // Untested: Max speed in MotionMagic mode.  Full range in 1 second.
-        public static final double kArmSensorUnitsPer100msPerSec = kArmRange*10;  // Untested: Max acceleration in MotionMagicMode.  Full acceleration in 1 second
+        public static final double kElbowPeakOutputForward =  0.80; // Limit output voltage to +/- 80% of the available voltage range.
+        public static final double kElbowPeakOutputReverse = -0.80; // Limit output voltage to +/- 80% of the available voltage range.
+        public static final double kElbowSensorUnitsPer100ms = kElbowRange*10.0;      // Untested: Max speed in MotionMagic mode.  Full range in 1 second.
+        public static final double kElbowSensorUnitsPer100msPerSec = kElbowRange*10;  // Untested: Max acceleration in MotionMagicMode.  Full acceleration in 1 second
 
-        public static final double kArmRaiseTimeout = 2.0; // Seconds - for autonomous.
-        public static final double kArmLowerTimeout = 2.0; // Seconds - for autonomous.
-        public static final double kArmHomeSpeed = 0.2;    // Percent
+        public static final double kElbowRaiseTimeout = 2.0; // Seconds - for autonomous.
+        public static final double kElbowLowerTimeout = 2.0; // Seconds - for autonomous.
+        public static final double kElbowHomeSpeed = 0.2;    // Percent
+        public static final double kElbowHomePosition = 0;    // ticks. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 1000; // ticks. TODO: Tune this value.
+        public static final double kElbowHighAlgaePosition = 2000; // ticks. TODO: Tune this value.
     }
     
     // Define locations on the field as poses that may be useful for semi-automatic driving.
@@ -305,11 +308,19 @@ public final class Constants {
         public static final double kMaxRaiseRobotSpeed = 1.0;
         public static final double kMaxLowerRobotSpeed = -1.0;
     }
-    public static final class ShooterConstants {
-        public static final double kIntakeSpeed = 1.0;
-        public static final double kShootSpeed =  1.0;
-        public static final double kUnshootSpeed = -1.0;
-        public static final double kShootTimeout = 3.0; // Seconds
+    public static final class ShoulderConstants {
+        public static final double kShoulderStartingPosition = 0;  // We should start at the minimum position with the arm rotated down.
+        public static final double kShoulderPeakOutputForward =  0.5; // TODO: Tune this value.
+        public static final double kShoulderPeakOutputReverse = -0.5; // TODO: Tune this value.
+        public static final double kShoulderTimeout = 3.0; // Seconds to wait for the arm to rotate to the shooting position.
+        public static final double kShoulderMinPosition = 0;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
+        public static final double kShoulderMaxPosition  = 2000; // Largest encoder value the software will rotote to. TODO: Tune this value.
+        public static final double kShoulderRotationThreshold = 20; // ticks. TODO: Tune this value.
+        public static final double kShoulderProcessorPosition = 200; // ticks. TODO: Tune this value.
+        public static final double kShoulderHomeSpeed = 0.2; // Percent. TODO: Tune this value.
+        public static final double kShoulderHomePosition = 0; // ticks. TODO: Tune this value.
+        public static final double kShoulderLowAlgaePosition = 1000; // ticks. TODO: Tune this value.
+        public static final double kShoulderHighAlgaePosition = 2000; // ticks. TODO: Tune this value.
     }
 
     
@@ -508,9 +519,19 @@ public final class Constants {
         .setF(PidConstants.kAlgaeIntake_kF);
 
     public static final PreussMotorConfig shoulderMotor = new PreussMotorConfig(CANConstants.kShoulderMotor);
-    public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1);
+    public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1)
+        .setP(PidConstants.kElbow_kP)
+        .setP(PidConstants.kElbow_kI)
+        .setP(PidConstants.kElbow_kD)
+        .setP(PidConstants.kElbow_kF)
+        .setP(PidConstants.kElbow_IntegralZone);
+    
     public static final PreussMotorConfig elbowMotor2 = new PreussMotorConfig(CANConstants.kElbowMotor2)
-        .setP(0.0);
+        .setP(PidConstants.kElbow_kP)
+        .setP(PidConstants.kElbow_kI)
+        .setP(PidConstants.kElbow_kD)
+        .setP(PidConstants.kElbow_kF)
+        .setP(PidConstants.kElbow_IntegralZone);
 
 
 }
