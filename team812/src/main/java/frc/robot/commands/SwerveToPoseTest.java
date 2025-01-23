@@ -55,24 +55,18 @@ public class SwerveToPoseTest extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d startingPose;
+    Pose2d startingPose = poseEstimatorSubsystem.getCurrentPose();
 
     if (allianceID == FieldConstants.BlueAlliance) {
       if (destinationID == 0) {
-        destination = VisionConstants.AprilTag.BLUE_AMP;
-        startingPose = new Pose2d(TrajectoryPlans.BlueAmpPlan.plan[i][j].waypoint, new Rotation2d(-Math.PI/2.0));
-      } else {
-        destination = VisionConstants.AprilTag.BLUE_RIGHT_SOURCE;
-        startingPose = new Pose2d(TrajectoryPlans.BlueAmpPlan.plan[i][j].waypoint, new Rotation2d(Math.PI/2.0));
+        destination = VisionConstants.AprilTag.BLUE_PROCESSOR;
+        startingPose = new Pose2d(TrajectoryPlans.BlueProcessorPlan.plan[i][j].waypoint, new Rotation2d(-Math.PI/2.0));
       }
     } else {
       if (destinationID == 0) {
-        destination = VisionConstants.AprilTag.RED_AMP;
-        startingPose = new Pose2d(TrajectoryPlans.RedAmpPlan.plan[i][j].waypoint, new Rotation2d(-Math.PI/2.0));  
-       } else { 
-        destination = VisionConstants.AprilTag.RED_LEFT_SOURCE;
-        startingPose = new Pose2d(TrajectoryPlans.RedAmpPlan.plan[i][j].waypoint, new Rotation2d(Math.PI/2.0));
-      }
+        destination = VisionConstants.AprilTag.RED_PROCESSOR;
+        startingPose = new Pose2d(TrajectoryPlans.RedProcessorPlan.plan[i][j].waypoint, new Rotation2d(-Math.PI/2.0));  
+       } 
     }
     Utilities.toSmartDashboard("TT Start",startingPose);
     SmartDashboard.putString("TT","init");
@@ -86,24 +80,16 @@ public class SwerveToPoseTest extends Command {
     SmartDashboard.putString("TT","Running");
     //commands = new SequentialCommandGroup();
 
-    if (destination == AprilTag.BLUE_AMP) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueAmpPlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_AMP.id());
+    if (destination == AprilTag.BLUE_PROCESSOR) {
+      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, startingPose);
+      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_PROCESSOR.id());
       nearTargetPose = Utilities.backToPose(aprilTagPose, 1.0);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
-    } else if (destination == AprilTag.RED_AMP) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedAmpPlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_AMP.id());
+    } else if (destination == AprilTag.RED_PROCESSOR) {
+      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, startingPose);
+      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_PROCESSOR.id());
       nearTargetPose = Utilities.backToPose(aprilTagPose, 1.0);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
-    } else if (destination == AprilTag.BLUE_RIGHT_SOURCE) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueSourcePlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_RIGHT_SOURCE.id());
-      nearTargetPose = Utilities.backToPose(aprilTagPose, 1.0);
-    } else if (destination == AprilTag.RED_LEFT_SOURCE) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedSourcePlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_LEFT_SOURCE.id());
-      nearTargetPose = Utilities.backToPose(aprilTagPose, 1.0);
     } else {
       //targetPose = startingPose; // This will end up doing nothing.
       nearTargetPose = startingPose;

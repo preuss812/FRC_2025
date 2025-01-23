@@ -26,7 +26,6 @@ public class SwerveToPoseCommand extends Command {
   protected AprilTag destination;
   private SequentialCommandGroup commands;
   private final double finalDistanceToAmp    = 1.0; // Meters
-  private final double finalDistanceToSource = 1.0; // Meters
   private final boolean debug = false;
 
   /** Creates a new SwerveToPoseCommand. */
@@ -56,24 +55,16 @@ public class SwerveToPoseCommand extends Command {
     if (debug) Utilities.toSmartDashboard("SW Start",startingPose);
     commands = new SequentialCommandGroup();
 
-    if (destination == AprilTag.BLUE_AMP) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueAmpPlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_AMP.id());
+    if (destination == AprilTag.BLUE_PROCESSOR) {
+      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, startingPose);
+      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_PROCESSOR.id());
       targetPose = Utilities.backToPose(aprilTagPose, finalDistanceToAmp);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
-    } else if (destination == AprilTag.RED_AMP) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedAmpPlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_AMP.id());
+    } else if (destination == AprilTag.RED_PROCESSOR) {
+      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, startingPose);
+      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_PROCESSOR.id());
       targetPose = Utilities.backToPose(aprilTagPose, finalDistanceToAmp);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
-    } else if (destination == AprilTag.BLUE_RIGHT_SOURCE) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueSourcePlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_RIGHT_SOURCE.id());
-      targetPose = Utilities.backToPose(aprilTagPose, finalDistanceToSource);
-    } else if (destination == AprilTag.RED_LEFT_SOURCE) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedSourcePlan, startingPose);
-      aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_LEFT_SOURCE.id());
-      targetPose = Utilities.backToPose(aprilTagPose, finalDistanceToSource);
     } else {
       //targetPose = startingPose; // This will end up doing nothing.
       targetPose = startingPose;

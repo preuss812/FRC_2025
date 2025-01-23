@@ -180,12 +180,12 @@ public class Utilities {
     public static Pose2d getAllianceRobotAmpPose(PoseEstimatorSubsystem poseEstimatorSubsystem) {
         Pose2d robotPose = null;
         if (isBlueAlliance()) {
-            Pose2d tag = poseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.BLUE_AMP.id());
+            Pose2d tag = poseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.BLUE_PROCESSOR.id());
             // This should position the robot back to the AMP touching the wall.
             robotPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation());
     
         } else if (isRedAlliance()) {
-            Pose2d tag = poseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.RED_AMP.id());
+            Pose2d tag = poseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.RED_PROCESSOR.id());
             // This should position the robot back to the AMP touching the wall.
             robotPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation());
         }

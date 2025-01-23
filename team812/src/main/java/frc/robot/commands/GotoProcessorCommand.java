@@ -6,8 +6,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Utilities;
 import frc.robot.subsystems.DriveSubsystemSRX;
@@ -20,10 +20,10 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
  * shooter motors as well.
  * The anywhere on the field part is not implemented here yet as it has some issues.
  */
-public class GotoSourceCommand extends GotoPoseCommand {
-  /** Creates a new GotoSourceCommand. */
+public class GotoProcessorCommand extends GotoPoseCommand {
+  /** Creates a new GotoAmpCommand. */
   private final boolean debug = false;
-  public GotoSourceCommand(PoseEstimatorSubsystem PoseEstimatorSubsystem
+  public GotoProcessorCommand(PoseEstimatorSubsystem PoseEstimatorSubsystem
     , DriveSubsystemSRX DriveSubsystemSRXSubsystem) { 
     super(PoseEstimatorSubsystem,DriveSubsystemSRXSubsystem, new Pose2d()); // Pose is a place holder.
   }
@@ -55,20 +55,20 @@ public class GotoSourceCommand extends GotoPoseCommand {
     onTarget = false;
 
     if (Utilities.isBlueAlliance()) {
-      Pose2d tag = m_PoseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.BLUE_RIGHT_SOURCE.id());
+      Pose2d tag = m_PoseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.BLUE_PROCESSOR.id());
       // This should position the robot back to the AMP touching the wall.
-      targetPose = new Pose2d(tag.getX(), tag.getY() + 1.0 /* meters */, tag.getRotation().rotateBy(new Rotation2d(Math.PI)));
+      targetPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation());
 
     } else if (Utilities.isRedAlliance()) {
-      Pose2d tag = m_PoseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.RED_LEFT_SOURCE.id());
+      Pose2d tag = m_PoseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.RED_PROCESSOR.id());
       // This should position the robot back to the AMP touching the wall.
-      targetPose = new Pose2d(tag.getX(), tag.getY() + 1.0 /* meters */, tag.getRotation().rotateBy(new Rotation2d(Math.PI)));
+      targetPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation());
     }
     else {
       targetPose = m_PoseEstimatorSubsystem.getCurrentPose(); // Hack:: if we dont know the alliance. Dont move. 
     }
 
-    if (debug) Utilities.toSmartDashboard("GotoTarget", targetPose);
+    if (true) Utilities.toSmartDashboard("GotoTarget", targetPose);
     if (debug) SmartDashboard.putBoolean("GotoPoseOnTarget", false); // We will need to check in execute
   }
 }

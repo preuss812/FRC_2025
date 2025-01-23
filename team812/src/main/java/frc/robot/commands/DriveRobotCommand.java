@@ -12,8 +12,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.OIConstants;
-import frc.robot.RobotContainer;
 import frc.robot.Utilities;
 import frc.robot.subsystems.DriveSubsystemSRX;
 
@@ -104,12 +102,8 @@ public class DriveRobotCommand extends Command {
   private PIDController yController;
   private PIDController rotationController;
   private boolean onTarget;
-  private static int timesInitialized = 0;
   private boolean debug = false;
-  private boolean debugPID = false;
-  private final int debugMinIterations = 5*50; // For debug do not end the command so we can observe oscillations.
-  private int debugIterations = 0;
-
+  
   /** Creates a new DriveDistanceCommand. */
   public DriveRobotCommand(DriveSubsystemSRX robotDrive, Pose2d relativeMove, boolean controlRotation) {
     this.robotDrive = robotDrive;
@@ -124,20 +118,8 @@ public class DriveRobotCommand extends Command {
   @Override
   public void initialize() {
 
-    //debugPID = RobotContainer.m_BlackBox.isSwitchCenter();
     double linearP = config.getLinearP();
     double linearI = config.getLinearI();
-    
-    /*
-    if (debugPID) {
-      debugIterations = 0;
-      config.setLinearTolerance(0.01); // tighter tolerance of 1cm
-      linearP = RobotContainer.m_BlackBox.getPotValueScaled(OIConstants.kControlBoxPotX, 0.0, 5.0);
-      linearI = RobotContainer.m_BlackBox.getPotValueScaled(OIConstants.kControlBoxPotY, 0.0, 0.1);
-      SmartDashboard.putNumber("BB P", linearP);
-      SmartDashboard.putNumber("BB I", linearI);
-    }
-    */
 
     // get the robot's current pose from the drivetrain
     startingPose = robotDrive.getPose();
@@ -151,10 +133,10 @@ public class DriveRobotCommand extends Command {
       if (debug) SmartDashboard.putString("DR all", "Blue");
 
     } else if (Utilities.isRedAlliance()) {
-      // This just inverts the X move as the field this year is mirrored about the center of the field.
+      // This just inverts the X move as the field this year is rotated about the center of the field.
       targetPose = new Pose2d(
       startingPose.getX() - relativeMove.getX(),
-      startingPose.getY() + relativeMove.getY(),
+      startingPose.getY() - relativeMove.getY(),
       startingPose.getRotation().rotateBy(relativeMove.getRotation().rotateBy(new Rotation2d(Math.PI))));
       if (debug) SmartDashboard.putString("DR all", "Red");
 
@@ -184,8 +166,6 @@ public class DriveRobotCommand extends Command {
     double xSpeed = 0.0;
     double ySpeed = 0.0;
     double rotationSpeed = 0.0;
-    //SmartDashboard.putNumber("Range", -54);
-    debugIterations++;
     currentPose = robotDrive.getPose();
     if (debug) Utilities.toSmartDashboard("Drive Pose", currentPose);
     if (debug) Utilities.toSmartDashboard("Drive target", targetPose);

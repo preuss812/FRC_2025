@@ -115,6 +115,11 @@ public final class Constants {
         public static final double kElbow_kD = 0.0;
         public static final double kElbow_kF = 0.0;
         public static final double kElbow_rampRate = 0.5;
+        public static final double kShoulder_kP = 2.7;
+        public static final double kShoulder_kI = 0.005;
+        public static final double kShoulder_IntegralZone=15;
+        public static final double kShoulder_kD = 0.0;
+        public static final double kShoulder_kF = 0.0;
         public static final double kArmExtension_kP = 0.3; //3.0;
         public static final double kArmExtension_kI = 0.0;
         public static final double kArmExtension_kD = 0.0;
@@ -175,23 +180,26 @@ public final class Constants {
     public static final class FieldConstants {
         // All units in Meters.
         
-        public static final double robotInitialOrientation = 0.0;  // Assume robot starts against the alliance wall facing the field.
-        public static final double length = Units.inchesToMeters(652.73-1.50); // This is X
-        public static final double width = Units.inchesToMeters(323.0); // This is Y
+        public static final double robotInitialOrientation = 180.0;  // Assume robot starts on the starting line facing the reef.
+        public static final double length = Units.inchesToMeters(657.37+33.51); // This is X
+        public static final double width = Units.inchesToMeters(317.15-0.15); // This is Y
 
         // Handy values
         public static double xMin = 0.00;
-        public static double xMax = 16.58 - 0.04; // A guess based on the coordinates april tag # 7 and 8;
+        public static double xMax = length; // Meters 
         public static double yMin = 0.00;
-        public static double yMax = 8.20;
+        public static double yMax = width; // Meters
         public static double xCenter = (xMax - xMin)/2.0;
         public static double yCenter = (yMax - yMin)/2.0;
 
         public static Translation2d CenterOfTheField = new Translation2d(xCenter, yCenter);
-        public static Translation2d NearBlueAmp = new Translation2d(1.84, yMax-1.0);
-        public static Translation2d NearRedAmp = new Translation2d(14.70, yMax-1.0);
-        public static Translation2d NearBlueSource = new Translation2d(15.08, 0.88);
-        public static Translation2d NearRedSource = new Translation2d(1.46, 0.88);
+        public static Translation2d NearBlueProcessor = new Translation2d(1.84, yMax-1.0);
+        public static Translation2d NearRedProcessor = new Translation2d(14.70, yMax-1.0);
+        
+        // Helper function to translate Blue coordinates to Red coordinates.
+        public static Translation2d BlueToRedTransform(Translation2d blueCoordinates) {
+            return new Translation2d(xMax - blueCoordinates.getX(), yMax - blueCoordinates.getY());
+        }
         
         // Preloaded Algaes along the center line of the field.
         public static Translation2d CenterAlgae1 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*0.0));
@@ -210,19 +218,14 @@ public final class Constants {
         public static Translation2d RedAlgae2 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
         public static Translation2d RedAlgae3 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
 
-        // For Testing at Preuss
-        public static Translation2d NearBandSaw = new Translation2d(NearBlueAmp.getX(), NearBlueAmp.getY() - 5.0);
-        public static Translation2d NearDriverStation = new Translation2d(NearBlueAmp.getX()+1.0, NearBlueAmp.getY()-2.5);
-        public static Translation2d NearHammers = new Translation2d(NearBlueAmp.getX()+1, NearBlueAmp.getY());
-        public static Translation2d NearNorthDoorToClassroom = new Translation2d(NearBlueAmp.getX()+5.0, NearBlueAmp.getY());
-
         // Field Coordinate transformations for alliances.
         public static int BlueAlliance = 0;
         public static int RedAlliance = 1;
         public static Transform2d [] AllianceTransformation = {
              new Transform2d(0.0,0.0,new Rotation2d(0)) // Blue alliance uses the native field coorinates.
-            ,new Transform2d(xMax, 0.0, new Rotation2d(Math.PI)) // Red alliance is rotated 180 degrees and offsets reversed.
+            ,new Transform2d(xMax, yMax, new Rotation2d(Math.PI)) // Red alliance is rotated 180 degrees and offsets reversed.
         };
+
     }
     
     public static final class AlgaeIntakeConstants {
@@ -275,22 +278,9 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_CAMERA = CAMERA_TO_ROBOT.inverse();
         public enum AprilTag {
             UNKNOWN(0),
-            BLUE_RIGHT_SOURCE(1),
-            BLUE_LEFT_SOURCE(2),
-            RED_RIGHT_SPEAKER(3),
-            RED_CENTER_SPEAKER(4),
-            RED_AMP(5),
-            BLUE_AMP(6),
-            BLUE_CENTER_SPEAKER(7),
-            BLUE_LEFT_SPEAKER(8),
-            RED_RIGHT_SOURCE(9),
-            RED_LEFT_SOURCE(10),
-            RED_LEFT_STAGE(11),
-            RED_RIGHT_STAGE(12),
-            RED_CENTER_STAGE(13),
-            BLUE_CENTER_STAGE(14),
-            BLUE_LEFT_STAGE(15),
-            BLUE_RIGHT_STAGE(16);
+            RED_PROCESSOR(3),
+            BLUE_PROCESSOR(16);
+            
             
             private int id;
             private AprilTag(int id) {
@@ -447,15 +437,7 @@ public final class Constants {
         public static final int kDrivingMotorCurrentLimit = 50; // amps
         public static final int kTurningMotorCurrentLimit = 20; // amps
       }
-    
-      // These were merged into the Preuss/Team812 OIConstants
-      /*public static final class OIConstants {
-        public static final int kDriverControllerPort = 0;
-        public static final double kDriveDeadband = 0.05;
-      }
-      */
 
-    
       public static final class AutoConstants {
         public static final double kMaxSpeedMetersPerSecond = 3;
         public static final double kMaxAccelerationMetersPerSecondSquared = 3;
@@ -519,11 +501,11 @@ public final class Constants {
         .setF(PidConstants.kAlgaeIntake_kF);
 
     public static final PreussMotorConfig shoulderMotor = new PreussMotorConfig(CANConstants.kShoulderMotor)
-    .setP(PidConstants.kElbow_kP)
-        .setP(PidConstants.kElbow_kI)
-        .setP(PidConstants.kElbow_kD)
-        .setP(PidConstants.kElbow_kF)
-        .setP(PidConstants.kElbow_IntegralZone);
+    .setP(PidConstants.kShoulder_kP)
+        .setP(PidConstants.kShoulder_kI)
+        .setP(PidConstants.kShoulder_kD)
+        .setP(PidConstants.kShoulder_kF)
+        .setP(PidConstants.kShoulder_IntegralZone);
         
     public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1)
         .setP(PidConstants.kElbow_kP)

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 
 /** 
- * This class supplies data to create trajectories from any point on the field to the AMP or SOURCE
+ * This class supplies data to create trajectories from any point on the field to the Processor or SOURCE
  * The hope is that these will enable semi-automatic driving from to and from those key field positions.
  * The strategy is the divide the field into 2 meter squares and then create plans based on the
  * best path to travel from each starting square.
@@ -103,13 +103,13 @@ public class TrajectoryPlans {
     }
     public static double dx = FieldConstants.xMax/8.0;
     public static double dy = FieldConstants.yMax/4.0;
-    public static final TrajectoryPlan BlueAmpPlan = new TrajectoryPlan( new FieldSquare[][]
+    public static final TrajectoryPlan BlueProcessorPlan = new TrajectoryPlan( new FieldSquare[][]
         {
             { // Colunm 0:
-                new FieldSquare(new Translation2d(dx*0+1.0, dy*0+2.0), FieldStep.Up),
-                new FieldSquare(new Translation2d(dx*0+1.5, dy*1+1.5), FieldStep.UpRight),
-                new FieldSquare(new Translation2d(dx*0+2.0, dy*2+1.0), FieldStep.Up),
-                new FieldSquare(new Translation2d(dx*0+2.0, dy*3+0.75), FieldStep.Done)
+                new FieldSquare(new Translation2d(dx*1.5, dy*0.5), FieldStep.Right),
+                new FieldSquare(new Translation2d(dx*1.5, dy*0.5), FieldStep.DownRight),
+                new FieldSquare(new Translation2d(dx*0, dy*2+1.0), FieldStep.Down),
+                new FieldSquare(new Translation2d(dx*0, dy*3+0.75), FieldStep.Down)
             },
             { // Column 1:
                 new FieldSquare(new Translation2d(dx*1+1.0, dy*0+2.0), FieldStep.UpLeft),
@@ -259,7 +259,7 @@ public class TrajectoryPlans {
             */
                   
     });
-    public static final TrajectoryPlan RedAmpPlan = transformPlan(BlueAmpPlan, FieldConstants.AllianceTransformation[FieldConstants.RedAlliance]);
+    public static final TrajectoryPlan RedProcessorPlan = transformPlan(BlueProcessorPlan, FieldConstants.AllianceTransformation[FieldConstants.RedAlliance]);
     public static final TrajectoryPlan RedSourcePlan = transformPlan(BlueSourcePlan, FieldConstants.AllianceTransformation[FieldConstants.RedAlliance]);
     public TrajectoryPlans() {
 

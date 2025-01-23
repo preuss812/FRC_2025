@@ -9,15 +9,11 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.RobotContainer;
 
-
-// Algae:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class StartButtonCommand extends SequentialCommandGroup {
-  /** Creates a new StartButtonCommand. */
-  public StartButtonCommand() {
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
+public class ResetDriveTrainCommand extends SequentialCommandGroup {
+  /** Creates a new ResetDriveTrainCommand. */
+  public ResetDriveTrainCommand() {
+    // reset the robot coordinates to have forward be the direction the robot is facing.
+    // Put the robot in slow/precision driving mode.
     addCommands(
       new SequentialCommandGroup(
         new StopAllMotorsCommand(),

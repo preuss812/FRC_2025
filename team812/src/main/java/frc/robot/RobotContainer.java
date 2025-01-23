@@ -15,6 +15,7 @@ import edu.wpi.first.math.MathUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 import edu.wpi.first.math.util.Units;
@@ -44,7 +45,7 @@ import frc.robot.Constants.UltrasonicConstants;
 //import frc.robot.Constants.WinchConstants;
 //import frc.robot.subsystems.AnalogUltrasonicDistanceSubsystem;
 import frc.robot.subsystems.ElbowRotationSubsystem;
-//import frc.robot.subsystems.BlackBoxSubsystem;
+import frc.robot.subsystems.BlackBoxSubsystem;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.ShoulderRotationSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
@@ -66,23 +67,21 @@ import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.FindAprilTagCommand;
 //import com.revrobotics.CANSparkMax;
 //import com.revrobotics.CANSparkLowLevel.MotorType;
-//import frc.robot.commands.GotoAmpCommand;
+//import frc.robot.commands.GotoProcessorCommand;
 //import frc.robot.commands.GotoPoseCommand;
 //import frc.robot.commands.AlgaeIntakeCommand;
 //import frc.robot.commands.RotateRobotAutoCommand;
 import frc.robot.commands.RotateRobotCommand;
-//import frc.robot.commands.ScoreAlgaeInAmp;
+//import frc.robot.commands.ScoreAlgaeInProcessor;
 //import frc.robot.commands.ShooterCommand;
-import frc.robot.commands.StartButtonCommand;
+import frc.robot.commands.ResetDriveTrainCommand;
 import frc.robot.commands.StopAllMotorsCommand;
 import frc.robot.commands.ShoulderRotationCommand;
 //import frc.robot.commands.StopRobotMotion;
-//import frc.robot.commands.SwerveToAmpCommand;
+//import frc.robot.commands.SwerveToProcessorCommand;
 //import frc.robot.commands.SwerveToPoseCommand;
 //import frc.robot.commands.SwerveToSourceCommand;
-//import frc.robot.commands.SwerveToPoseTest;
-//import frc.robot.commands.SwerveToPoseTest2;
-import frc.robot.commands.SwerveToPoseTest3;
+import frc.robot.commands.SwerveToPoseTest;
 import frc.robot.commands.TakeInAlgaeOLSCommand;
 import frc.robot.commands.WinchDownCommand;
 import frc.robot.commands.WinchUpCommand;
@@ -116,8 +115,7 @@ public class RobotContainer {
   private static boolean debug = false;
   public final static DriveSubsystemSRX m_robotDrive = new DriveSubsystemSRX();
 
-  //public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
-  //public static CameraVisionSubsystem m_CameraVisionSubsystem = new CameraVisionSubsystem();
+  public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
   public static PhotonCamera m_camera = new PhotonCamera("pv-812");
 
   //public static EncoderSubsystem m_EncoderSubsystem = new EncoderSubsystem();
@@ -126,10 +124,9 @@ public class RobotContainer {
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
   public static WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
-  //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE); // TODO Enable this and add SmartDashboard for Winch.
+  //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE);
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
-  //public static AnalogUltrasonicDistanceSubsystem m_UltrasonicDistanceSubsystem = 
-  //          new AnalogUltrasonicDistanceSubsystem();
+  //public static AnalogUltrasonicDistanceSubsystem m_UltrasonicDistanceSubsystem = new AnalogUltrasonicDistanceSubsystem();
   public static PingResponseUltrasonicSubsystem m_PingResponseUltrasonicSubsystem =
     new PingResponseUltrasonicSubsystem(
       UltrasonicConstants.kPingChannel,
@@ -258,25 +255,6 @@ public class RobotContainer {
     new TriggerButton(m_driverController, Axis.kRightTrigger)
       .whileTrue(new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem));
 
-    /*
-     * Not using the swerve motion so disabling the buttons
-     * 
-    new JoystickButton(m_driverController, Button.kB.value).whileTrue(
-      //new SequentialCommandGroup(
-        new SwerveToSourceCommand(m_robotDrive, m_PoseEstimatorSubsystem)//,
-        //new GotoSourceCommand(m_PoseEstimatorSubsystem, m_robotDrive)
-      //)
-    );
-
-    new JoystickButton(m_driverController, Button.kX.value).whileTrue(
-        //new SequentialCommandGroup(
-          new SwerveToAmpCommand( m_robotDrive, m_PoseEstimatorSubsystem)//, // Gets close to AMP
-          //new GotoAmpCommand(m_PoseEstimatorSubsystem, m_robotDrive), // Go the rest of the way to the AMP.
-          //new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem).withTimeout(2.0)
-      //).andThen(new StopAllMotorsCommand())
-    );
-    */
-
     // Xbox A button spits out the algae
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
@@ -284,7 +262,7 @@ public class RobotContainer {
       );
     
     // Xbox Y button resets the robot coorinate system
-    new JoystickButton(m_driverController, Button.kY.value).onTrue(new StartButtonCommand());
+    new JoystickButton(m_driverController, Button.kY.value).onTrue(new ResetDriveTrainCommand());
 
     // Xbox start button puts thte robot in fast/speed driving mode.
     new JoystickButton(m_driverController, Button.kStart.value).onTrue(
@@ -323,77 +301,49 @@ public class RobotContainer {
     new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHighAlgaePosition)));
     new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHighAlgaePosition)));
 
+    new JoystickButton(leftJoystick,3).onTrue(new SequentialCommandGroup(
+      new InstantCommand(() -> m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 0.0, new Rotation2d(0.0)), true),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, 1.0, new Rotation2d(0.0)), true),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 0.0, new Rotation2d(0.0)), true),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
+    ));
 
+    new JoystickButton(leftJoystick,4).onTrue(new SequentialCommandGroup(
+      new InstantCommand(() -> m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 1.0, new Rotation2d(0.0)), true),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 1.0, new Rotation2d(0.0)), true),
+      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
+    ));
+    Pose2d at16 = new Pose2d(Units.inchesToMeters(235.73), Units.inchesToMeters(-0.15), new Rotation2d(0.0));
+    Pose2d at3 = at16.relativeTo(new Pose2d(Constants.FieldConstants.AllianceTransformation[1].getX(),
+    Constants.FieldConstants.AllianceTransformation[1].getY(), Constants.FieldConstants.AllianceTransformation[1].getRotation()));
 
-    //new JoystickButton(leftJoystick, 4).onTrue(new ElbowRotationCommand(m_ElbowRotationSubsystem,ElbowConstants.kElbowIntakePosition));
-    // This command should just stop the robot from driving and stop the shooter, shoulder, and elbow motors.
-    //new JoystickButton(leftJoystick, 5).onTrue(new StopAllMotorsCommand());
+    SmartDashboard.putNumber("X3", Units.metersToInches(at3.getX()));
+    SmartDashboard.putNumber("Y3", Units.metersToInches(at3.getY()));
+    SmartDashboard.putNumber("R3", Units.radiansToDegrees(at3.getRotation().getRadians()));
 
-    //new JoystickButton(leftJoystick, 6).onTrue(new ElbowRotationCommand(m_ElbowRotationSubsystem, ElbowConstants.kElbowScoringPosition));
-    //new JoystickButton(leftJoystick, 7).onTrue(new StartButtonCommand());
-    //new JoystickButton(leftJoystick, 8).onTrue(new ElbowHomeCommand(m_ElbowRotationSubsystem));
-    //new JoystickButton(leftJoystick, 8).onTrue(new ShoulderHomeCommand(m_ShoulderRotationSubsystem));
-    //new JoystickButton(leftJoystick, 9).onTrue(new TakeInAlgaeOLSCommand(m_AlgaeIntakeSubsystem));
-    //new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->Utilities.resetPoseAtAmp()));
-    //new JoystickButton(leftJoystick, 11).whileTrue( new WinchUpCommand(m_WinchSubsystem));
-    //new JoystickButton(leftJoystick, 12).whileTrue( new WinchDownCommand(m_WinchSubsystem));
-    
-    
+    Pose2d at16P = at3.relativeTo(new Pose2d(Constants.FieldConstants.AllianceTransformation[1].getX(),
+    Constants.FieldConstants.AllianceTransformation[1].getY(), Constants.FieldConstants.AllianceTransformation[1].getRotation()));
 
-/*
-    new JoystickButton(RightJoystick, 11).onTrue(
-      neElbowHomeCommand(m_ElbowRotationSubsystem)
-    );
-    
-    new JoystickButton(leftJoystick, 1).onTrue(
-      new ScoreAlgaeInAmp(m_ElbowRotationSubsystem, m_ShooterSubsystem)
-    );
-
-    new JoystickButton(leftJoystick, 4).whileTrue(
-      new DetectColorCommand(m_ColorDetectionSubsystem)
-    );
-    new JoystickButton(leftJoystick, 2).whileTrue(
-      new InstantCommand(() -> m_robotDrive.setX(), m_robotDrive)
-    );
-    */
-
-    // Possible aide for end game.  In this command the xbox right joystick controls 
-    // rotation as normal but the Y axis now controls driving along the 
-    // line that projects perpendicularly from the april tag in view when the command
-    // is started.
-    
-    // The next 2 buttons did not work with InstantCommand().onTrue().
-    //  They are not needed for game play.
-    // Nevertheless, I still want to understand how to perform these commands.
-    // Tring with RunCommand().whileTrue()...
-    /*
-    new JoystickButton(leftJoystick, 5).whileTrue(
-      new RunCommand(() -> m_robotDrive.wheelsStraightAhead(), m_robotDrive)
-    );
-    new JoystickButton(leftJoystick, 6).whileTrue(
-      new RunCommand(() -> m_robotDrive.wheels45(), m_robotDrive)
-    );
-
-    new JoystickButton(rightJoystick, 3).whileTrue(
-      new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-    );
-    */
-
-    
+    SmartDashboard.putNumber("X3P", Units.metersToInches(at16P.getX()));
+    SmartDashboard.putNumber("Y3P", Units.metersToInches(at16P.getY()));
+    SmartDashboard.putNumber("R3P", Units.radiansToDegrees(at16P.getRotation().getRadians()));
     /* Debugging below */
     if (debug) {
 
       // Try all possible plans to makesure there are now obvious bad moves in the plans.
       for (int i = 1; i <= 16; i+= 2) {
         for (int j = 1; j <= 8; j+= 2) {
-          List<Translation2d> blueAmpPlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueAmpPlan, new Pose2d(16,0,new Rotation2d(0)));
+          List<Translation2d> blueProcessorPlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, new Pose2d(16,0,new Rotation2d(0)));
           List<Translation2d> blueSourcePlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueSourcePlan, new Pose2d(16,0,new Rotation2d(0)));
         }
       }
       // Try all possible plans to makesure there are now obvious bad moves in the plans.
       for (int i = 1; i <= 16; i+= 2) {
         for (int j = 1; j <= 8; j+= 2) {
-          List<Translation2d> redAmpPlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedAmpPlan, new Pose2d(16,0,new Rotation2d(0)));
+          List<Translation2d> redProcessorPlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, new Pose2d(16,0,new Rotation2d(0)));
           List<Translation2d> redSourcePlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedSourcePlan, new Pose2d(16,0,new Rotation2d(0)));
         }
       }
@@ -403,12 +353,12 @@ public class RobotContainer {
 
       /**
        * Create smart dash button that cycles through the various paths
-       * from each 2x2 meter square on the field to the amp and source
+       * from each 2x2 meter square on the field to the Processor and source
        * for both red and blue alliances.
        */
       
       if (debug) {
-        SmartDashboard.putData("TTcmd", new SwerveToPoseTest3(m_robotDrive, m_PoseEstimatorSubsystem));
+        SmartDashboard.putData("TTcmd", new SwerveToPoseTest(m_robotDrive, m_PoseEstimatorSubsystem));
         SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, 0.0, false));
         SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
         SmartDashboard.putData("DAcmd", new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController));
@@ -480,13 +430,13 @@ public class RobotContainer {
    *  This function sets the gyro angle based on the alliance (blue or red)
    * and the assumed starting position of the robot on the field.
    * The current assumption is that the robot will be placed with it's back 
-   * close to the amp wall. The X coodinate will be calculate based on the
+   * close to the Processor wall. The X coodinate will be calculate based on the
    * assumption that the robot is just inside the starting box.
    */
-  public static void setGyroAngleToStartMatchAmp() {
-    double ampZoneDepth = Units.inchesToMeters(13);
+  public static void setGyroAngleToStartMatchProcessor() {
+    double ProcessorZoneDepth = Units.inchesToMeters(13);
     double startingBoxDepth = Units.inchesToMeters(76.1);
-    double startingRobotCenterY = FieldConstants.yMax - ampZoneDepth - DriveConstants.kBackToCenterDistance;
+    double startingRobotCenterY = FieldConstants.yMax - ProcessorZoneDepth - DriveConstants.kBackToCenterDistance;
     double startingRobotCenterX = FieldConstants.xMin + startingBoxDepth - DriveConstants.kRobotWidth/2.0 - Units.inchesToMeters(2.0)/* tape */;
 
     boolean isBlueAlliance = Utilities.isBlueAlliance(); // From the Field Management system.
@@ -496,8 +446,8 @@ public class RobotContainer {
       m_robotDrive.setAngleDegrees(startingHeading);
       m_robotDrive.resetOdometry(
         new Pose2d(
-           startingRobotCenterX     // Just inside the starting box near the amp
-          ,startingRobotCenterY     // Just inside the starting box near the amp
+           startingRobotCenterX     // Just inside the starting box near the Processor
+          ,startingRobotCenterY     // Just inside the starting box near the Processor
           ,new Rotation2d(Units.degreesToRadians(startingHeading)) // Facing toward the field.
         )
       );
@@ -506,8 +456,8 @@ public class RobotContainer {
       m_robotDrive.setAngleDegrees(startingHeading);
       m_robotDrive.resetOdometry(
         new Pose2d(
-           FieldConstants.xMax - startingRobotCenterX     // Just inside the starting box near the amp
-          ,startingRobotCenterY                           // Just inside the starting box near the amp
+           FieldConstants.xMax - startingRobotCenterX     // Just inside the starting box near the Processor
+          ,startingRobotCenterY                           // Just inside the starting box near the Processor
           ,new Rotation2d(Units.degreesToRadians(startingHeading))    // Facing toward the field.
         )
       );

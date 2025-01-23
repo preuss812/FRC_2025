@@ -27,7 +27,7 @@ import frc.robot.commands.DriveRobotCommand;
 import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.FindAprilTagCommand;
 import frc.robot.commands.ScoreAlgaeInProcessor;
-import frc.robot.commands.GotoAmpCommand;
+import frc.robot.commands.GotoProcessorCommand;
 //import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.RotateRobotAutoCommand;
 //import frc.robot.commands.StopRobotMotion;
@@ -166,7 +166,7 @@ public class Autonomous extends SequentialCommandGroup {
             new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 8)),
             new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "GotoScoringPosition")),
             new ParallelCommandGroup(
-              new GotoAmpCommand(m_PoseEstimatorSubsystem, m_robotDrive).withTimeout(3.0),
+              new GotoProcessorCommand(m_PoseEstimatorSubsystem, m_robotDrive).withTimeout(3.0),
               
             new ElbowRotationCommand(m_ElbowRotationSubsystem, ElbowConstants.kElbowMinPosition)), // TODO raise arm in parallel. 100 fudge factor
             // TODO: Could try raising the arm in parallel with this move to the amp - dph 2024-03-06.
@@ -265,7 +265,7 @@ public class Autonomous extends SequentialCommandGroup {
       SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup(
         // Set the gyro starting angle based on alliance and assumed robot placement
         new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 1)),
-        new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatchAmp()),
+        new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatchProcessor()),
         new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
         new InstantCommand(() -> Utilities.allianceSetCurrentPose(
           new Pose2d(

@@ -129,10 +129,6 @@ public class Robot extends TimedRobot {
     }
     // Ensure that at startup, the robot is in a known speed mode.
     RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.SPEED);
-    
-    // Ensure that at startup, we are not in endgame mode.
-    //RobotContainer.m_WinchSubsystem.setEndGame(false);
-
   }
 
   /**
@@ -140,50 +136,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    
-    /*
-    if (blackBox) {
-      if (RobotContainer.m_BlackBox.isSwitchLeft())
-        SmartDashboard.putString("Debug","None");
-      else if  (RobotContainer.m_BlackBox.isSwitchCenter())
-        SmartDashboard.putString("Debug","Drive");
-      else if  (RobotContainer.m_BlackBox.isSwitchLeft())
-        SmartDashboard.putString("Debug","Rotate");
-      else
-        SmartDashboard.putString("Debug","N/A");
-
-      // If the black box rightmost switch, #4 has change position, update the driving mode.
-      if (!RobotContainer.m_BlackBox.isSet(OIConstants.kControlBoxSw4) && !drivingSwitchPosition) {
-        RobotContainer.m_robotDrive.setDrivingMode(DriveSubsystemSRX.DrivingMode.PRECISION);
-        drivingSwitchPosition = true;
-      } else if (RobotContainer.m_BlackBox.isSet(OIConstants.kControlBoxSw4) && drivingSwitchPosition) {
-        RobotContainer.m_robotDrive.setDrivingMode(DriveSubsystemSRX.DrivingMode.SPEED);
-        drivingSwitchPosition = false;
-      }
-    }
-
-    // if the black box #3 switch has changed position, update the endGame mode.
-    if (!RobotContainer.m_BlackBox.isSet(OIConstants.kControlBoxSw3) && !endGameSwitchPosition) {
-      RobotContainer.m_WinchSubsystem.setEndGame(true);
-      endGameSwitchPosition = true;
-    } else if (RobotContainer.m_BlackBox.isSet(OIConstants.kControlBoxSw3) && endGameSwitchPosition) {
-      RobotContainer.m_WinchSubsystem.setEndGame(false);
-      endGameSwitchPosition = false;
-    }
-    */
-
-    /*
-    if (powerDistribution) {
-      double totalCurrent = RobotContainer.m_PowerDistribution.getTotalCurrent();
-      SmartDashboard.putNumber("Robot Current", totalCurrent);
-      // Get the current going through channel 7, in Amperes.
-      // The PDP returns the current in increments of 0.125A.
-      // At low currents the current readings tend to be less accurate.
-      double winchCurrent = RobotContainer.m_PowerDistribution.getCurrent(6); // TODO Need the right channel
-      SmartDashboard.putNumber("Winch Current", winchCurrent);
-    }
-    */
-
   }
 
   @Override

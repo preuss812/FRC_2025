@@ -15,9 +15,9 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
  * field to the SOURCE.  It should probably lower the arm and quiese the intake
  * shooter motors as well.
  */
-public class SwerveToSourceCommand extends SwerveToPoseCommand {
-  /** Creates a new SwerveToSourceCommand. */
-  public SwerveToSourceCommand(
+public class SwerveToProcessorCommand extends SwerveToPoseCommand {
+  /** Creates a new SwerveToAmpCommand. */
+  public SwerveToProcessorCommand(
     DriveSubsystemSRX DriveSubsystemSRXSubsystem,
     PoseEstimatorSubsystem PoseEstimatorSubsystem
   ) { 
@@ -26,12 +26,12 @@ public class SwerveToSourceCommand extends SwerveToPoseCommand {
     super(
       DriveSubsystemSRXSubsystem,
       PoseEstimatorSubsystem,
-      Utilities.isBlueAlliance() ? VisionConstants.AprilTag.BLUE_RIGHT_SOURCE : VisionConstants.AprilTag.RED_LEFT_SOURCE);
+      Utilities.isBlueAlliance() ? VisionConstants.AprilTag.BLUE_PROCESSOR : VisionConstants.AprilTag.BLUE_PROCESSOR);
   }
 
   @Override
   public void initialize() {
-    this.destination = Utilities.isBlueAlliance() ? VisionConstants.AprilTag.BLUE_RIGHT_SOURCE : VisionConstants.AprilTag.RED_LEFT_SOURCE;
+    this.destination = Utilities.isBlueAlliance() ? VisionConstants.AprilTag.BLUE_PROCESSOR : VisionConstants.AprilTag.RED_PROCESSOR;
     super.initialize();
   }
 
