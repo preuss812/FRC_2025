@@ -51,8 +51,8 @@ public final class Constants {
         public static final int kWinchMotor = 41;
         public static final int kElbowMotor1 = 43;
         public static final int kElbowMotor2 = 44;
-        public static final int kAlgaeIntakeMotor = 40;
-        public static final int kShoulderMotor = 42;
+        public static final int kAlgaeIntakeMotor = 42;
+        public static final int kShoulderMotor = 40;
 
         public static final int kPDP = 0; // was 50 until 3/12/2024
         public static final int kPCM = 51;
@@ -518,7 +518,13 @@ public final class Constants {
         .setD(PidConstants.kAlgaeIntake_kD)
         .setF(PidConstants.kAlgaeIntake_kF);
 
-    public static final PreussMotorConfig shoulderMotor = new PreussMotorConfig(CANConstants.kShoulderMotor);
+    public static final PreussMotorConfig shoulderMotor = new PreussMotorConfig(CANConstants.kShoulderMotor)
+    .setP(PidConstants.kElbow_kP)
+        .setP(PidConstants.kElbow_kI)
+        .setP(PidConstants.kElbow_kD)
+        .setP(PidConstants.kElbow_kF)
+        .setP(PidConstants.kElbow_IntegralZone);
+        
     public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1)
         .setP(PidConstants.kElbow_kP)
         .setP(PidConstants.kElbow_kI)

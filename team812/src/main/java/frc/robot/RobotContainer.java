@@ -211,7 +211,7 @@ public class RobotContainer {
       new RunCommand(() -> m_ElbowRotationSubsystem.rotate(-leftJoystick.getY()), m_ElbowRotationSubsystem)
     );
     
-    // The left joystick controls the rotation of the shoulder.
+    // The right joystick controls the rotation of the shoulder.
     m_ShoulderRotationSubsystem.setDefaultCommand(
       new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
