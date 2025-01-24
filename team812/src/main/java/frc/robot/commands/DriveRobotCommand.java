@@ -102,7 +102,7 @@ public class DriveRobotCommand extends Command {
   private PIDController yController;
   private PIDController rotationController;
   private boolean onTarget;
-  private boolean debug = false;
+  private boolean debug = true;
   
   /** Creates a new DriveDistanceCommand. */
   public DriveRobotCommand(DriveSubsystemSRX robotDrive, Pose2d relativeMove, boolean controlRotation) {
@@ -133,11 +133,11 @@ public class DriveRobotCommand extends Command {
       if (debug) SmartDashboard.putString("DR all", "Blue");
 
     } else if (Utilities.isRedAlliance()) {
-      // This just inverts the X move as the field this year is rotated about the center of the field.
+      // This just inverts the X and Y moves as the field this year is rotated about the center of the field.
       targetPose = new Pose2d(
       startingPose.getX() - relativeMove.getX(),
       startingPose.getY() - relativeMove.getY(),
-      startingPose.getRotation().rotateBy(relativeMove.getRotation().rotateBy(new Rotation2d(Math.PI))));
+      startingPose.getRotation().rotateBy(relativeMove.getRotation()));
       if (debug) SmartDashboard.putString("DR all", "Red");
 
     } else {
