@@ -416,6 +416,7 @@ public class TrajectoryPlans {
         }
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
+            new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
             command,
