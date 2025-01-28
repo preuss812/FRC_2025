@@ -9,6 +9,7 @@ package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -34,6 +35,9 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   public static NetworkTable nttable;
   static int i = 0;
+  public static SendableChooser<Integer> autoChooser = new SendableChooser<>();
+  static int autoPlan = 0;
+
   /*
   private boolean drivingSwitchPosition = false; // Assume the switch is not set (SPEED mode).
   private boolean endGameSwitchPosition = false; // Assume we are not starting in endgame.
@@ -55,6 +59,9 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     SmartDashboard.putData(CommandScheduler.getInstance()); // This puts running commands on the shuffleboard.
     addPeriodic(() -> Utilities.setAlliance(), 1.0 );
+
+    // Add a dropdown menu to select the autonomous plan.
+    autoChooser.setDefaultOption("Robot makes the plan", 0);
 
     SmartDashboard.putNumber("AutoStartDelay", 0.0);  // This puts up a place on the dashboard we can use to modify autonomous.
     SmartDashboard.putNumber("AutoMode", AutoConstants.DefaultMode);
@@ -103,11 +110,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    int autoOption = autoChooser.getSelected() - 1;
+    if (autoOption >= 0 && autoOption < TrajectoryPlans.autoPlans.size())
+      autoPlan = autoOption;
+    m_autonomousCommand = TrajectoryPlans.autoPlans.get(autoPlan++);
+    if (autoPlan >= TrajectoryPlans.autoPlans.size()) autoPlan = 0;  // This is part of the debug that cycles through the various plans
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
+      
     }
   }
 

@@ -15,12 +15,21 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.function.BooleanSupplier;
+
+import org.json.simple.parser.ParseException;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+
+import com.pathplanner.lib.path.*;
+import com.pathplanner.lib.util.FileVersionException;
+
 
 /**
  * Add your docs here.
@@ -73,6 +82,14 @@ public class Utilities {
 
     public static void toSmartDashboard(String label, Pose2d pose) {
         SmartDashboard.putString(label, String.format("(%4.2f,%4.2f) %2.0f", pose.getX(), pose.getY(), pose.getRotation().getDegrees()) );
+    }
+
+    public static void toSmartDashboard(String label, List<Pose2d> poses) {
+        String s = "";
+        for(Pose2d p : poses) {
+            s += String.format("(%4.2f,%4.2f),", p.getX(), p.getY());
+        }
+        SmartDashboard.putString(label, s );
     }
 
     public static Pose2d pose180(Pose2d pose) {
@@ -234,5 +251,33 @@ public class Utilities {
     // Boolean Supplier to return true if we are within 45 seconds of the end of the match.
     public static BooleanSupplier endGame = ()->DriverStation.getMatchTime() >= 2.5*60.0 - 45.0;
     
+    public static void loadChoreoPathsForAutonomous()
+    {
+        Trajectory Autonomous_Trajetory_1;
+        // Load a full Choreo trajectory as a PathPlannerPath
+        try {
+            PathPlannerPath exampleChoreoTraj = PathPlannerPath.fromChoreoTrajectory("A1.traj");
+            // TODO: Autonomous_Trajetory_1 = exampleChoreoTraj.get;
 
+        } catch (FileVersionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } //PathPlannerPath.fromChoreoTrajectory("Blue Low to AT17.traj");
+        //PathPlannerPath exampleChoreoTrajSplit = PathPlannerPath.fromChoreoTrajectory("Example Choreo Traj", 1);// Load a split Choreo trajectory as a PathPlannerPath, using the split point with index 1
+
+    }
+
+    // Check april tag coordinates for complementray tags.
+    public static boolean comparePoses(Pose2d pose1, Pose2d pose2, double deltaXY, double deltaR) {
+        Pose2d pose2Transformed = FieldConstants.BlueToRedPose(pose2);
+        return  (Math.abs(pose1.getX() - pose2Transformed.getX()) < deltaXY) &&
+                (Math.abs(pose1.getY() - pose2Transformed.getY()) < deltaXY) &&
+                (Math.abs(pose1.getRotation().getRadians() - pose2Transformed.getRotation().getRadians()) < deltaR);
+      }
 }

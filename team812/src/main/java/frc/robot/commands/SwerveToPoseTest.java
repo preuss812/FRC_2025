@@ -38,7 +38,7 @@ public class SwerveToPoseTest extends Command {
   private static int i = 0;
   private static int j = 0;
   private static int allianceID = FieldConstants.BlueAlliance;
-  private static int destinationID = 1; // 0=amp; 1 = source;
+  private static int destinationID = 0; // 0 = Processor
   
   /** Creates a new SwerveToPoseTest. */
   public SwerveToPoseTest(
@@ -60,20 +60,26 @@ public class SwerveToPoseTest extends Command {
     if (allianceID == FieldConstants.BlueAlliance) {
       if (destinationID == 0) {
         destination = VisionConstants.AprilTag.BLUE_PROCESSOR;
-        startingPose = new Pose2d(TrajectoryPlans.BlueProcessorPlan.plan[i][j].waypoint, new Rotation2d(-Math.PI/2.0));
+        startingPose = TrajectoryPlans.fieldSquareToPose(i,j);
       }
     } else {
       if (destinationID == 0) {
         destination = VisionConstants.AprilTag.RED_PROCESSOR;
-        startingPose = new Pose2d(TrajectoryPlans.RedProcessorPlan.plan[i][j].waypoint, new Rotation2d(-Math.PI/2.0));  
+        startingPose = TrajectoryPlans.fieldSquareToPose(i,j);
+
        } 
     }
     Utilities.toSmartDashboard("TT Start",startingPose);
+    SmartDashboard.putString("TT AL", allianceID == FieldConstants.BlueAlliance ? "Blue" : "Red");
     SmartDashboard.putString("TT","init");
     SmartDashboard.putNumber("TT i",i);
     SmartDashboard.putNumber("TT j",j);
+    int ij[] = TrajectoryPlans.poseToFieldSquare(startingPose);
+    SmartDashboard.putNumber("TT ip",i);
+    SmartDashboard.putNumber("TT jp",j);
 
-    List<Translation2d> waypoints = new ArrayList<>();
+
+    List<Pose2d> waypoints = new ArrayList<>();
     Pose2d aprilTagPose = null;
     Pose2d nearTargetPose = null;
     //Pose2d targetPose = null;
@@ -95,7 +101,7 @@ public class SwerveToPoseTest extends Command {
       nearTargetPose = startingPose;
     }
     //if (waypoints.size() > 0)
-      SmartDashboard.putString("TT plan", waypoints.toString());
+      Utilities.toSmartDashboard("TT Plan", waypoints);
     
     if (waypoints.size() > 0 && !startingPose.equals(nearTargetPose))
       new FollowTrajectoryCommand(robotDrive, poseEstimatorSubsystem, null, startingPose, waypoints, nearTargetPose);
@@ -103,27 +109,19 @@ public class SwerveToPoseTest extends Command {
     {
         RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(new Trajectory());
     }
-    if (i < 7) {
-      i++;
-    } else if (j < 3) {
+    i++;
+    if (i >= TrajectoryPlans.numXSquares) {
+      // Move to the next row
+      i = 0;
       j++;
-      i=0;
-    } else if (destinationID < 1) {
-      i = 0;
-      j = 0;
-      destinationID = 1;
-    } else if (allianceID == FieldConstants.BlueAlliance) {
-      i = 0;
-      j = 0;
-      destinationID = 0;
-      allianceID = FieldConstants.RedAlliance;
-    } else {
-      i = 0;
-      j = 0;
-      destinationID = 0;
-      allianceID = FieldConstants.BlueAlliance;
+      if (j >= TrajectoryPlans.numYSquares) {
+        // Switch alliances and start back at the first square.
+        i = 0;
+        j = 0;
+        allianceID = allianceID == FieldConstants.BlueAlliance ? FieldConstants.RedAlliance : FieldConstants.BlueAlliance;
+      }
     }
-}
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override

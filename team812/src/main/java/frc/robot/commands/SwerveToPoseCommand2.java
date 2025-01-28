@@ -59,12 +59,12 @@ public class SwerveToPoseCommand2 extends Command {
     commands = new SequentialCommandGroup();
 
     if (destination == AprilTag.BLUE_PROCESSOR) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, startingPose);
+      //waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, startingPose);
       aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_PROCESSOR.id());
       targetPose = Utilities.backToPose(aprilTagPose, finalDistanceToAmp);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
     } else if (destination == AprilTag.RED_PROCESSOR) {
-      waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, startingPose);
+      //aypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, startingPose);
       aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_PROCESSOR.id());
       targetPose = Utilities.backToPose(aprilTagPose, finalDistanceToAmp);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
@@ -91,12 +91,12 @@ public class SwerveToPoseCommand2 extends Command {
       //commands.addCommands(new RotateRobotCommand(robotDrive, faceFirstWaypoint.getRadians(), false));
     }
     if (waypoints.size() > 0 && !startingPose.equals(targetPose)) {
-      new FollowTrajectoryCommand(robotDrive, poseEstimatorSubsystem, null, rotatedStartingPose, waypoints, rotatedTargetPose);
+      //new FollowTrajectoryCommand(robotDrive, poseEstimatorSubsystem, null, rotatedStartingPose, waypoints, rotatedTargetPose);
     } else {
         RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(new Trajectory());
     }
     if (startingPose != null && waypoints.size() > 0 && targetPose != null) {
-      commands.addCommands(new FollowTrajectoryCommand(robotDrive, poseEstimatorSubsystem, null, startingPose, waypoints, targetPose));
+      //commands.addCommands(new FollowTrajectoryCommand(robotDrive, poseEstimatorSubsystem, null, startingPose, waypoints, targetPose));
     }
     // This effectively forks off the command from our thread.
     // This command will stay active until the FollowTrajectoryCommand finishes 

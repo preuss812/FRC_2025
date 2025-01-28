@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -48,7 +49,6 @@ public final class Constants {
         public static final int kSwerveLeftFrontDrive = 28;
         public static final int kSwerveLeftFrontCANCoder = 38;
 
-        public static final int kWinchMotor = 41;
         public static final int kElbowMotor1 = 43;
         public static final int kElbowMotor2 = 44;
         public static final int kAlgaeIntakeMotor = 42;
@@ -131,11 +131,7 @@ public final class Constants {
         public static final double kAlgaeIntake_kI = 0.0;
         public static final double kAlgaeIntake_kD = 0.0;
         public static final double kAlgaeIntake_kF = 0.0;
-        public static final double kWinch_kP = 2.7; // TODO are these needed and tuned?
-        public static final double kWinch_kI = 0.0;
-        public static final double kWinch_kD = 0.0;
-        public static final double kWinch_kF = 0.0; 
-    
+        
         public static final double kShooter_kP = 2.7; // TODO are these needed and tuned?
         public static final double kShooter_kI = 0.0;
         public static final double kShooter_kD = 0.0;
@@ -176,56 +172,80 @@ public final class Constants {
         public static final double kElbowHighAlgaePosition = 2000; // ticks. TODO: Tune this value.
     }
     
-    // Define locations on the field as poses that may be useful for semi-automatic driving.
+    // Define locations on the field that may be useful for semi-automatic driving.
     public static final class FieldConstants {
         // All units in Meters.
-        
+        // These values are derived from april tag locations and field drawings in the game manual or cad drawings.
         public static final double robotInitialOrientation = 180.0;  // Assume robot starts on the starting line facing the reef.
-        public static final double length = Units.inchesToMeters(657.37+33.51); // This is X
-        public static final double width = Units.inchesToMeters(317.15-0.15); // This is Y
+        public static final double fieldLength = Units.inchesToMeters(657.37+33.51); // This is X
+        public static final double fieldWidth = Units.inchesToMeters(317.15-0.15); // This is Y
 
         // Handy values
         public static double xMin = 0.00;
-        public static double xMax = length; // Meters 
+        public static double xMax = fieldLength; // Meters 
         public static double yMin = 0.00;
-        public static double yMax = width; // Meters
+        public static double yMax = fieldWidth; // Meters
         public static double xCenter = (xMax - xMin)/2.0;
         public static double yCenter = (yMax - yMin)/2.0;
-
-        public static Translation2d CenterOfTheField = new Translation2d(xCenter, yCenter);
-        public static Translation2d NearBlueProcessor = new Translation2d(1.84, yMax-1.0);
-        public static Translation2d NearRedProcessor = new Translation2d(14.70, yMax-1.0);
+        public static double xSquareSize = xMax/8;
+        public static double ySquareSize = yMax/4;
+        public static double bargeWidth = Units.inchesToMeters(46.0);
+        public static double tapeWidth = Units.inchesToMeters(2.0);
+        public static double reefToStart = Units.inchesToMeters(88.0);
+        public static double tapeToReef = Units.inchesToMeters(14.0);
+        public static double zeroToReef = Units.inchesToMeters(144.0);
+        public static double reefWidth = Units.inchesToMeters(93.50) - tapeToReef*2;
+        public static double placedBallSpacing = Units.inchesToMeters(72.0);
+        public static double bargeYCenter = Units.inchesToMeters(75.39);
+        public static double checkFieldLength = zeroToReef*2 + reefToStart*2 + bargeWidth + tapeWidth*2 + 2*reefWidth;
+        public static double startToBarge = (FieldConstants.xMax - checkFieldLength)/2.0;
         
-        // Helper function to translate Blue coordinates to Red coordinates.
-        public static Translation2d BlueToRedTransform(Translation2d blueCoordinates) {
-            return new Translation2d(xMax - blueCoordinates.getX(), yMax - blueCoordinates.getY());
+        // Handy X coordinates:
+        public static double blueRowOfAlgae = Units.inchesToMeters(48.0);
+        public static double blueStartLine =  zeroToReef + reefWidth + reefToStart + tapeWidth/2;
+        public static double redRowOfAlgae = xMax - blueRowOfAlgae;
+        public static double redStartLine = xMax - blueStartLine;
+
+        // Handy Y coordinates:
+        public static double stagedCoralAlgaeLow = yCenter - Units.inchesToMeters(72);
+        public static double stagedCoralAlgaeMed = yCenter;
+        public static double stagedCoralAlgaeHigh = yCenter + Units.inchesToMeters(72);
+
+        // Helper functions to translate Blue coordinates to Red coordinates.
+        // This is most likely to be used for creating red alliance autonomous routines
+        // from blue alliance autonomous routines.  For 2025 this is a rotation about the center
+        // of the field of play.  In 2024 this was a mirroring of the field about the center of the field.
+
+        /**
+         * Transform a Translation2d for the blue alliance to the complementary Translation2d for the red alliance.
+         * @param blueRotation - the Translation2d for the robot in the blue alliance.
+         * @return - the Translation2d for the robot in the red alliance.
+         */public static Translation2d BlueToRedTranslation(Translation2d blueTranslation) {
+            return new Translation2d(xMax - blueTranslation.getX(), yMax - blueTranslation.getY());
         }
-        
-        // Preloaded Algaes along the center line of the field.
-        public static Translation2d CenterAlgae1 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*0.0));
-        public static Translation2d CenterAlgae2 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*1.0));
-        public static Translation2d CenterAlgae3 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*2.0));
-        public static Translation2d CenterAlgae4 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*3.0));
-        public static Translation2d CenterAlgae5 = new Translation2d(xCenter, Units.inchesToMeters(29.64+66.0*4.0));
 
-        // From bottom of the field to the top (lowest Y coordinate to highest Y cooordinate).
-        public static Translation2d BlueAlgae1 = new Translation2d(Units.inchesToMeters(114.0), yCenter);
-        public static Translation2d BlueAlgae2 = new Translation2d(Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
-        public static Translation2d BlueAlgae3 = new Translation2d(Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
+        /**
+         * Transform a Rotation2d for the blue alliance to the complementary Rotation2d for the red alliance.
+         * @param blueRotation - the Rotation2d for the robot in the blue alliance.
+         * @return - the Rotation2d for the robot in the red alliance.
+         */
+        public static Rotation2d BlueToRedRotation(Rotation2d blueRotation) {
+            return blueRotation.rotateBy(new Rotation2d(Math.PI));
+        }
 
-        // From bottom of the field to the top (lowest Y coordinate to highest Y cooordinate).
-        public static Translation2d RedAlgae1 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter);
-        public static Translation2d RedAlgae2 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0));
-        public static Translation2d RedAlgae3 = new Translation2d(xMax - Units.inchesToMeters(114.0), yCenter+ Units.inchesToMeters(57.0*2.0));
+        /**
+         * Transform a Pose2d for the blue alliance to the complementary Pose2d for the red alliance.
+         * @param bluePose - The Pose2d for the robot in the blue alliance.
+         * @return         - The Pose2d for the robot in the red alliance.
+         */
+        public static Pose2d BlueToRedPose(Pose2d bluePose) {
+            return new Pose2d(BlueToRedTranslation(bluePose.getTranslation()), BlueToRedRotation(bluePose.getRotation()));
+        }
 
         // Field Coordinate transformations for alliances.
         public static int BlueAlliance = 0;
         public static int RedAlliance = 1;
-        public static Transform2d [] AllianceTransformation = {
-             new Transform2d(0.0,0.0,new Rotation2d(0)) // Blue alliance uses the native field coorinates.
-            ,new Transform2d(xMax, yMax, new Rotation2d(Math.PI)) // Red alliance is rotated 180 degrees and offsets reversed.
-        };
-
+        public static Pose2d blueToRedTransform = new Pose2d(xMax, yMax, new Rotation2d(Math.PI));
     }
     
     public static final class AlgaeIntakeConstants {
@@ -274,7 +294,9 @@ public final class Constants {
             new Translation3d(cameraXOffsetToRobot,cameraYOffsetToRobot,cameraHeightToGround),
             new Rotation3d(cameraRoll, cameraPitch, cameraYaw)
         );
-
+        public static Pose2d nearBlueProcessor = new Pose2d(Units.inchesToMeters(235.73), Units.inchesToMeters(1.5), new Rotation2d(Units.degreesToRadians(270)));
+        public static Pose2d nearRedProcessor = new Pose2d(Units.inchesToMeters(455.15), Units.inchesToMeters(217.15-1.5), new Rotation2d(Units.degreesToRadians(90)));
+        
         public static final Transform3d ROBOT_TO_CAMERA = CAMERA_TO_ROBOT.inverse();
         public enum AprilTag {
             UNKNOWN(0),
@@ -292,12 +314,6 @@ public final class Constants {
     
     }
 
-    public static final class WinchConstants {
-        public static final double kRaiseRobotSpeed =  1.0;
-        public static final double kLowerRobotSpeed = -1.0;
-        public static final double kMaxRaiseRobotSpeed = 1.0;
-        public static final double kMaxLowerRobotSpeed = -1.0;
-    }
     public static final class ShoulderConstants {
         public static final double kShoulderStartingPosition = 0;  // We should start at the minimum position with the arm rotated down.
         public static final double kShoulderPeakOutputForward =  0.5; // TODO: Tune this value.
@@ -381,9 +397,23 @@ public final class Constants {
         public static final boolean kGyroReversed = false;
 
         public static final double kBackToCenterDistance = Units.inchesToMeters(17.5); //was 15.0 until 3/5/2024
-        public static final double kRobotWidth = Units.inchesToMeters(24.0+6); // Frame with pules 2 bumpers.
+        public static final double kBumperWidth = Units.inchesToMeters(3.0);
+        public static final double kRobotWidth = Units.inchesToMeters(24.0+kBumperWidth*2.0); // Frame width plus 2 bumpers.
+        public static final double kRobotLength = Units.inchesToMeters(24.0+6); // Frame length plus 2 bumpers.
         public static final double kApproximateStartingY = FieldConstants.yMax - Units.inchesToMeters(36.0); // Meters (ie near the amp)
         public static final double kStartingOrientation = 0.0; // Starting orientation in radians (ie robot back against the alliance wall)
+        public static final Translation2d robotCenterToFrontBumper = new Translation2d(kRobotLength/2 + kBumperWidth, 0);
+        public static final Translation2d robotCenterToBackBumper = new Translation2d(-(kRobotLength/2 + kBumperWidth), 0);
+        public static final Rotation2d rotate180 = new Rotation2d(Math.PI);
+        public static final Translation2d rotatedRobotFrontBumper(Rotation2d rotation) {
+            return robotCenterToFrontBumper.rotateBy(rotation);
+        }
+        // Return a pose for the robot to be facing the pose with the center of it's front bumper touching the pose
+        public static Pose2d robotFrontAtPose(Pose2d pose) {
+            Translation2d position = pose.getTranslation().plus(rotatedRobotFrontBumper(pose.getRotation()));
+            Rotation2d rotation = pose.getRotation().rotateBy(rotate180);
+            return new Pose2d(position, rotation);
+        }
       }
     
       public static final class ModuleConstants {

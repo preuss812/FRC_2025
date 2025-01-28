@@ -21,7 +21,6 @@ public class StopAllMotorsCommand extends Command {
       RobotContainer.m_AlgaeIntakeSubsystem,
       RobotContainer.m_ElbowRotationSubsystem,
       RobotContainer.m_ShoulderRotationSubsystem,
-      //RobotContainer.m_WinchSubsystem,
       RobotContainer.m_robotDrive
     );
   }
@@ -32,7 +31,6 @@ public class StopAllMotorsCommand extends Command {
     RobotContainer.m_AlgaeIntakeSubsystem.stop();
     RobotContainer.m_ElbowRotationSubsystem.stop();
     RobotContainer.m_ShoulderRotationSubsystem.stop();
-    RobotContainer.m_WinchSubsystem.stop();
     RobotContainer.m_robotDrive.drive(0,0,0,true,true);
   }
 

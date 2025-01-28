@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.photonvision.PhotonCamera;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.MathUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,6 +27,7 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -42,13 +45,11 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShoulderConstants;
 import frc.robot.Constants.UltrasonicConstants;
 //import frc.robot.Constants.VisionConstants.AprilTag;
-//import frc.robot.Constants.WinchConstants;
 //import frc.robot.subsystems.AnalogUltrasonicDistanceSubsystem;
 import frc.robot.subsystems.ElbowRotationSubsystem;
 import frc.robot.subsystems.BlackBoxSubsystem;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.ShoulderRotationSubsystem;
-import frc.robot.subsystems.WinchSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 import frc.robot.subsystems.PingResponseUltrasonicSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
@@ -83,8 +84,6 @@ import frc.robot.commands.ShoulderRotationCommand;
 //import frc.robot.commands.SwerveToSourceCommand;
 import frc.robot.commands.SwerveToPoseTest;
 import frc.robot.commands.TakeInAlgaeOLSCommand;
-import frc.robot.commands.WinchDownCommand;
-import frc.robot.commands.WinchUpCommand;
 //import frc.robot.commands.GotoSourceCommand;
 //import frc.robot.commands.DetectColorCommand;
 //import frc.robot.TrajectoryPlans;
@@ -123,7 +122,6 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
-  public static WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE);
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
   //public static AnalogUltrasonicDistanceSubsystem m_UltrasonicDistanceSubsystem = new AnalogUltrasonicDistanceSubsystem();
@@ -143,7 +141,8 @@ public class RobotContainer {
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
   
   //public static CANcoder m_enctest = new CANcoder(38);
-
+  //private final SendableChooser<Command> autoChooser;
+  
   // private final Joystick xboxController = new
   // Joystick(OIConstants.kXboxController);
   double POV_to_double(int pov) {
@@ -186,9 +185,14 @@ public class RobotContainer {
    */
   public RobotContainer() {
 
+    //configureAutoBuilder();
+    //autoChooser = AutoBuilder.buildAutoChooser("autos");
+    //SmartDashboard.putData("Auto Mode", autoChooser);
+    TrajectoryPlans.buildAutoTrajectories(); 
+
     // Configure the button bindings
     configureButtonBindings();
-
+    
     // Configure default commands
 
     // The xBox controller left stick controls translation of the robot.
@@ -316,40 +320,11 @@ public class RobotContainer {
       new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 1.0, new Rotation2d(0.0)), true),
       new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
     ));
-    Pose2d at16 = new Pose2d(Units.inchesToMeters(235.73), Units.inchesToMeters(-0.15), new Rotation2d(0.0));
-    Pose2d at3 = at16.relativeTo(new Pose2d(Constants.FieldConstants.AllianceTransformation[1].getX(),
-    Constants.FieldConstants.AllianceTransformation[1].getY(), Constants.FieldConstants.AllianceTransformation[1].getRotation()));
-
-    SmartDashboard.putNumber("X3", Units.metersToInches(at3.getX()));
-    SmartDashboard.putNumber("Y3", Units.metersToInches(at3.getY()));
-    SmartDashboard.putNumber("R3", Units.radiansToDegrees(at3.getRotation().getRadians()));
-
-    Pose2d at16P = at3.relativeTo(new Pose2d(Constants.FieldConstants.AllianceTransformation[1].getX(),
-    Constants.FieldConstants.AllianceTransformation[1].getY(), Constants.FieldConstants.AllianceTransformation[1].getRotation()));
-
-    SmartDashboard.putNumber("X3P", Units.metersToInches(at16P.getX()));
-    SmartDashboard.putNumber("Y3P", Units.metersToInches(at16P.getY()));
-    SmartDashboard.putNumber("R3P", Units.radiansToDegrees(at16P.getRotation().getRadians()));
+    
     /* Debugging below */
-    if (debug) {
+    if (true || debug) {
 
-      // Try all possible plans to makesure there are now obvious bad moves in the plans.
-      for (int i = 1; i <= 16; i+= 2) {
-        for (int j = 1; j <= 8; j+= 2) {
-          List<Translation2d> blueProcessorPlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, new Pose2d(16,0,new Rotation2d(0)));
-          List<Translation2d> blueSourcePlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueSourcePlan, new Pose2d(16,0,new Rotation2d(0)));
-        }
-      }
-      // Try all possible plans to makesure there are now obvious bad moves in the plans.
-      for (int i = 1; i <= 16; i+= 2) {
-        for (int j = 1; j <= 8; j+= 2) {
-          List<Translation2d> redProcessorPlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, new Pose2d(16,0,new Rotation2d(0)));
-          List<Translation2d> redSourcePlan = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedSourcePlan, new Pose2d(16,0,new Rotation2d(0)));
-        }
-      }
-      Pose2d testPose1 = new Pose2d(0,0,new Rotation2d(0));
-      Pose2d redTestPose1 = testPose1.transformBy(FieldConstants.AllianceTransformation[FieldConstants.RedAlliance]);
-      if (debug) Utilities.toSmartDashboard("RedTestPose1", redTestPose1);
+ 
 
       /**
        * Create smart dash button that cycles through the various paths
@@ -357,7 +332,7 @@ public class RobotContainer {
        * for both red and blue alliances.
        */
       
-      if (debug) {
+      if (true || debug) {
         SmartDashboard.putData("TTcmd", new SwerveToPoseTest(m_robotDrive, m_PoseEstimatorSubsystem));
         SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, 0.0, false));
         SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
@@ -373,6 +348,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return new Autonomous(this);
+    //return autoChooser.getSelected();
   }
    
   // Function to align the PoseEstimator pose and the DriveTrain pose.

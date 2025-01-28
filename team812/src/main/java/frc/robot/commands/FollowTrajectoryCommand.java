@@ -4,12 +4,14 @@
 
 package frc.robot.commands;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -41,19 +43,26 @@ public class FollowTrajectoryCommand extends SequentialCommandGroup {
     PoseEstimatorSubsystem poseEstimatorSubsystem,
     TrajectoryConfig config,
     Pose2d startingPose,
-    List<Translation2d> waypoints,
+    List<Pose2d> waypoints,
     Pose2d targetPose) 
   {
     Trajectory trajectory;
+    List<Translation2d>  translationWaypoints = new ArrayList<Translation2d>();
+
     try {
+      Pose2d fakeTargetPose = new Pose2d(targetPose.getTranslation(), new Rotation2d(0));
+      for (Pose2d pose : waypoints) {
+        translationWaypoints.add(pose.getTranslation());
+      }
       trajectory = TrajectoryGenerator.generateTrajectory(          
           startingPose,  // We are starting where we are.
           // Pass through these zero interior waypoints, this should probably be something to make sure we dont crash into other robots.
-          waypoints,
-          targetPose,
+          translationWaypoints,
+          fakeTargetPose,
           config != null ? config : FollowTrajectoryCommand.config); // use default config is none was specified.
+          SmartDashboard.putNumber("PTS", translationWaypoints.size());
     } catch (Exception e) {
-        ListIterator<Translation2d> iter = waypoints.listIterator();
+        ListIterator<Translation2d> iter = translationWaypoints.listIterator();
         while (iter.hasNext()) {
           addCommands(new GotoPoseCommand(poseEstimatorSubsystem, robotDrive, new Pose2d(iter.next(), targetPose.getRotation()))); // For each waypoint.
         }
@@ -62,9 +71,9 @@ public class FollowTrajectoryCommand extends SequentialCommandGroup {
         if (debug) SmartDashboard.putString("FT", "catch->gotoPose");
       return;
     }
-    if (true || debug) {
+    //if (true || debug) {
       RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory);
-    }
+    //}
 
     var thetaController = new ProfiledPIDController(
       AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);

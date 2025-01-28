@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
-import frc.robot.Constants.OIConstants;
-import frc.robot.RobotContainer;
 import frc.robot.Utilities;
 
 public class GotoPoseCommand extends Command {

@@ -57,6 +57,10 @@ public class Autonomous extends SequentialCommandGroup {
 
   public Autonomous(RobotContainer robotContainer) {
 
+    InstantCommand test = new InstantCommand(()->SmartDashboard.putString("test", "executed"));
+    test.setName("Test");
+    SmartDashboard.putString("test", "constructed");
+    
     m_robotDrive = RobotContainer.m_robotDrive;
     m_AlgaeIntakeSubsystem = RobotContainer.m_AlgaeIntakeSubsystem;
     m_ElbowRotationSubsystem = RobotContainer.m_ElbowRotationSubsystem;
@@ -106,6 +110,7 @@ public class Autonomous extends SequentialCommandGroup {
       firstMove = new Pose2d(firstMoveX, firstMoveY, new Rotation2d(-Math.PI/2.0)); // Pose for robot to be at the april tag.
       secondMove = new Pose2d(secondMoveX, secondMoveY, new Rotation2d(-Math.PI/2.0)); // Pose for robot to be at the april tag.
       noTagSeenMove = new Pose2d(noTagSeenMoveX, noTagSeenMoveY, new Rotation2d( Math.PI/2.0)); // Pose for robot to face the center of the field.
+      
 
       SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup(
         // Set the gyro starting angle based on alliance and assumed robot placement

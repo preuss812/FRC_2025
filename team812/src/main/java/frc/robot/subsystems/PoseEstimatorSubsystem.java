@@ -19,6 +19,8 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -143,7 +145,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
       drivetrainSubsystem.getRotation(),
       drivetrainSubsystem.getModulePositions());
 
-    field2d.setRobotPose(getCurrentPose());
+    // field2d.setRobotPose(getCurrentPose());  // TODO: UNCOMMENT THIS!!!
     if (trajectory != null) 
       field2d.getObject("trajectory").setTrajectory(trajectory);
       
@@ -203,6 +205,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     return (m_lastAprilTagSeen > 0);
   }
 
+  // For autonomous to prevent motion if the robot cannot see an apriltag and therefore is in an unknown location.
   public BooleanSupplier tagInViewSupplier = () -> (m_lastAprilTagSeen > 0);
+
+  // Return the pose for a robot to be directly in front of the specified apriltag
+  public Pose2d robotPoseAtApriltag(int id) {
+    return DriveConstants.robotFrontAtPose(getAprilTagPose(id));
+  }
 
 }
