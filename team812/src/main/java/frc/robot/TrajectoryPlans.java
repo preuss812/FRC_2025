@@ -42,8 +42,8 @@ public class TrajectoryPlans {
     public static ArrayList<String>     autoNames = new ArrayList<String>();
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
     public static final TrajectoryConfig m_defaultTrajectoryConfig = new TrajectoryConfig(
-        AutoConstants.kMaxSpeedMetersPerSecond,
-        AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+        AutoConstants.kMaxSpeedMetersPerSecond/5.0,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared/5.0)
         .setKinematics(DriveConstants.kDriveKinematics);
 
     // Define a gridded map of the field to define a path from each square to the blue alliance processor.
