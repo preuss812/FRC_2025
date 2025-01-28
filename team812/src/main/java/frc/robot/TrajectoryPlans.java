@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 
@@ -33,6 +35,7 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
  */
 public class TrajectoryPlans {
 
+    private static boolean debug = true;
     public static int numXSquares = 8;
     public static int numYSquares = 4;
     public static double dx = FieldConstants.xMax/numXSquares;
@@ -41,10 +44,17 @@ public class TrajectoryPlans {
     public static ArrayList<Trajectory> autoPaths = new ArrayList<Trajectory>();
     public static ArrayList<String>     autoNames = new ArrayList<String>();
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
-    public static final TrajectoryConfig m_defaultTrajectoryConfig = new TrajectoryConfig(
+    
+    // For now, default speeds are the debug/slow speeds.
+    public static final TrajectoryConfig m_debugTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond/5.0,
         AutoConstants.kMaxAccelerationMetersPerSecondSquared/5.0)
         .setKinematics(DriveConstants.kDriveKinematics);
+    public static final TrajectoryConfig m_fullSpeedTrajectoryConfig = new TrajectoryConfig(
+        AutoConstants.kMaxSpeedMetersPerSecond,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+        .setKinematics(DriveConstants.kDriveKinematics);
+        public static final TrajectoryConfig m_defaultTrajectoryConfig = m_debugTrajectoryConfig;
 
     // Define a gridded map of the field to define a path from each square to the blue alliance processor.
     // Currently these paths are crude and need some refinement if they are to be used during a match.
@@ -204,22 +214,32 @@ public class TrajectoryPlans {
         Trajectory trajectory = null;
         Pose2d startingPose = waypoints[0];
         Pose2d endingPose = waypoints[waypoints.length - 1];
+        boolean useListOfPoses = true;
 
-        List<Translation2d>  translationWaypoints = new ArrayList<Translation2d>();
         try {
-            //Pose2d fakeTargetPose = new Pose2d(endingPose.getTranslation(), new Rotation2d(0));
-            for (int i = 1; i < waypoints.length - 1; i++) {
-               translationWaypoints.add(waypoints[i].getTranslation());
+
+            if (useListOfPoses) {
+                // Try the version of generateTrajectory that takes a list of poses instead of a list of translations.
+                // The hope is that this generates better robot rotational control - dph 2025-01-28
+                List<Pose2d> waypointList = Arrays.asList(waypoints);
+                trajectory = TrajectoryGenerator.generateTrajectory( waypointList, config != null ? config : m_defaultTrajectoryConfig);
+            } else {
+                // Generate a trajectory with a starting and ending pose and a list of translation waypoints.
+                List<Translation2d>  translationWaypoints = new ArrayList<Translation2d>();
+                //Pose2d fakeTargetPose = new Pose2d(endingPose.getTranslation(), new Rotation2d(0));
+                for (int i = 1; i < waypoints.length - 1; i++) {
+                translationWaypoints.add(waypoints[i].getTranslation());
+                }
+                trajectory = TrajectoryGenerator.generateTrajectory(          
+                    startingPose,  // We are starting where we are.
+                    // Pass through these zero interior waypoints, this should probably be something to make sure we dont crash into other robots.
+                    translationWaypoints,
+                    endingPose,
+                    config != null ? config : m_defaultTrajectoryConfig
+                ); // use default config is none was specified.
             }
-            trajectory = TrajectoryGenerator.generateTrajectory(          
-                startingPose,  // We are starting where we are.
-                // Pass through these zero interior waypoints, this should probably be something to make sure we dont crash into other robots.
-                translationWaypoints,
-                endingPose,
-                config != null ? config : m_defaultTrajectoryConfig
-            ); // use default config is none was specified.
-            // Next line is debug to display the path on the shuffleboard.Vision.field
-            RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory);
+            if (debug)
+                RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory);
         }
         catch (Exception e) {
             // Let null return as the trajectory and the caller must handle it.
@@ -434,6 +454,7 @@ public class TrajectoryPlans {
      * @return - true if the assumptions are met, otherwise false.
      */
     public static boolean checkAprilTagMirroring(PoseEstimatorSubsystem poseEstimatorSubsystem) {
+        if (!debug) return true;    // Dont waste time if we are not debugging.
         double translationThreshold = 0.002; // 2mm
         double rotationThreshold = 0.001; // 0.001 Radians which is about 1/20th of a degree
         if (Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(1),poseEstimatorSubsystem.getAprilTagPose(13),translationThreshold, rotationThreshold)
@@ -458,6 +479,7 @@ public class TrajectoryPlans {
      * This may throw a null pointer exception.
      */
     public static void checkAllTrajectories() throws NullPointerException {
+        if (!debug) return;  // Dont waste time if we are not debugging.
         // Try all possible plans to makesure there are now obvious bad moves in the plans.
         for (int i = 1; i < 8; i++) {
             for (int j = 1; j < 4; j++) {
@@ -479,5 +501,50 @@ public class TrajectoryPlans {
             );
             }
         }
+    }
+
+    public static SequentialCommandGroup robotDanceCommand(DriveSubsystemSRX driveTrain, PoseEstimatorSubsystem poseEstimatorSubsystem, TrajectoryConfig config) {
+        SwerveControllerCommand command = null;
+        
+        ProfiledPIDController thetaController = new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        Pose2d[] danceMoves = new Pose2d[] {
+            new Pose2d(FieldConstants.blueRowOfAlgae,FieldConstants.yCenter,new Rotation2d(0.0)),
+            new Pose2d(FieldConstants.blueRowOfAlgae,FieldConstants.yCenter+1,new Rotation2d(Math.PI*7/4)),
+            new Pose2d(FieldConstants.blueRowOfAlgae+1,FieldConstants.yCenter,new Rotation2d(Math.PI*4/4)),
+            new Pose2d(FieldConstants.blueRowOfAlgae,FieldConstants.yCenter-1,new Rotation2d(Math.PI*1/4)),
+            new Pose2d(FieldConstants.blueRowOfAlgae+1,FieldConstants.yCenter+1,new Rotation2d(Math.PI*5/4)),
+            new Pose2d(FieldConstants.blueRowOfAlgae+1,FieldConstants.yCenter-1,new Rotation2d(Math.PI*3/4)),
+            new Pose2d(FieldConstants.blueRowOfAlgae+0.5,FieldConstants.yCenter,new Rotation2d(Math.PI*1/4)),
+            new Pose2d(FieldConstants.blueRowOfAlgae,FieldConstants.yCenter,new Rotation2d(0.0))
+        };
+
+        Trajectory trajectory = createTrajectory(driveTrain, danceMoves, config);
+        if (trajectory != null) {
+            command = new SwerveControllerCommand(
+            trajectory,
+            poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
+            DriveConstants.kDriveKinematics,
+
+            // Position controllers
+            new PIDController(AutoConstants.kPXController, 0, 0),
+            new PIDController(AutoConstants.kPYController, 0, 0),
+            thetaController,
+            driveTrain::setModuleStates,
+            driveTrain);
+        }
+        return new SequentialCommandGroup(
+            // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
+            new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
+            new VerifyStartingPositionCommand(poseEstimatorSubsystem, danceMoves[0]),
+            new InstantCommand(() -> poseEstimatorSubsystem.setCurrentPose(danceMoves[0])),
+            new InstantCommand(() -> poseEstimatorSubsystem.field2d.setRobotPose(danceMoves[0])), // for debug
+            new InstantCommand(() -> poseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
+            command,
+            new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(danceMoves[danceMoves.length-1])) // for debug
+            // may need a driveToPose to perfectly position the robot.
+            // will need some arm motion to socre the coral.
+            // could add additional actions to grab an algea and drive to the processor and score there.
+        );
     }
 }
