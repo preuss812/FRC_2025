@@ -16,6 +16,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 
 import org.photonvision.PhotonCamera;
+
+import com.ctre.phoenix.Util;
+
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.Constants.OIConstants;
@@ -45,7 +48,7 @@ public class GotoAprilTagCommand extends Command {
      * default constructor
      */
     public GotoAprilTagConfig() {
-      maxThrottle = 0.70;
+      maxThrottle = 0.10;
       linearP = 2.0;
       linearI = 0.0; // linearP/100.0;
       linearD = 0.0; // linearP*10.0;
@@ -106,7 +109,7 @@ public class GotoAprilTagCommand extends Command {
   private PIDController rotationController;
   private Pose2d targetPose;
   private boolean onTarget;
-  private boolean debug = false;
+  private boolean debug = true;
 
   /**
    * Drive to the specified distance from the best april tag currently in view.
@@ -161,7 +164,7 @@ public class GotoAprilTagCommand extends Command {
       // Get the tag pose from field layout - consider that the layout will be null if it failed to load
       Pose2d tagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
       //SmartDashboard.putNumber("TagAmbiguity", target.getPoseAmbiguity());
-      if (target.getPoseAmbiguity() <= .2 && fiducialId >= 0) {
+      if (target.getPoseAmbiguity() <= .4 && fiducialId >= 0) {
         targetPose = Utilities.backToPose(tagPose, targetDistance);
 
         xController = new PIDController(
@@ -206,6 +209,11 @@ public class GotoAprilTagCommand extends Command {
     double rotationSpeed = 0.0;
 
     estimatedPose = poseEstimatorSubsystem.getCurrentPose();
+    if (debug) SmartDashboard.putNumber("G2A eX", estimatedPose.getX());
+    if (debug) SmartDashboard.putNumber("G2A eY", estimatedPose.getY());
+    if (debug) SmartDashboard.putNumber("G2A tX", targetPose.getX());
+    if (debug) SmartDashboard.putNumber("G2A tY", targetPose.getY());
+
 
     // Calculate the X and Y and rotation offsets to the target location
     translationErrorToTarget = new Translation2d( targetPose.getX() - estimatedPose.getX(), targetPose.getY() - estimatedPose.getY());
@@ -243,6 +251,8 @@ public class GotoAprilTagCommand extends Command {
         xSpeed = MathUtil.clamp(xController.calculate(translationErrorToTargetCorrectedForRotation.getX(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
         ySpeed = MathUtil.clamp(yController.calculate(translationErrorToTargetCorrectedForRotation.getY(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
       } else {
+        double xout = xController.calculate(translationErrorToTarget.getX());
+        SmartDashboard.putNumber("G2A xout", xout);
         xSpeed = MathUtil.clamp(xController.calculate(translationErrorToTarget.getX(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
         ySpeed = MathUtil.clamp(yController.calculate(translationErrorToTarget.getY(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
       }

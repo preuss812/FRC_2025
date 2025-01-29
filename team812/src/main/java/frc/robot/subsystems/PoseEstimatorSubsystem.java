@@ -145,7 +145,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
       drivetrainSubsystem.getRotation(),
       drivetrainSubsystem.getModulePositions());
 
-    // field2d.setRobotPose(getCurrentPose());  // TODO: UNCOMMENT THIS!!!
+    field2d.setRobotPose(getCurrentPose());
     if (trajectory != null) 
       field2d.getObject("trajectory").setTrajectory(trajectory);
       

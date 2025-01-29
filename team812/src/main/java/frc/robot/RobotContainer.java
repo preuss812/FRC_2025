@@ -64,6 +64,7 @@ import frc.robot.commands.DriveOnAprilTagProjectionCommand;
 import frc.robot.commands.DriveRobotCommand;
 import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.ExpelAlgaeCommand;
+import frc.robot.commands.GotoAprilTagCommand;
 import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.FindAprilTagCommand;
 //import com.revrobotics.CANSparkMax;
@@ -262,9 +263,11 @@ public class RobotContainer {
     // Xbox A button spits out the algae
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
-        new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
+        //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
+        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30))
       );
     
+      SmartDashboard.putData("GA",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30)));
     // Xbox Y button resets the robot coorinate system
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new ResetDriveTrainCommand());
 
