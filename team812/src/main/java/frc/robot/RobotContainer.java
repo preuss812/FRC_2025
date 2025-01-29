@@ -336,6 +336,7 @@ public class RobotContainer {
        */
       
       if (true || debug) {
+        SmartDashboard.putData("Dance", TrajectoryPlans.robotDanceCommand(m_robotDrive, m_PoseEstimatorSubsystem, null /*=default*/) );
         SmartDashboard.putData("TTcmd", new SwerveToPoseTest(m_robotDrive, m_PoseEstimatorSubsystem));
         SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, 0.0, false));
         SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
