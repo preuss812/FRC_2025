@@ -12,14 +12,22 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+
+
+
 import org.photonvision.PhotonCamera;
+
+import com.ctre.phoenix.Util;
+
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
+import frc.robot.Constants.OIConstants;
+import frc.robot.RobotContainer;  // To access the Black Box Controller.
 import frc.robot.Utilities;
 
-public class GotoAprilTagCommand extends Command {
+public class BadGotoAprilTagCommand extends Command {
   
-  public class GotoAprilTagConfig {
+  public class BadGotoAprilTagConfig {
     private double maxThrottle;
     private double linearP;
     private double linearI;
@@ -39,9 +47,9 @@ public class GotoAprilTagCommand extends Command {
     /**
      * default constructor
      */
-    public GotoAprilTagConfig() {
-      maxThrottle = 0.30;
-      linearP = 1.0;
+    public BadGotoAprilTagConfig() {
+      maxThrottle = 0.10;
+      linearP = 2.0;
       linearI = 0.0; // linearP/100.0;
       linearD = 0.0; // linearP*10.0;
       linearF = 0.0;
@@ -56,21 +64,21 @@ public class GotoAprilTagCommand extends Command {
       angularIZone = Units.degreesToRadians(10.0);
       angularTolerance = Units.degreesToRadians(5.0);
     }
-    public GotoAprilTagConfig setMaxThrottle(double maxThrottle) {this.maxThrottle = maxThrottle; return this; };
-    public GotoAprilTagConfig setLinearP(double linearP) {this.linearP = linearP; return this; };
-    public GotoAprilTagConfig setLinearI(double linearI) {this.linearI = linearI; return this; };
-    public GotoAprilTagConfig setLinearD(double linearD) {this.linearD = linearD; return this; };
-    public GotoAprilTagConfig setLinearF(double linearF) {this.linearF = linearF; return this; };
-    public GotoAprilTagConfig setLinearIZone(double linearIZone) {this.linearIZone = linearIZone; return this; };
-    public GotoAprilTagConfig setLinearTolerance(double linearTolerance) {this.linearTolerance = linearTolerance; return this; };
+    public BadGotoAprilTagConfig setMaxThrottle(double maxThrottle) {this.maxThrottle = maxThrottle; return this; };
+    public BadGotoAprilTagConfig setLinearP(double linearP) {this.linearP = linearP; return this; };
+    public BadGotoAprilTagConfig setLinearI(double linearI) {this.linearI = linearI; return this; };
+    public BadGotoAprilTagConfig setLinearD(double linearD) {this.linearD = linearD; return this; };
+    public BadGotoAprilTagConfig setLinearF(double linearF) {this.linearF = linearF; return this; };
+    public BadGotoAprilTagConfig setLinearIZone(double linearIZone) {this.linearIZone = linearIZone; return this; };
+    public BadGotoAprilTagConfig setLinearTolerance(double linearTolerance) {this.linearTolerance = linearTolerance; return this; };
 
-    public GotoAprilTagConfig setMaxRotation(double maxRotation) {this.maxRotation = maxRotation; return this; };
-    public GotoAprilTagConfig setAngularP(double angularP) {this.angularP = angularP; return this; };
-    public GotoAprilTagConfig setAngularI(double angularI) {this.angularI = angularI; return this; };
-    public GotoAprilTagConfig setAngularD(double angularD) {this.angularD = angularD; return this; };
-    public GotoAprilTagConfig setAngularF(double angularF) {this.angularF = angularF; return this; };
-    public GotoAprilTagConfig setAngularIZone(double angularIZone) {this.angularIZone = angularIZone; return this; };
-    public GotoAprilTagConfig setAngularTolerance(double angularTolerance) {this.angularTolerance = angularTolerance; return this; };
+    public BadGotoAprilTagConfig setMaxRotation(double maxRotation) {this.maxRotation = maxRotation; return this; };
+    public BadGotoAprilTagConfig setAngularP(double angularP) {this.angularP = angularP; return this; };
+    public BadGotoAprilTagConfig setAngularI(double angularI) {this.angularI = angularI; return this; };
+    public BadGotoAprilTagConfig setAngularD(double angularD) {this.angularD = angularD; return this; };
+    public BadGotoAprilTagConfig setAngularF(double angularF) {this.angularF = angularF; return this; };
+    public BadGotoAprilTagConfig setAngularIZone(double angularIZone) {this.angularIZone = angularIZone; return this; };
+    public BadGotoAprilTagConfig setAngularTolerance(double angularTolerance) {this.angularTolerance = angularTolerance; return this; };
 
     public double getMaxThrottle() { return maxThrottle; }
     public double getLinearP() { return linearP; }
@@ -87,27 +95,22 @@ public class GotoAprilTagCommand extends Command {
     public double getAngularF() { return angularF; }
     public double getAngularIZone() { return angularIZone; }
     public double getAngularTolerance() { return angularTolerance; }
-  } // DebugGotoAprilTagConfig Class
+  } // GotoAprilTagConfig Class
 
   /** Creates a new command to move the robot to the specified pose. */
   private final PoseEstimatorSubsystem poseEstimatorSubsystem;
   private final DriveSubsystemSRX robotDrive;
   private final PhotonCamera photonCamera;
-  private final GotoAprilTagConfig config;
+  private final BadGotoAprilTagConfig config;
   private final double targetDistance;
 
   private PIDController xController;
   private PIDController yController;
   private PIDController rotationController;
   private Pose2d targetPose;
-  private Pose2d aprilTagPose;
   private boolean onTarget;
-  private boolean debug = true; // turn on/off SmartDashBoard feedback
-  private boolean simulatingRobot = true; // force robot starting position and april tag number for debugging purposes.
-  private int simulationAprilTagID = 6;
-  private Pose2d simulatedRobotPose;
-  private Pose2d simulatedRobotStartingPose = new Pose2d(15.5, 0.60, new Rotation2d(Units.degreesToRadians(-60)));
-  private double maximumAmbiguity = 0.04; // Should be lower.
+  private boolean debug = true;
+
   /**
    * Drive to the specified distance from the best april tag currently in view.
    * @params poseEstimatorSubsystem - the pose estimator subsystem
@@ -115,28 +118,26 @@ public class GotoAprilTagCommand extends Command {
    * @params photonCamera - the Photon Camera Subsystem used to see the April Tags.
    * @params targetDistance - the distance in meters to be away from the April Tag.
    */
-  public GotoAprilTagCommand(PoseEstimatorSubsystem poseEstimatorSubsystem
+  public BadGotoAprilTagCommand(PoseEstimatorSubsystem poseEstimatorSubsystem
     , DriveSubsystemSRX robotDrive
     , PhotonCamera photonCamera
-    , double targetDistance
-    , boolean simulatingRobot) {
+    , double targetDistance) {
     
     // Use addRequirements() here to declare subsystem dependencies.
     this.poseEstimatorSubsystem = poseEstimatorSubsystem;
     this.robotDrive = robotDrive;
     this.photonCamera = photonCamera;
     this.targetDistance = targetDistance;
-    this.simulatingRobot = simulatingRobot;
     onTarget = false;
-    this.config = new GotoAprilTagConfig();
+    this.config = new BadGotoAprilTagConfig();
     addRequirements(robotDrive, poseEstimatorSubsystem);
   }
 
-  public GotoAprilTagCommand(PoseEstimatorSubsystem poseEstimatorSubsystem
+  public BadGotoAprilTagCommand(PoseEstimatorSubsystem poseEstimatorSubsystem
     , DriveSubsystemSRX robotDrive
     , PhotonCamera photonCamera
     , double targetDistance
-    , GotoAprilTagConfig config) {
+    , BadGotoAprilTagConfig config) {
     
     // Use addRequirements() here to declare subsystem dependencies.
     this.poseEstimatorSubsystem = poseEstimatorSubsystem;
@@ -157,28 +158,14 @@ public class GotoAprilTagCommand extends Command {
     double linearI = config.getLinearI();
     
     var pipelineResult = photonCamera.getLatestResult();
-    if (pipelineResult.hasTargets() || simulatingRobot) {
-      int fiducialId = -1; // Sentinel value
-
-      // If we are simulating the robot, use the predefined aprilTag and robot pose.
-      if (simulatingRobot) {
-        fiducialId = simulationAprilTagID;
-        simulatedRobotPose = simulatedRobotStartingPose;
-      } else {
-        // Use the vision subsystem to get the april tag that we have the best view of
-        // The assumption here is that the driver wants to go that tag.
-        var target = pipelineResult.getBestTarget();
-        if (debug) SmartDashboard.putNumber("TagAmbiguity", target.getPoseAmbiguity());
-
-        // If we have a tag and can see it well, use it. Otherwise, the command will just end.
-        if (target.getPoseAmbiguity() <= maximumAmbiguity && fiducialId >= 0)  { 
-          fiducialId = target.getFiducialId();
-        }
-      }
+    if (pipelineResult.hasTargets()) {
+      var target = pipelineResult.getBestTarget();
+      var fiducialId = target.getFiducialId();
       // Get the tag pose from field layout - consider that the layout will be null if it failed to load
-      if (fiducialId >= 0) {
-        aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
-        targetPose = Utilities.backToPose(aprilTagPose, targetDistance);
+      Pose2d tagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
+      //SmartDashboard.putNumber("TagAmbiguity", target.getPoseAmbiguity());
+      if (target.getPoseAmbiguity() <= .4 && fiducialId >= 0) {
+        targetPose = Utilities.backToPose(tagPose, targetDistance);
 
         xController = new PIDController(
           linearP, // config.getLinearP(),
@@ -209,31 +196,32 @@ public class GotoAprilTagCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    if (onTarget) return; // Prevent code from running if we are there or if there was no apriltag.
-
-    boolean controlRotation = false; // TODO test with true.
+    if (onTarget) return; // Prevent execution if no suitable april tag was found.
+    boolean correctRotation = false; // TODO test with true.
     Translation2d translationErrorToTarget;
+    Translation2d translationErrorToTargetCorrectedForRotation;
     double rotationError;
-    Pose2d robotPose;
+    Rotation2d rotationErrorEstimationToDriveTrain;
+    Pose2d estimatedPose;
+    Pose2d driveTrainPose;
+    double estimatedRotationToDriveTrainRotation;
     double xSpeed = 0.0;
     double ySpeed = 0.0;
     double rotationSpeed = 0.0;
 
-    // get the robot's position on the field.
-    robotPose = poseEstimatorSubsystem.getCurrentPose();
-    
-    // Force the robot position and rotation to known values for debugging purposes.
-    if (simulatingRobot) {
-        robotPose = simulatedRobotPose;
-        poseEstimatorSubsystem.setCurrentPose(robotPose);
-    }
+    estimatedPose = poseEstimatorSubsystem.getCurrentPose();
+    if (debug) SmartDashboard.putNumber("G2A eX", estimatedPose.getX());
+    if (debug) SmartDashboard.putNumber("G2A eY", estimatedPose.getY());
+    if (debug) SmartDashboard.putNumber("G2A tX", targetPose.getX());
+    if (debug) SmartDashboard.putNumber("G2A tY", targetPose.getY());
+
 
     // Calculate the X and Y and rotation offsets to the target location
-    translationErrorToTarget = new Translation2d( targetPose.getX() - robotPose.getX(), targetPose.getY() - robotPose.getY());
-    rotationError = MathUtil.angleModulus(targetPose.getRotation().getRadians() - robotPose.getRotation().getRadians());
-
+    translationErrorToTarget = new Translation2d( targetPose.getX() - estimatedPose.getX(), targetPose.getY() - estimatedPose.getY());
+    
+    // Calculate the difference in rotation between the PoseEstimator and the TargetPose
     // Make sure the rotation error is between -PI and PI
+    rotationError = MathUtil.inputModulus(targetPose.getRotation().getRadians() - estimatedPose.getRotation().getRadians(), -Math.PI, Math.PI);
     if (debug) SmartDashboard.putNumber("G2A R", Units.radiansToDegrees(rotationError));
     if (debug) SmartDashboard.putNumber("G2A X", translationErrorToTarget.getX());
     if (debug) SmartDashboard.putNumber("G2A Y", translationErrorToTarget.getY());
@@ -241,63 +229,47 @@ public class GotoAprilTagCommand extends Command {
     // Test to see if we have arrived at the requested pose within the specified toleranes
     if (Math.abs(translationErrorToTarget.getX()) < config.getLinearTolerance()
     &&  Math.abs(translationErrorToTarget.getY()) < config.getLinearTolerance()
-    &&  ((!controlRotation) || (Math.abs(rotationError) < config.getAngularTolerance()))) {
-      // We are close enough.  Stop the robot and the command.
+    &&  Math.abs(rotationError) < config.getAngularTolerance()) {
+      // Yes, we have arrived
       if (debug) SmartDashboard.putBoolean("G2A OnTarget", true);
       xSpeed = 0.0;
       ySpeed = 0.0;
       rotationSpeed = 0.0;
       onTarget = true;
     } else {
-      // We are not close enough yet./
+      if (correctRotation) {
+        // Rotate the drive X and Y taking into account the difference in the coordinates
+        // between the DriveTrain and the PoseEstimator.
+        // Calculate the difference in rotation between the PoseEstimator and the DriveTrainPose
+        driveTrainPose = robotDrive.getPose();
+        estimatedRotationToDriveTrainRotation = estimatedPose.getRotation().getRadians() - driveTrainPose.getRotation().getRadians();
+        estimatedRotationToDriveTrainRotation = MathUtil.inputModulus(estimatedRotationToDriveTrainRotation, 0.0, Math.PI*2.0);
+        
+        if (debug) SmartDashboard.putNumber("G2A P2Derr", estimatedRotationToDriveTrainRotation);
 
-      // Transform the error into apriltag coordinates
-      Translation2d aprilTagErrorVector = translationErrorToTarget.rotateBy(targetPose.getRotation()); //  vector from apriltag to the robot rotated in april tag space
-
-      // Calculate the speeds in the coordinates system defined by the april tag
-      // It is important that clipping occurs here and not below as clipping in the field coordinates 
-      // will lead to paths that may initially veer away from the target.
-      double xSpeedAprilTag = xController.calculate(aprilTagErrorVector.getX(), 0);
-      double ySpeedAprilTag = yController.calculate(aprilTagErrorVector.getY(), 0);
-
-      // Enforce maThrottle by scaling the magnitude of the error vector.
-      // If we clamped instead we would see a slightly off initial angle when clipping happens.
-      if (Math.sqrt(xSpeedAprilTag*xSpeedAprilTag + ySpeedAprilTag*ySpeedAprilTag) > config.getMaxThrottle()) {
-        double scaleFactor =  config.getMaxThrottle() / Math.sqrt(xSpeedAprilTag*xSpeedAprilTag + ySpeedAprilTag*ySpeedAprilTag);
-        xSpeedAprilTag *= scaleFactor;
-        ySpeedAprilTag *= scaleFactor;
+        rotationErrorEstimationToDriveTrain = new Rotation2d(estimatedRotationToDriveTrainRotation);
+        translationErrorToTargetCorrectedForRotation = translationErrorToTarget.rotateBy(rotationErrorEstimationToDriveTrain);    // TODO Check sign of rotation.
+        xSpeed = MathUtil.clamp(xController.calculate(translationErrorToTargetCorrectedForRotation.getX(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
+        ySpeed = MathUtil.clamp(yController.calculate(translationErrorToTargetCorrectedForRotation.getY(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
+      } else {
+        double xout = xController.calculate(translationErrorToTarget.getX());
+        SmartDashboard.putNumber("G2A xout", xout);
+        xSpeed = MathUtil.clamp(xController.calculate(translationErrorToTarget.getX(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
+        ySpeed = MathUtil.clamp(yController.calculate(translationErrorToTarget.getY(), 0), -config.getMaxThrottle(), config.getMaxThrottle());
       }
-
-      // Rotate the calculated speeds back to field coordinates.
-      Translation2d aprilSpeedsPose = new Translation2d(xSpeedAprilTag,ySpeedAprilTag);
-      Translation2d unrotatedSpeedsPose = aprilSpeedsPose.rotateBy(targetPose.getRotation().times(-1));
-      
-      // Use the unrotated speeds to control the robot.  It is possible that these speeds could exceed te max throttle but dont
-      // clip them unless absolutely necessary to avoid artifacts in the paths.
-      // The extra magnitude is more or less limited to sqrt(2)*maxThrottle
-      xSpeed = MathUtil.clamp(unrotatedSpeedsPose.getX(), -1.0, 1.0);
-      ySpeed = MathUtil.clamp(unrotatedSpeedsPose.getY(), -1.0, 1.0);
-
-      // We are controlling rotation whether we use it for "onTarget" calculations or not.
-      rotationSpeed = MathUtil.clamp(rotationController.calculate(rotationError, 0),-config.getMaxRotation(), config.getMaxRotation());
+      rotationSpeed = -MathUtil.clamp(-rotationController.calculate(rotationError, 0),-config.getMaxRotation(), config.getMaxRotation()); // TODO Check sign  & Clean up 3 negations :-)
     }
     if (debug) SmartDashboard.putNumber("G2A xSpeed", xSpeed);
     if (debug) SmartDashboard.putNumber("G2A ySpeed", ySpeed);
     if (debug) SmartDashboard.putNumber("G2A rSpeed", rotationSpeed);
     robotDrive.drive(-xSpeed, -ySpeed, -rotationSpeed, true, true);
 
-    // For debug, update the forced robot location based on the x,y,theta applied.
-    if (simulatingRobot) {
-      double scale=0.02; // Rate that the simulation applies the changes to the robot's position.
-      simulatedRobotPose = new Pose2d(simulatedRobotPose.getX()-xSpeed*scale, simulatedRobotPose.getY()-ySpeed*scale, simulatedRobotPose.getRotation().minus(new Rotation2d(rotationSpeed*scale)));
-    }
- 
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    robotDrive.drive(0, 0, 0, true, true);
+    robotDrive.drive(0, 0, 0, true, true); // TODO Verify signs of inputs 
   }
 
   // Returns true when the command should end.

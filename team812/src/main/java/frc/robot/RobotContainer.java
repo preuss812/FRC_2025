@@ -55,6 +55,7 @@ import frc.robot.subsystems.PingResponseUltrasonicSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.GotoAprilTagCommand;
 //import frc.robot.subsystems.CameraVisionSubsystem;
 //import frc.robot.subsystems.ColorDetectionSubsytem;
 import frc.robot.commands.ShoulderHomeCommand;
@@ -64,7 +65,7 @@ import frc.robot.commands.DriveOnAprilTagProjectionCommand;
 import frc.robot.commands.DriveRobotCommand;
 import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.ExpelAlgaeCommand;
-import frc.robot.commands.GotoAprilTagCommand;
+import frc.robot.commands.BadGotoAprilTagCommand;
 import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.FindAprilTagCommand;
 //import com.revrobotics.CANSparkMax;
@@ -264,10 +265,10 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30))
+        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), false)
       );
     
-      SmartDashboard.putData("GA",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30)));
+      SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), true));
     // Xbox Y button resets the robot coorinate system
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new ResetDriveTrainCommand());
 

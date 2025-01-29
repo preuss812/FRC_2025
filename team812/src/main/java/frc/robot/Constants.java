@@ -329,7 +329,12 @@ public final class Constants {
         public static final double kShoulderHighAlgaePosition = 2000; // ticks. TODO: Tune this value.
     }
 
-    
+    public static final class RotationConstants {
+        public static final Rotation2d zero = new Rotation2d(0);
+        public static final Rotation2d rotate180 = new Rotation2d(Math.PI);
+    }
+
+
     public static final class CameraConstants {
         public static final String kCamName="pv-812";
     }
