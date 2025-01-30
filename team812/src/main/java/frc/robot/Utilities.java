@@ -280,4 +280,22 @@ public class Utilities {
                 (Math.abs(pose1.getY() - pose2Transformed.getY()) < deltaXY) &&
                 (Math.abs(pose1.getRotation().getRadians() - pose2Transformed.getRotation().getRadians()) < deltaR);
       }
+
+      // Find the direction from point A to point B
+      public static double getHeading(Translation2d a, Translation2d b) {
+        double result;
+        double dx = b.getX() - a.getX();
+        double dy = b.getY() - a.getY();
+        if (dx > 0) {
+            result = Math.atan(dy/dx);
+        } else if (dx < 0) {
+            result = MathUtil.angleModulus(Math.PI + Math.atan(dy/dx));
+        } else if (dy > 0) {
+            result = Math.PI/2;
+        } else {
+            result = -Math.PI/2;
+        }
+
+        return result;
+      }
 }

@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import org.photonvision.PhotonCamera;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
+import frc.robot.Constants.CameraConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.Utilities;
 
 public class GotoAprilTagCommand extends Command {
@@ -40,21 +42,21 @@ public class GotoAprilTagCommand extends Command {
      * default constructor
      */
     public GotoAprilTagConfig() {
-      maxThrottle = 0.30;
-      linearP = 1.0;
+      maxThrottle = 0.80;
+      linearP = 2.0;
       linearI = 0.0; // linearP/100.0;
       linearD = 0.0; // linearP*10.0;
       linearF = 0.0;
       linearIZone = Units.inchesToMeters(4.0);
       linearTolerance = Units.inchesToMeters(2.0);
 
-      maxRotation = 0.8;
-      angularP =  0.35;
+      maxRotation = 0.50;
+      angularP =  1.0; // 0.35;
       angularI = 0.0; // angularI/100.0;
       angularD = 0.0; //angularP*10.0;
       angularF = 0.0;
       angularIZone = Units.degreesToRadians(10.0);
-      angularTolerance = Units.degreesToRadians(5.0);
+      angularTolerance = Units.degreesToRadians(2.0);
     }
     public GotoAprilTagConfig setMaxThrottle(double maxThrottle) {this.maxThrottle = maxThrottle; return this; };
     public GotoAprilTagConfig setLinearP(double linearP) {this.linearP = linearP; return this; };
@@ -102,11 +104,37 @@ public class GotoAprilTagCommand extends Command {
   private Pose2d targetPose;
   private Pose2d aprilTagPose;
   private boolean onTarget;
+  private double cameraToRobotAngle; // Radians the rotation to get from the camera to the front of the robot.
   private boolean debug = true; // turn on/off SmartDashBoard feedback
   private boolean simulatingRobot = true; // force robot starting position and april tag number for debugging purposes.
-  private int simulationAprilTagID = 6;
+  private int simulationNumber = 0;
   private Pose2d simulatedRobotPose;
-  private Pose2d simulatedRobotStartingPose = new Pose2d(15.5, 0.60, new Rotation2d(Units.degreesToRadians(-60)));
+  private int[] simulationAprilTagIDs = new int [] {
+    6,6,6,
+    7,7,7,
+    19,19,19,
+    17,17,17
+  };
+  private Pose2d[] simulatedRobotStartingPoses = new Pose2d[] {
+  new Pose2d(12.5, 0.60, new Rotation2d(Units.degreesToRadians(-60))),
+  new Pose2d(15.5, 0.60, new Rotation2d(Units.degreesToRadians(-60))),
+  new Pose2d(15.5, 2.60, new Rotation2d(Units.degreesToRadians(-60))),
+
+  new Pose2d(14.5, 7.60, new Rotation2d(Units.degreesToRadians(0))),
+  new Pose2d(15.5, 5.60, new Rotation2d(Units.degreesToRadians(10))),
+  new Pose2d(15.5, 2.60, new Rotation2d(Units.degreesToRadians(-10))),
+  
+  new Pose2d(3.5, 7.60, new Rotation2d(Units.degreesToRadians(110))),
+  new Pose2d(1.5, 7.60, new Rotation2d(Units.degreesToRadians(130))),
+  new Pose2d(1.5, 5.60, new Rotation2d(Units.degreesToRadians(130))),
+
+  new Pose2d(1.5, 2.60, new Rotation2d(Units.degreesToRadians(-125))),
+  new Pose2d(1.5, 0.60, new Rotation2d(Units.degreesToRadians(-130))),
+  new Pose2d(4.5, 0.60, new Rotation2d(Units.degreesToRadians(-120)))
+  };
+
+
+
   private double maximumAmbiguity = 0.4; // Should be lower.
   /**
    * Drive to the specified distance from the best april tag currently in view.
@@ -130,23 +158,9 @@ public class GotoAprilTagCommand extends Command {
     onTarget = false;
     this.config = new GotoAprilTagConfig();
     addRequirements(robotDrive, poseEstimatorSubsystem);
+    cameraToRobotAngle = VisionConstants.XCAMERA_TO_ROBOT.getRotation().getZ();
   }
 
-  public GotoAprilTagCommand(PoseEstimatorSubsystem poseEstimatorSubsystem
-    , DriveSubsystemSRX robotDrive
-    , PhotonCamera photonCamera
-    , double targetDistance
-    , GotoAprilTagConfig config) {
-    
-    // Use addRequirements() here to declare subsystem dependencies.
-    this.poseEstimatorSubsystem = poseEstimatorSubsystem;
-    this.robotDrive = robotDrive;
-    this.photonCamera = photonCamera;
-    this.targetDistance = targetDistance;
-    onTarget = false;
-    this.config = config;
-    addRequirements(robotDrive, poseEstimatorSubsystem);
-  }
 
   // Called when the command is initially scheduled.
   @Override
@@ -160,10 +174,15 @@ public class GotoAprilTagCommand extends Command {
     if (pipelineResult.hasTargets() || simulatingRobot) {
       int fiducialId = -1; // Sentinel value
 
-      // If we are simulating the robot, use the predefined aprilTag and robot pose.
+      // If we are simulating the robot, use the predefined aprilTag and robot poses cycling through the poses with each successive command.
       if (simulatingRobot) {
-        fiducialId = simulationAprilTagID;
-        simulatedRobotPose = simulatedRobotStartingPose;
+        fiducialId = simulationAprilTagIDs[simulationNumber];
+        simulatedRobotPose = simulatedRobotStartingPoses[simulationNumber++];
+        poseEstimatorSubsystem.setCurrentPose(simulatedRobotPose);
+        aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
+        if  (simulationNumber >= simulatedRobotStartingPoses.length) {
+          simulationNumber = 0;
+        }
       } else {
         // Use the vision subsystem to get the april tag that we have the best view of
         // The assumption here is that the driver wants to go that tag.
@@ -220,7 +239,7 @@ public class GotoAprilTagCommand extends Command {
 
     if (onTarget) return; // Prevent code from running if we are there or if there was no apriltag.
 
-    boolean controlRotation = false; // TODO test with true.
+    boolean controlRotation = true; // TODO test with true.
     Translation2d translationErrorToTarget;
     double rotationError;
     Pose2d robotPose;
@@ -237,9 +256,20 @@ public class GotoAprilTagCommand extends Command {
         poseEstimatorSubsystem.setCurrentPose(robotPose);
     }
 
-    // Calculate the X and Y and rotation offsets to the target location
+    // Calculate the X and Y offsets to the target location
     translationErrorToTarget = new Translation2d( targetPose.getX() - robotPose.getX(), targetPose.getY() - robotPose.getY());
-    rotationError = MathUtil.angleModulus(targetPose.getRotation().getRadians() - robotPose.getRotation().getRadians());
+
+    // Control rotation to always face directly at the target as it approaches.
+    // This is to ensure that we get the most updates to our pose estimator for best possitioning accuracy.
+    // Calculate the tangent of the translation error.
+    double desiredRotation;
+    double errorVectorMagnitude = Math.pow(Math.pow(translationErrorToTarget.getX(),2) + Math.pow(translationErrorToTarget.getY(),2),0.5);
+    desiredRotation = MathUtil.angleModulus(Utilities.getHeading(robotPose.getTranslation(), aprilTagPose.getTranslation() )+ cameraToRobotAngle);
+    // If we are very close to the target, use the target pose.
+    if (errorVectorMagnitude  < 0.5 /* meters */) {
+      desiredRotation = targetPose.getRotation().getRadians();
+    }
+    rotationError = MathUtil.angleModulus(desiredRotation - robotPose.getRotation().getRadians());
 
     // Make sure the rotation error is between -PI and PI
     if (debug) SmartDashboard.putNumber("G2A R", Units.radiansToDegrees(rotationError));
@@ -300,7 +330,7 @@ public class GotoAprilTagCommand extends Command {
     // For debug, update the forced robot location based on the x,y,theta applied.
     if (simulatingRobot) {
       double scale=0.02; // Rate that the simulation applies the changes to the robot's position.
-      simulatedRobotPose = new Pose2d(simulatedRobotPose.getX()-xSpeed*scale, simulatedRobotPose.getY()-ySpeed*scale, simulatedRobotPose.getRotation().minus(new Rotation2d(rotationSpeed*scale)));
+      simulatedRobotPose = new Pose2d(simulatedRobotPose.getX()-xSpeed*scale, simulatedRobotPose.getY()-ySpeed*scale, new Rotation2d(desiredRotation)); //simulatedRobotPose.getRotation().minus(new Rotation2d(rotationSpeed*scale)));
     }
  
   }
