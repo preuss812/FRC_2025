@@ -65,7 +65,7 @@ import frc.robot.commands.DriveOnAprilTagProjectionCommand;
 import frc.robot.commands.DriveRobotCommand;
 import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.ExpelAlgaeCommand;
-import frc.robot.commands.BadGotoAprilTagCommand;
+//import frc.robot.commands.BadGotoAprilTagCommand;
 import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.FindAprilTagCommand;
 //import com.revrobotics.CANSparkMax;

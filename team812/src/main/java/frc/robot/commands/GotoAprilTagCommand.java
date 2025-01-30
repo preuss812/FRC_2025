@@ -107,7 +107,7 @@ public class GotoAprilTagCommand extends Command {
   private int simulationAprilTagID = 6;
   private Pose2d simulatedRobotPose;
   private Pose2d simulatedRobotStartingPose = new Pose2d(15.5, 0.60, new Rotation2d(Units.degreesToRadians(-60)));
-  private double maximumAmbiguity = 0.04; // Should be lower.
+  private double maximumAmbiguity = 0.4; // Should be lower.
   /**
    * Drive to the specified distance from the best april tag currently in view.
    * @params poseEstimatorSubsystem - the pose estimator subsystem
@@ -169,12 +169,20 @@ public class GotoAprilTagCommand extends Command {
         // The assumption here is that the driver wants to go that tag.
         var target = pipelineResult.getBestTarget();
         if (debug) SmartDashboard.putNumber("TagAmbiguity", target.getPoseAmbiguity());
+        
 
         // If we have a tag and can see it well, use it. Otherwise, the command will just end.
-        if (target.getPoseAmbiguity() <= maximumAmbiguity && fiducialId >= 0)  { 
+        if (target.getPoseAmbiguity() <= maximumAmbiguity)  { 
+          SmartDashboard.putString("DebugG2A", "Pass");
           fiducialId = target.getFiducialId();
+        } else {
+          SmartDashboard.putString("DebugG2A", "Fail");
+          if (debug) SmartDashboard.putNumber("TagAmbiguity", target.getPoseAmbiguity());
+
+
         }
       }
+      if (debug) SmartDashboard.putNumber("TagNumber", fiducialId);
       // Get the tag pose from field layout - consider that the layout will be null if it failed to load
       if (fiducialId >= 0) {
         aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
@@ -260,6 +268,9 @@ public class GotoAprilTagCommand extends Command {
       double xSpeedAprilTag = xController.calculate(aprilTagErrorVector.getX(), 0);
       double ySpeedAprilTag = yController.calculate(aprilTagErrorVector.getY(), 0);
 
+      SmartDashboard.putNumber("GAAX", xSpeedAprilTag);
+      SmartDashboard.putNumber("GAAY", ySpeedAprilTag);
+      
       // Enforce maThrottle by scaling the magnitude of the error vector.
       // If we clamped instead we would see a slightly off initial angle when clipping happens.
       if (Math.sqrt(xSpeedAprilTag*xSpeedAprilTag + ySpeedAprilTag*ySpeedAprilTag) > config.getMaxThrottle()) {
