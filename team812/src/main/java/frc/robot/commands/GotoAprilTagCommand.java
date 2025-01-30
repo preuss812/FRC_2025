@@ -15,87 +15,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import org.photonvision.PhotonCamera;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
-import frc.robot.Constants.CameraConstants;
+import frc.utils.DrivingConfig;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Utilities;
 
 public class GotoAprilTagCommand extends Command {
   
-  public class GotoAprilTagConfig {
-    private double maxThrottle;
-    private double linearP;
-    private double linearI;
-    private double linearD;
-    private double linearF;
-    private double linearIZone;
-    private double linearTolerance;
-
-    private double maxRotation;
-    private double angularP;
-    private double angularI;
-    private double angularD;
-    private double angularF;
-    private double angularIZone;
-    private double angularTolerance;
-
-    /**
-     * default constructor
-     */
-    public GotoAprilTagConfig() {
-      maxThrottle = 0.80;
-      linearP = 2.0;
-      linearI = 0.0; // linearP/100.0;
-      linearD = 0.0; // linearP*10.0;
-      linearF = 0.0;
-      linearIZone = Units.inchesToMeters(4.0);
-      linearTolerance = Units.inchesToMeters(2.0);
-
-      maxRotation = 0.50;
-      angularP =  1.0; // 0.35;
-      angularI = 0.0; // angularI/100.0;
-      angularD = 0.0; //angularP*10.0;
-      angularF = 0.0;
-      angularIZone = Units.degreesToRadians(10.0);
-      angularTolerance = Units.degreesToRadians(2.0);
-    }
-    public GotoAprilTagConfig setMaxThrottle(double maxThrottle) {this.maxThrottle = maxThrottle; return this; };
-    public GotoAprilTagConfig setLinearP(double linearP) {this.linearP = linearP; return this; };
-    public GotoAprilTagConfig setLinearI(double linearI) {this.linearI = linearI; return this; };
-    public GotoAprilTagConfig setLinearD(double linearD) {this.linearD = linearD; return this; };
-    public GotoAprilTagConfig setLinearF(double linearF) {this.linearF = linearF; return this; };
-    public GotoAprilTagConfig setLinearIZone(double linearIZone) {this.linearIZone = linearIZone; return this; };
-    public GotoAprilTagConfig setLinearTolerance(double linearTolerance) {this.linearTolerance = linearTolerance; return this; };
-
-    public GotoAprilTagConfig setMaxRotation(double maxRotation) {this.maxRotation = maxRotation; return this; };
-    public GotoAprilTagConfig setAngularP(double angularP) {this.angularP = angularP; return this; };
-    public GotoAprilTagConfig setAngularI(double angularI) {this.angularI = angularI; return this; };
-    public GotoAprilTagConfig setAngularD(double angularD) {this.angularD = angularD; return this; };
-    public GotoAprilTagConfig setAngularF(double angularF) {this.angularF = angularF; return this; };
-    public GotoAprilTagConfig setAngularIZone(double angularIZone) {this.angularIZone = angularIZone; return this; };
-    public GotoAprilTagConfig setAngularTolerance(double angularTolerance) {this.angularTolerance = angularTolerance; return this; };
-
-    public double getMaxThrottle() { return maxThrottle; }
-    public double getLinearP() { return linearP; }
-    public double getLinearI() { return linearI; }
-    public double getLinearD() { return linearD; }
-    public double getLinearF() { return linearF; }
-    public double getLinearIZone() { return linearIZone; }
-    public double getLinearTolerance() { return linearTolerance; }
-    
-    public double getMaxRotation() { return maxRotation; }
-    public double getAngularP() { return angularP; }
-    public double getAngularI() { return angularI; }
-    public double getAngularD() { return angularD; }
-    public double getAngularF() { return angularF; }
-    public double getAngularIZone() { return angularIZone; }
-    public double getAngularTolerance() { return angularTolerance; }
-  } // DebugGotoAprilTagConfig Class
-
   /** Creates a new command to move the robot to the specified pose. */
   private final PoseEstimatorSubsystem poseEstimatorSubsystem;
   private final DriveSubsystemSRX robotDrive;
   private final PhotonCamera photonCamera;
-  private final GotoAprilTagConfig config;
+  private final DrivingConfig config;
   private final double targetDistance;
 
   private PIDController xController;
@@ -147,6 +77,7 @@ public class GotoAprilTagCommand extends Command {
     , DriveSubsystemSRX robotDrive
     , PhotonCamera photonCamera
     , double targetDistance
+    , DrivingConfig config
     , boolean simulatingRobot) {
     
     // Use addRequirements() here to declare subsystem dependencies.
@@ -156,7 +87,7 @@ public class GotoAprilTagCommand extends Command {
     this.targetDistance = targetDistance;
     this.simulatingRobot = simulatingRobot;
     onTarget = false;
-    this.config = new GotoAprilTagConfig();
+    this.config = config == null ? robotDrive.defaultAutoConfig : config;
     addRequirements(robotDrive, poseEstimatorSubsystem);
     cameraToRobotAngle = VisionConstants.XCAMERA_TO_ROBOT.getRotation().getZ();
   }
@@ -332,7 +263,6 @@ public class GotoAprilTagCommand extends Command {
       double scale=0.02; // Rate that the simulation applies the changes to the robot's position.
       simulatedRobotPose = new Pose2d(simulatedRobotPose.getX()-xSpeed*scale, simulatedRobotPose.getY()-ySpeed*scale, new Rotation2d(desiredRotation)); //simulatedRobotPose.getRotation().minus(new Rotation2d(rotationSpeed*scale)));
     }
- 
   }
 
   // Called once the command ends or is interrupted.

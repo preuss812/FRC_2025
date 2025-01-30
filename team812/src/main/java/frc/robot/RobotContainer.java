@@ -265,10 +265,10 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), false)
+        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.debugAutoConfig, false)
       );
     
-      SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), true));
+      SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.defaultAutoConfig, true));
     // Xbox Y button resets the robot coorinate system
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new ResetDriveTrainCommand());
 

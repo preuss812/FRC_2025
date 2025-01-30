@@ -13,11 +13,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.ModifiedSlewRateLimiter;
 import frc.robot.Utilities;
+import frc.utils.DrivingConfig;
 import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystemSRX extends SubsystemBase {
@@ -78,12 +80,36 @@ public class DriveSubsystemSRX extends SubsystemBase {
   private DrivingMode drivingMode;
   private double maxSpeedMetersPerSecond;
   private double maxAngularSpeed;
-  
+  public DrivingConfig defaultAutoConfig;
+  public DrivingConfig debugAutoConfig;
+
+
   private final boolean debug = false;
 
   /** Creates a new DriveSubsystemSRXSRX. */
   public DriveSubsystemSRX() {
     setDrivingMode(DrivingMode.SPEED); // Default driving mode is speed mode.
+
+    // set up some known-good PID configurations for automatic and semi-automatic driving.
+    defaultAutoConfig = new DrivingConfig()
+    .setMaxThrottle(0.8)
+    .setMaxRotation(0.8)
+    .setLinearP(2.0)
+    .setLinearIZone(Units.inchesToMeters(4.0))
+    .setLinearTolerance(Units.inchesToMeters(2.0))
+    .setAngularP(1.0)
+    .setAngularIZone(Units.degreesToRadians(10.0))
+    .setAngularTolerance(Units.degreesToRadians(2.0));
+
+    debugAutoConfig = new DrivingConfig()
+      .setMaxThrottle(0.2)
+      .setMaxRotation(0.2)
+      .setLinearP(0.1)
+      .setLinearIZone(Units.inchesToMeters(4.0))
+      .setLinearTolerance(Units.inchesToMeters(2.0))
+      .setAngularP(0.5)
+      .setAngularIZone(Units.degreesToRadians(10.0))
+      .setAngularTolerance(Units.degreesToRadians(2.0));
 
     // TODO Do we need to reset the gyro here?
   }
