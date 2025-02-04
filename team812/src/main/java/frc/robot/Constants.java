@@ -19,6 +19,8 @@ import edu.wpi.first.math.util.Units;
 //import frc.robot.Constants.CANConstants;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+
+import edu.wpi.first.wpilibj.AnalogInput; // Assumes encoder connected to the Roborio.
 //import com.revrobotics.CANSparkBase.IdleMode;
 //import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -315,6 +317,9 @@ public final class Constants {
     }
 
     public static final class ShoulderConstants {
+        public static final AnalogInput kShoulderEncoderInputChannel = new AnalogInput(3);
+        public static final int kPidIdx = 0;
+        public static final int kTimeoutMs = 10;
         public static final double kShoulderStartingPosition = 0;  // We should start at the minimum position with the arm rotated down.
         public static final double kShoulderPeakOutputForward =  0.5; // TODO: Tune this value.
         public static final double kShoulderPeakOutputReverse = -0.5; // TODO: Tune this value.
