@@ -15,7 +15,8 @@ public class ElbowRotationCommand extends Command {
   private final ElbowRotationSubsystem m_armSubsystem;
   private final double m_position;
   private double setPoint;
-  private final boolean debug = false;
+  private final boolean debug = true;
+  private int m_simulatedTicks = 0;
 
   public ElbowRotationCommand(ElbowRotationSubsystem subsystem, double position) {
     m_armSubsystem = subsystem;
@@ -27,7 +28,7 @@ public class ElbowRotationCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    m_simulatedTicks = 0;
     if (debug) SmartDashboard.putString("armcmd", "started");
 
     setPoint = MathUtil.clamp(m_position, ElbowConstants.kElbowMinPosition, ElbowConstants.kElbowMaxPosition);
@@ -38,6 +39,9 @@ public class ElbowRotationCommand extends Command {
   @Override
   public void execute() {
     m_armSubsystem.setTargetPosition(setPoint);   // TODO: Does this need to be here? - dph 2023-03-01
+    m_simulatedTicks = (m_simulatedTicks+1)% 360;
+    if (debug) SmartDashboard.putNumber("elbow", m_simulatedTicks);
+
   }
 
   public boolean onTarget() {
@@ -66,6 +70,6 @@ public class ElbowRotationCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return onTarget();
+    return onTarget() || (m_simulatedTicks > 100);
   }
 }

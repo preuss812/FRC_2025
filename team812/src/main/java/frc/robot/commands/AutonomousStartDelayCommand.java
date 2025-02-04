@@ -8,6 +8,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
+/**
+ * Command to delay the start of autonomous motion for some number of seconds.
+ * This might be needed to avoid collisions during autonomous mode if a 
+ * teammate is driving in the same area.
+ */
 public class AutonomousStartDelayCommand extends Command {
   /** Creates a new AutonomousStartDelayCommand. */
   private double delay = 0.0;

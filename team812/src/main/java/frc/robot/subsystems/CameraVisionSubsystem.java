@@ -15,6 +15,7 @@ public class CameraVisionSubsystem extends SubsystemBase {
   /** Creates a new CameraVisionSubsystem. */
   public PhotonCamera camera = new PhotonCamera("pv-812");
   private final boolean debug = false;
+  public static final int NO_TAG_FOUND = -1;
 
   public CameraVisionSubsystem() {
     //camera.setDriverMode(true); // a guess
@@ -75,5 +76,21 @@ public class CameraVisionSubsystem extends SubsystemBase {
       }
   }
 
-
+  /**
+   * getBestAprilTag - return the id of the best april tag the robot can see or -1
+   * @param maximumAmbiguity - (double) the maximum ambiguity that is acceptable.  Range from 0.0..1.0
+   * @return - the id of the best april tag or -1
+   */
+  public int getBestAprilTag(double maximumAmbiguity) {
+    int fiducialID = NO_TAG_FOUND; // Sentinel value indicating no tag found
+    var pipelineResult = camera.getLatestResult();
+    if (pipelineResult.hasTargets()) {
+      var target = pipelineResult.getBestTarget();
+      var bestFiducialId = target.getFiducialId();
+      if (target.getPoseAmbiguity() <= maximumAmbiguity && bestFiducialId >= 0) {
+        fiducialID = bestFiducialId;
+      }
+    }    
+    return fiducialID;  
+  }
 }

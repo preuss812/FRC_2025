@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-//import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.util.Color;
 import com.revrobotics.ColorSensorV3;
@@ -13,6 +12,14 @@ import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorMatch;
 import frc.robot.Constants.ColorConstants;
 
+/**
+ * This subsystem manages a color detector.
+ * Currently, it is set up for the 2024, Crescendo season
+ * which had orange foam rings which were detected crossing
+ * a black background field.
+ * This would need different colors and proximity numbers for reuse.
+ * "note" has be replaced by "algae" for 2025 but the colors and distance have not been adjusted.
+ */
 public class ColorDetectionSubsytem {
   /** Creates a new ColorMatcher. */
     final I2C.Port            i2cPort = I2C.Port.kOnboard;

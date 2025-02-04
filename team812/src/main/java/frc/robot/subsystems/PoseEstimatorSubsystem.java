@@ -68,6 +68,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   private double previousPipelineTimestamp = 0;
   private boolean isBlueAlliance = true;
   private int m_lastAprilTagSeen = 0;
+  public static final int NO_TAG_FOUND = -1;
 
   public PoseEstimatorSubsystem(PhotonCamera photonCamera, DriveSubsystemSRX drivetrainSubsystem) {
     this.photonCamera = photonCamera;
@@ -211,6 +212,24 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   // Return the pose for a robot to be directly in front of the specified apriltag
   public Pose2d robotPoseAtApriltag(int id) {
     return DriveConstants.robotFrontAtPose(getAprilTagPose(id));
+  }
+
+   /**
+   * getBestAprilTag - return the id of the best april tag the robot can see or -1
+   * @param maximumAmbiguity - (double) the maximum ambiguity that is acceptable.  Range from 0.0..1.0
+   * @return - the id of the best april tag or -1
+   */
+  public int getBestAprilTag(double maximumAmbiguity) {
+    int fiducialID = NO_TAG_FOUND; // Sentinel value indicating no tag found
+    var pipelineResult = photonCamera.getLatestResult();
+    if (pipelineResult.hasTargets()) {
+      var target = pipelineResult.getBestTarget();
+      var bestFiducialId = target.getFiducialId();
+      if (target.getPoseAmbiguity() <= maximumAmbiguity && bestFiducialId >= 0) {
+        fiducialID = bestFiducialId;
+      }
+    }    
+    return fiducialID;  
   }
 
 }

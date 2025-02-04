@@ -191,7 +191,7 @@ public class RobotContainer {
     //autoChooser = AutoBuilder.buildAutoChooser("autos");
     //SmartDashboard.putData("Auto Mode", autoChooser);
     TrajectoryPlans.buildAutoTrajectories(); 
-
+    SmartDashboard.putNumber("y",99.0);
     // Configure the button bindings
     configureButtonBindings();
     
@@ -268,8 +268,8 @@ public class RobotContainer {
         new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.debugAutoConfig, false)
       );
     
-      SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.defaultAutoConfig, true));
-    // Xbox Y button resets the robot coorinate system
+      
+      // Xbox Y button resets the robot coorinate system
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new ResetDriveTrainCommand());
 
     // Xbox start button puts thte robot in fast/speed driving mode.
@@ -328,7 +328,18 @@ public class RobotContainer {
     /* Debugging below */
     if (true || debug) {
 
- 
+      SmartDashboard.putData("IC", new InstantCommand(() -> m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(1,4,new Rotation2d(0)))));
+      SmartDashboard.putData("EL", new ElbowRotationCommand(m_ElbowRotationSubsystem, 5000));
+      SmartDashboard.putData("SQ",
+        new SequentialCommandGroup(
+          new InstantCommand(() -> m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
+          new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 0.0, new Rotation2d(0.0)), true),
+          new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, 1.0, new Rotation2d(0.0)), true),
+          new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 0.0, new Rotation2d(0.0)), true),
+          new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
+        )
+      );
+
 
       /**
        * Create smart dash button that cycles through the various paths
@@ -341,7 +352,8 @@ public class RobotContainer {
         SmartDashboard.putData("TTcmd", new SwerveToPoseTest(m_robotDrive, m_PoseEstimatorSubsystem));
         SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, 0.0, false));
         SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
-        SmartDashboard.putData("DAcmd", new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController));
+        SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.defaultAutoConfig, true));
+        SmartDashboard.putData("DOP",new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController, m_robotDrive.defaultAutoConfig, true));
       }
     } // (debug)
   } // (configureButtonBindings)

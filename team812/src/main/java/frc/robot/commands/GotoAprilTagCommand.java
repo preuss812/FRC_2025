@@ -16,6 +16,7 @@ import org.photonvision.PhotonCamera;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.utils.DrivingConfig;
+import frc.utils.PreussAutoDrive;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Utilities;
 
@@ -27,10 +28,8 @@ public class GotoAprilTagCommand extends Command {
   private final PhotonCamera photonCamera;
   private final DrivingConfig config;
   private final double targetDistance;
-
-  private PIDController xController;
-  private PIDController yController;
-  private PIDController rotationController;
+  private final PreussAutoDrive autoDrive;
+  ;
   private Pose2d targetPose;
   private Pose2d aprilTagPose;
   private boolean onTarget;
@@ -88,6 +87,7 @@ public class GotoAprilTagCommand extends Command {
     this.simulatingRobot = simulatingRobot;
     onTarget = false;
     this.config = config == null ? robotDrive.defaultAutoConfig : config;
+    this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, config, simulatingRobot);
     addRequirements(robotDrive, poseEstimatorSubsystem);
     cameraToRobotAngle = VisionConstants.XCAMERA_TO_ROBOT.getRotation().getZ();
   }
@@ -98,9 +98,10 @@ public class GotoAprilTagCommand extends Command {
   public void initialize() {
     onTarget = true; // Not really but if we dont find a target, this will cause the command to end immediately.
     //debugPID = RobotContainer.m_BlackBox.isSwitchCenter();
-    double linearP = config.getLinearP();
-    double linearI = config.getLinearI();
     
+    // Reset the pid controllers
+    autoDrive.reset();
+
     var pipelineResult = photonCamera.getLatestResult();
     if (pipelineResult.hasTargets() || simulatingRobot) {
       int fiducialId = -1; // Sentinel value
@@ -109,7 +110,7 @@ public class GotoAprilTagCommand extends Command {
       if (simulatingRobot) {
         fiducialId = simulationAprilTagIDs[simulationNumber];
         simulatedRobotPose = simulatedRobotStartingPoses[simulationNumber++];
-        poseEstimatorSubsystem.setCurrentPose(simulatedRobotPose);
+        autoDrive.setCurrentPose(simulatedRobotPose);
         aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
         if  (simulationNumber >= simulatedRobotStartingPoses.length) {
           simulationNumber = 0;
@@ -137,28 +138,7 @@ public class GotoAprilTagCommand extends Command {
       if (fiducialId >= 0) {
         aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
         targetPose = Utilities.backToPose(aprilTagPose, targetDistance);
-
-        xController = new PIDController(
-          linearP, // config.getLinearP(),
-          linearI, // config.getLinearI(),
-          config.getLinearD()
-        );
-        xController.setIZone(config.getLinearIZone());
-        yController = new PIDController(
-          linearP, // config.getLinearP(),
-          linearI, // config.getLinearI(),
-          config.getLinearD()
-        );
-        yController.setIZone(config.getAngularIZone()); // TODO Needs Tuning.
-
-        rotationController = new PIDController(
-          config.getAngularP(),
-          config.getAngularI(),
-          config.getAngularD()
-          );
-        rotationController.setTolerance(config.getAngularTolerance()); // did not work, dont understand yet
-        rotationController.enableContinuousInput(-Math.PI, Math.PI); // Tell PID Controller to expect inputs between -180 and 180 degrees (in Radians).
-        onTarget = false;
+        onTarget = false; // There is a target to go to!!!
         if (debug) SmartDashboard.putNumber("G2A dist", targetDistance);
       }
     }
@@ -179,13 +159,7 @@ public class GotoAprilTagCommand extends Command {
     double rotationSpeed = 0.0;
 
     // get the robot's position on the field.
-    robotPose = poseEstimatorSubsystem.getCurrentPose();
-    
-    // Force the robot position and rotation to known values for debugging purposes.
-    if (simulatingRobot) {
-        robotPose = simulatedRobotPose;
-        poseEstimatorSubsystem.setCurrentPose(robotPose);
-    }
+    robotPose = autoDrive.getCurrentPose();
 
     // Calculate the X and Y offsets to the target location
     translationErrorToTarget = new Translation2d( targetPose.getX() - robotPose.getX(), targetPose.getY() - robotPose.getY());
@@ -226,8 +200,8 @@ public class GotoAprilTagCommand extends Command {
       // Calculate the speeds in the coordinates system defined by the april tag
       // It is important that clipping occurs here and not below as clipping in the field coordinates 
       // will lead to paths that may initially veer away from the target.
-      double xSpeedAprilTag = xController.calculate(aprilTagErrorVector.getX(), 0);
-      double ySpeedAprilTag = yController.calculate(aprilTagErrorVector.getY(), 0);
+      double xSpeedAprilTag = autoDrive.calculateX(aprilTagErrorVector.getX());
+      double ySpeedAprilTag = autoDrive.calculateY(aprilTagErrorVector.getY());
 
       SmartDashboard.putNumber("GAAX", xSpeedAprilTag);
       SmartDashboard.putNumber("GAAY", ySpeedAprilTag);
@@ -251,18 +225,12 @@ public class GotoAprilTagCommand extends Command {
       ySpeed = MathUtil.clamp(unrotatedSpeedsPose.getY(), -1.0, 1.0);
 
       // We are controlling rotation whether we use it for "onTarget" calculations or not.
-      rotationSpeed = MathUtil.clamp(rotationController.calculate(rotationError, 0),-config.getMaxRotation(), config.getMaxRotation());
+      rotationSpeed = autoDrive.calculateClampedRotation(rotationError);
     }
     if (debug) SmartDashboard.putNumber("G2A xSpeed", xSpeed);
     if (debug) SmartDashboard.putNumber("G2A ySpeed", ySpeed);
     if (debug) SmartDashboard.putNumber("G2A rSpeed", rotationSpeed);
-    robotDrive.drive(-xSpeed, -ySpeed, -rotationSpeed, true, true);
-
-    // For debug, update the forced robot location based on the x,y,theta applied.
-    if (simulatingRobot) {
-      double scale=0.02; // Rate that the simulation applies the changes to the robot's position.
-      simulatedRobotPose = new Pose2d(simulatedRobotPose.getX()-xSpeed*scale, simulatedRobotPose.getY()-ySpeed*scale, new Rotation2d(desiredRotation)); //simulatedRobotPose.getRotation().minus(new Rotation2d(rotationSpeed*scale)));
-    }
+    autoDrive.drive(-xSpeed, -ySpeed, -rotationSpeed, true, true);
   }
 
   // Called once the command ends or is interrupted.

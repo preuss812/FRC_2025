@@ -8,6 +8,9 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ColorDetectionSubsytem;
 
+/**
+ * This command curently never ends so the purpose is not clear.
+ */
 public class DetectColorCommand extends Command {
   /** Creates a new DetectColorCommand. */
   ColorDetectionSubsytem m_ColorDetector;
