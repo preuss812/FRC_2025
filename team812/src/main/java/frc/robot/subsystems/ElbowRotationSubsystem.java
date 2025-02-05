@@ -90,6 +90,11 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     return getPosition() - getTargetPosition();
   }
 
+   // Sets the target encoder value.  The PID in the TalonSRX will drive the arm to this position.
+   public void setSensorPosition(double position) {
+    m_elbowLeft.setSelectedSensorPosition(position, 0, 10);
+  }
+
   // Returns true if the arm is fully lowered.
   public boolean isFwdLimitSwitchClosed() {
     return (m_elbowLeft.isFwdLimitSwitchClosed() == 1 ? true : false);
@@ -139,7 +144,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
       }
     }
     
-    SmartDashboard.putNumber("Elbow pos:",   getPosition());
+    SmartDashboard.putNumber("Elbow Pos",   getPosition());
     SmartDashboard.putNumber("Elbow target", targetPosition);
     SmartDashboard.putBoolean("Elbow Homed", isHomed());
     SmartDashboard.putBoolean("Elbow fwdsw", isFwdLimitSwitchClosed());

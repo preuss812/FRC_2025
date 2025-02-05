@@ -19,7 +19,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-
+import edu.wpi.first.math.spline.SplineHelper;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -55,6 +55,7 @@ import frc.robot.subsystems.PingResponseUltrasonicSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.CompoundArmMovementCommand;
 import frc.robot.commands.GotoAprilTagCommand;
 //import frc.robot.subsystems.CameraVisionSubsystem;
 //import frc.robot.subsystems.ColorDetectionSubsytem;
@@ -354,6 +355,24 @@ public class RobotContainer {
         SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
         SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.defaultAutoConfig, true));
         SmartDashboard.putData("DOP",new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController, m_robotDrive.defaultAutoConfig, true));
+        SmartDashboard.putData("SHP", new InstantCommand(() -> m_ShoulderRotationSubsystem.setSensorPosition(45)));
+        SmartDashboard.putData("ELP", new InstantCommand(() -> m_ElbowRotationSubsystem.setSensorPosition(45)));
+        // Start the game
+        SmartDashboard.putData("AP0",
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(170), Units.degreesToRadians(60), true));
+        // Grab algae from lower level
+        SmartDashboard.putData("AP1",
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(180), Units.degreesToRadians(95), true));
+        // Pick up algae from ground
+        SmartDashboard.putData("AP2",
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(30), Units.degreesToRadians(10), true));
+        // Score algae in processor 
+        SmartDashboard.putData("AP3",
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(90), Units.degreesToRadians(5), true));
+        // Climbing
+        SmartDashboard.putData("AP4",
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(-45),Units.degreesToRadians(95.0), true));
+
       }
     } // (debug)
   } // (configureButtonBindings)

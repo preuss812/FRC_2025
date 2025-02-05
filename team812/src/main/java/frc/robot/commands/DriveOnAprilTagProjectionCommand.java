@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import org.ejml.dense.row.decomposition.eig.WatchedDoubleStepQRDecomposition_DDRM;
 import org.photonvision.PhotonCamera;
 
 import edu.wpi.first.math.MathUtil;
@@ -11,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,12 +48,14 @@ public class DriveOnAprilTagProjectionCommand extends Command {
   private double projectionM;
   private double projectionB;
   private Line projection;
-
+  private static double sqrtOfTwoOverTwo = Math.sqrt(2.0)/2.0;
   private boolean debug = true;
-  private static final double[] simulatedJoystick = new double[] {0.1,0.1,0.1};
+  private static final double[] simulatedJoystick = new double[] {0.3,0.1,0.1};
   private int simulationCycleCount = 0;
-  private static final Pose2d simulationStartingPose = new Pose2d(13.5, 0.6, new Rotation2d(Math.PI));
+  private static final Pose2d simulationStartingPose = new Pose2d(15.5, 2.6, new Rotation2d(Math.PI));
   private static final double needToBeOnLineDistance = 1.0; // (meters)
+  private Translation2d lastThrottle = new Translation2d(0,0);
+
   /**
    * Drive to the specified distance from the best april tag currently in view.
    * @params poseEstimatorSubsystem - the pose estimator subsystem
@@ -79,6 +83,15 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     addRequirements(robotDrive, poseEstimatorSubsystem);
   }
 
+  // Apply an exponential smoothing
+  private Translation2d smoother(Translation2d throttle) {
+    double smoothingFactor = 0.2; // 20% new value, 80% old
+    Translation2d result =  new Translation2d(
+      throttle.getX() * smoothingFactor  + lastThrottle.getX() * (1.0-smoothingFactor),
+      throttle.getY() * smoothingFactor  + lastThrottle.getY() * (1.0-smoothingFactor) );
+    this.lastThrottle = new Translation2d(throttle.getX(), throttle.getY());
+    return result;
+  }
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
@@ -93,7 +106,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     
     if (simulation) {
       fiducialId = 6;
-      simulationCycleCount = 0;
+      simulationCycleCount = -500;
       autoDrive.setCurrentPose(simulationStartingPose);
     } else {
       fiducialId = poseEstimatorSubsystem.getBestAprilTag(0.2); 
@@ -140,25 +153,31 @@ public class DriveOnAprilTagProjectionCommand extends Command {
   public void execute() {
     if (!commandIsActive) return; // If we did not find an april tag, prevent problems with uninitialized variables below
 
-    Translation2d translationErrorToTarget;
+    Translation2d fieldThrottle;
     Pose2d robotPose;
     double xSpeed = 0.0;
     double ySpeed = 0.0;
     double rotationSpeed = 0.0;
-    Translation2d nominalMove = new Translation2d(1,0);
-    Translation2d move;
-    Translation2d uncorrectedGoal;
-    Translation2d correctedGoal;
+    Translation2d aprilThrustVector;
+    Translation2d fieldThrustVector;
     double throttle;
     double desiredRotation;
     double rotationError;
+    
 
     if (aprilTagPose == null)  return;
 
     throttle = -xbox.getRightY(); // Driver controls +/-X on the projection line
     if (simulation) {
-      throttle = simulatedJoystick[simulationCycleCount++];
-      if (simulationCycleCount >= simulatedJoystick.length) simulationCycleCount = 0; // Continue on with the last value
+      simulationCycleCount++;
+      if (simulationCycleCount > 500) {
+        simulationCycleCount = -500;
+      }
+      if (simulationCycleCount < 0) {
+        throttle = -simulatedJoystick[0];
+      } else {
+        throttle = simulatedJoystick[0];
+      }
     }
     //rotationSpeed = MathUtil.applyDeadband(xbox.getRightX(), OIConstants.kDriveDeadband); // Based on xbox right joystick.
     // ? Should rotation be an automatic calculate to keep the robot facing the tag?
@@ -171,34 +190,86 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     rotationError = MathUtil.angleModulus(desiredRotation - robotPose.getRotation().getRadians());
     rotationSpeed = autoDrive.calculateClampedRotation(rotationError);
 
-    double distanceToAprilTag = Line.distanceBetweenTwoPoints(robotPose.getTranslation(), aprilTagPose.getTranslation());
-    double distanceToProjection = projection.distanceFromPointToLine(robotPose.getTranslation());
+    Translation2d robotInAprilTagSpace = new Translation2d(robotPose.getX() - aprilTagPose.getX(), robotPose.getY() - aprilTagPose.getY()).rotateBy(aprilTagPose.getRotation().times(-1.0));
 
-    
-    Transform2d intoAprilTag = new Transform2d(aprilTagPose, new Pose2d(0,0,new Rotation2d(0)));
-    Pose2d robotPoseNoRotation = new Pose2d(robotPose.getTranslation(), new Rotation2d(0));
-    Pose2d robotPoseApril = robotPoseNoRotation.transformBy(intoAprilTag);
-    
-    // By default, Split the throttle 50,50 between getting toward the line and moving along the line
-    double towardProjectionPortion = Math.sqrt(2.0)/2.0;
-    double parallelToProjectionPortion = 1.0 - towardProjectionPortion;
-    
-    if (robotPoseApril.getX() > robotPoseApril.getY()) {
-      // we are getting close so use proportionately more to get on the projectionline
-      // Note: this does not account for robot center to robot perimiter.
-      towardProjectionPortion = distanceToProjection/(distanceToAprilTag + distanceToProjection);
-      parallelToProjectionPortion = 1.0 - towardProjectionPortion;
+    double epsilon = 0.05; // 5cm
+    if (throttle > 0) {
+      // We are moving away from the target.
+      // Therefore the target position will be diagonally toward the projection lihe, Y = 0 in april tag space.
+      
+      if (robotInAprilTagSpace.getY() > epsilon) {
+        // we need to move down toward the projection
+        aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, sqrtOfTwoOverTwo);
+        SmartDashboard.putString("DOA Path", "+ +");
+      } else if (robotInAprilTagSpace.getY() > -epsilon) {
+        // On the line, stay on the line.
+        double r = Line.vectorLength(robotInAprilTagSpace);
+        aprilThrustVector = new Translation2d(-Math.cos(robotInAprilTagSpace.getX()), Math.sin(robotInAprilTagSpace.getY()/r)); 
+        SmartDashboard.putString("DOA Path", "+ 0");
+      } else {
+        // we need to move up toward the projection
+        aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, -sqrtOfTwoOverTwo);
+        SmartDashboard.putString("DOA Path", "+ -");
+      }
+    } else {
+      // We are moving toward from the target.
+      // Therefore the target position will be diagonally toward the projection lihe, Y = 0 in april tag space.
+      if (Math.abs(robotInAprilTagSpace.getX()) > Math.abs(robotInAprilTagSpace.getY())) {
+        // We are far enough away we can move diagonally
+        if (robotInAprilTagSpace.getY() > epsilon) {
+          // we need to move down toward the projection
+          SmartDashboard.putString("DOA Path", "- + +");
+          aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, -sqrtOfTwoOverTwo);
+        } else if (robotInAprilTagSpace.getY() > -epsilon) {
+          // On the line, stay on the line.
+          double r = Line.vectorLength(robotInAprilTagSpace);
+          aprilThrustVector = new Translation2d(-Math.cos(robotInAprilTagSpace.getX()), Math.sin(robotInAprilTagSpace.getY()/r)); 
+          SmartDashboard.putString("DOA Path", "- + 0");
+        } else {
+          // we need to move up toward the projection
+          aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, sqrtOfTwoOverTwo);
+          SmartDashboard.putString("DOA Path", "- + -");
+        }
+      } else {
+        //  We are wider away from the target so we need to exert more centering force.
+        // We are far enough away we can NOT move diagonally
+        // Ideally, this would rarely come up.
+        if (robotInAprilTagSpace.getY() > epsilon) {
+          // head straight down to the projection line
+          aprilThrustVector = new Translation2d(0.0, -1);
+          SmartDashboard.putString("DOA Path", "- - +");
+        } else if (robotInAprilTagSpace.getY() > -epsilon) {
+          // On the line, stay on the line.
+          double r = Line.vectorLength(robotInAprilTagSpace);
+          aprilThrustVector = new Translation2d(-Math.cos(robotInAprilTagSpace.getX()), Math.sin(robotInAprilTagSpace.getY()/r)); 
+          SmartDashboard.putString("DOA Path", "- - 0");
+        } else {
+          // we need to move up toward the projection
+          aprilThrustVector = new Translation2d(0.0, 1.0);
+          SmartDashboard.putString("DOA Path", "- - -");
+        }
+      }
     }
+    // Rotate the thrust vector into field coordinates and use that as xSpeed, ySpeed
+    //fieldThrustVector = aprilThrustVector.rotateBy(aprilTagPose.getRotation().times(-1.0).rotateBy(new Rotation2d(Math.PI)));
+    fieldThrustVector = aprilThrustVector.rotateBy(aprilTagPose.getRotation().times(1.0).rotateBy(new Rotation2d(0.0)));
+    fieldThrottle = fieldThrustVector.times(throttle);  // Minus puts back into yaw, pitch
+    //fieldThrottle = smoother(fieldThrottle); // Maybe try on a robot.
+    if (simulation) {
+      if (throttle < 0 && Line.vectorLength(robotInAprilTagSpace) < 0.5) {
+        fieldThrottle = fieldThrottle.times(0.5); // Just to reduce driving through the tags
+      }
+    }
+    SmartDashboard.putNumber("DOA thetaF", Units.radiansToDegrees(Math.atan(fieldThrustVector.getY()/fieldThrustVector.getX())));
+    SmartDashboard.putNumber("DOA thetA", Units.radiansToDegrees(Math.atan(robotInAprilTagSpace.getY()/robotInAprilTagSpace.getX())));
 
-    Pose2d scaledRobotPoseApril = new Pose2d(robotPoseApril.getX() * towardProjectionPortion* throttle, robotPoseApril.getY() * parallelToProjectionPortion * throttle, robotPoseApril.getRotation());
-    translationErrorToTarget = scaledRobotPoseApril.transformBy(intoAprilTag).getTranslation();
-  
+    if (debug) SmartDashboard.putNumber("DA X", fieldThrottle.getX());
+    if (debug) SmartDashboard.putNumber("DA Y", fieldThrottle.getY());
     
-    if (debug) SmartDashboard.putNumber("DA X", translationErrorToTarget.getX());
-    if (debug) SmartDashboard.putNumber("DA Y", translationErrorToTarget.getY());
-    
-    xSpeed = autoDrive.calculateClampedX(translationErrorToTarget.getX());
-    ySpeed = autoDrive.calculateClampedY(translationErrorToTarget.getY());
+    xSpeed = fieldThrottle.getX();
+    ySpeed = fieldThrottle.getY();
+    //xSpeed = autoDrive.calculateClampedX(fieldThrottle.getX());
+    //ySpeed = autoDrive.calculateClampedY(fieldThrottle.getY());
   
     if (debug) SmartDashboard.putNumber("DA xSpeed", xSpeed);
     if (debug) SmartDashboard.putNumber("DA ySpeed", ySpeed);

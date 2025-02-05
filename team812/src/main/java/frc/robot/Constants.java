@@ -152,7 +152,7 @@ public final class Constants {
         // The '0' position is defined by the scoring position which is enforced by the upper/reverse.
         // The 'max' position is defined by the arm fully rotated which is  enforced the forward limit switch.
         // The proper starting position for the arm is in the fully down position with the forward limit switch activated.
-        public static final double kElbowMinPosition = 0;    // Smallest encoder value the software will rotate to.
+        public static final double kElbowMinPosition = -180;    // Smallest encoder value the software will rotate to.
         public static final double kElbowMaxPosition = 2800; // Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of ticks in the active range of arm motion between limits.
 
@@ -324,7 +324,7 @@ public final class Constants {
         public static final double kShoulderPeakOutputForward =  0.5; // TODO: Tune this value.
         public static final double kShoulderPeakOutputReverse = -0.5; // TODO: Tune this value.
         public static final double kShoulderTimeout = 3.0; // Seconds to wait for the arm to rotate to the shooting position.
-        public static final double kShoulderMinPosition = 0;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
+        public static final double kShoulderMinPosition = -180;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
         public static final double kShoulderMaxPosition  = 2000; // Largest encoder value the software will rotote to. TODO: Tune this value.
         public static final double kShoulderRotationThreshold = 20; // ticks. TODO: Tune this value.
         public static final double kShoulderProcessorPosition = 200; // ticks. TODO: Tune this value.

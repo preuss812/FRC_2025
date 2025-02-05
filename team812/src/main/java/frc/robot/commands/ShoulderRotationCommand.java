@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ShoulderConstants;
 import frc.robot.subsystems.ShoulderRotationSubsystem;
@@ -12,17 +13,31 @@ public class ShoulderRotationCommand extends Command {
   /** Creates a new ShooterCommand. */
   private double targetPosition;
   private final ShoulderRotationSubsystem m_ShoulderRotationSubsystem;
-    public ShoulderRotationCommand(ShoulderRotationSubsystem subsystem, double position) {
-      m_ShoulderRotationSubsystem = subsystem;
-      targetPosition = position;
-    // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(subsystem);
-    }
+  private final boolean simulation;
+
+  public ShoulderRotationCommand(ShoulderRotationSubsystem subsystem, double position) {
+    m_ShoulderRotationSubsystem = subsystem;
+    targetPosition = position;
+    this.simulation = false;
+  // Use addRequirements() here to declare subsystem dependencies.
+  addRequirements(subsystem);
+  }
+  
+  public ShoulderRotationCommand(ShoulderRotationSubsystem subsystem, double position, boolean simulation) {
+    m_ShoulderRotationSubsystem = subsystem;
+    targetPosition = Units.radiansToDegrees(position);
+    this.simulation = simulation;
+  // Use addRequirements() here to declare subsystem dependencies.
+  addRequirements(subsystem);
+  }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     m_ShoulderRotationSubsystem.setTargetPosition(targetPosition);
+    if (simulation) {
+      m_ShoulderRotationSubsystem.setSensorPosition(targetPosition);
+    }
   }
 
   // Called every time the scheduler runs while the command is scheduled.
