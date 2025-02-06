@@ -11,18 +11,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-//import edu.wpi.first.wpilibj.CAN;
-//import frc.robot.Constants.CANConstants;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-
 import edu.wpi.first.wpilibj.AnalogInput; // Assumes encoder connected to the Roborio.
-//import com.revrobotics.CANSparkBase.IdleMode;
-//import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import frc.utils.PreussMotorConfig;
 /**
@@ -141,25 +135,29 @@ public final class Constants {
     }
 
     public static final class ElbowConstants {
-   
+        // This year we are using Lamprey 2 analog encoders.
+        // That means ther will be no homing of the arm because this 
+        // encoder remembers it orientation even when powered off.
+        // Units are still coded as ticks but there are now 360 ticks per revolution
+        // so ticks is that same as degrees.
+        public static final int kPidIdx = 0;
+        public static final int kTimeoutMs = 10;
+        public static final boolean kAbsoluteEncoder = true;
+        public static final boolean kMotorInverted = false;
+        public static final boolean kSensorInverted = false;
         public static final double kElbowThreshold =2; // TODO - tune this value.  2 is too small but 10 may be too large - dph 2024-02-25.
-        public static final double kElbowEncoderCountPerRevolution = 8192; 
+        public static final double kElbowEncoderCountPerRevolution = 360; 
         public static final double kElbowDegreesPerTick = 360.0/ElbowConstants.kElbowEncoderCountPerRevolution;
         public static final double kElbowTicksPerDegree = ElbowConstants.kElbowEncoderCountPerRevolution/360.0;
         
-        // Positions are in Encode Ticks.
-        // Ticks increase as the arm move down to the intake position.
-        // The '0' position is defined by the scoring position which is enforced by the upper/reverse.
-        // The 'max' position is defined by the arm fully rotated which is  enforced the forward limit switch.
-        // The proper starting position for the arm is in the fully down position with the forward limit switch activated.
-        public static final double kElbowMinPosition = -180;    // Smallest encoder value the software will rotate to.
-        public static final double kElbowMaxPosition = 2800; // Largest encoder value the software will rotote to.
+        public static final double kElbowMinPosition = -60.0;    // Smallest encoder value the software will rotate to.
+        public static final double kElbowMaxPosition = 120.0; // Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of ticks in the active range of arm motion between limits.
 
-        public static final double kElbowStartingPosition = kElbowMaxPosition;  // We should start at the max position with the arm rotated down to intake Algaes.
-        public static final double kElbowIntakePosition = kElbowMaxPosition;
-        public static final double kElbowHookChainPosition = kElbowMaxPosition;
-        public static final double kElbowScoringPosition = kElbowMinPosition;  // Rotated upward to score a Algae.
+        public static final double kElbowStartingPosition = 170.0;  // We should start at the max position with the arm rotated down to intake Algaes.
+        public static final double kElbowGroundIntakePosition = 30.0;
+        public static final double kElbowHookChainPosition = -45;
+        public static final double kElbowScoringPosition = 90;  // Rotated upward to score a Algae.
 
         public static final double kElbowPeakOutputForward =  0.80; // Limit output voltage to +/- 80% of the available voltage range.
         public static final double kElbowPeakOutputReverse = -0.80; // Limit output voltage to +/- 80% of the available voltage range.
@@ -168,10 +166,16 @@ public final class Constants {
 
         public static final double kElbowRaiseTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowLowerTimeout = 2.0; // Seconds - for autonomous.
+        public static final double kElbowHomeTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeSpeed = 0.2;    // Percent
         public static final double kElbowHomePosition = 0;    // ticks. TODO: Tune this value.
-        public static final double kElbowLowAlgaePosition = 1000; // ticks. TODO: Tune this value.
-        public static final double kElbowHighAlgaePosition = 2000; // ticks. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 180; // ticks. TODO: Tune this value.
+        public static final double kElbowHighAlgaePosition = 120; // ticks. TODO: Tune this value.
+        public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;
+        public static final double kElbowScoreCoralPosition = 170;
+        public static final double kElbowDrivingWithAlgaePosition = 30; // More or less straight up
+        public static final double kElbowScoreAlgaeInProcessorPosition = -45;
+
     }
     
     // Define locations on the field that may be useful for semi-automatic driving.
@@ -248,6 +252,51 @@ public final class Constants {
         public static int BlueAlliance = 0;
         public static int RedAlliance = 1;
         public static Pose2d blueToRedTransform = new Pose2d(xMax, yMax, new Rotation2d(Math.PI));
+
+        public static int[] complementaryAprilTag = new int[] {
+            0, // Artifact of zero indexing.
+            13, // 1
+            12, // 2
+            16, // 3
+            15, // 4
+            14,
+            19,
+            18,
+            17,
+            22,
+            21,
+            20,
+            2,  
+            1,
+            5,
+            4,
+            3,
+            8,
+            7,
+            6,
+            11,
+            10,
+            9  // 22
+        };
+
+        // for autonomous, get the alliance appropriate april tag using the tag mapping.
+        public static int allianceAprilTag(int allianceID, int fiducialID) {
+            int result = 0;
+            if (allianceID == BlueAlliance) {
+                if (fiducialID >= 12 && fiducialID <= 22) {
+                    result = fiducialID;
+                } else if (fiducialID >= 1 && fiducialID <= 11) {
+                    result = complementaryAprilTag[fiducialID];
+                }
+            } else if (allianceID == RedAlliance) {
+                if (fiducialID >= 12 && fiducialID <= 22) {
+                    result = complementaryAprilTag[fiducialID];
+                } else if (fiducialID >= 1 && fiducialID <= 11) {
+                    result = fiducialID;
+                }
+            }
+            return result; // The compiler wasnt sure I was return an int.
+        }
     }
     
     public static final class AlgaeIntakeConstants {
@@ -317,21 +366,37 @@ public final class Constants {
     }
 
     public static final class ShoulderConstants {
-        public static final AnalogInput kShoulderEncoderInputChannel = new AnalogInput(3);
+        // This year we are using Lamprey 2 analog encoders.
+        // That means ther will be no homing of the arm because this 
+        // encoder remembers it orientation even when powered off.
+        // Units are still coded as ticks but there are now 360 ticks per revolution
+        // so ticks is that same as degrees.
         public static final int kPidIdx = 0;
         public static final int kTimeoutMs = 10;
-        public static final double kShoulderStartingPosition = 0;  // We should start at the minimum position with the arm rotated down.
-        public static final double kShoulderPeakOutputForward =  0.5; // TODO: Tune this value.
-        public static final double kShoulderPeakOutputReverse = -0.5; // TODO: Tune this value.
+        public static final boolean kAbsoluteEncoder = true;
+        public static final boolean kMotorInverted = false;
+        public static final boolean kSensorInverted = false;
+        public static final double kShoulderEncoderCountPerRevolution = 360; 
+        public static final double kShoulderDegreesPerTick = 360.0/ShoulderConstants.kShoulderEncoderCountPerRevolution;
+        public static final double kShoulderTicksPerDegree = ShoulderConstants.kShoulderEncoderCountPerRevolution/360.0;
+        public static final double kShoulderStartingPosition = 60;  // We should start at the minimum position with the arm rotated down.
+        public static final double kShoulderPeakOutputForward =  0.8; // TODO: Tune this value.
+        public static final double kShoulderPeakOutputReverse = -0.8; // TODO: Tune this value.
+        public static final double kShoulderHomeTimeout = 3.0; // Seconds to wait for the arm to rotate to the home position.
         public static final double kShoulderTimeout = 3.0; // Seconds to wait for the arm to rotate to the shooting position.
-        public static final double kShoulderMinPosition = -180;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
-        public static final double kShoulderMaxPosition  = 2000; // Largest encoder value the software will rotote to. TODO: Tune this value.
-        public static final double kShoulderRotationThreshold = 20; // ticks. TODO: Tune this value.
-        public static final double kShoulderProcessorPosition = 200; // ticks. TODO: Tune this value.
+        public static final double kShoulderMinPosition = 0;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
+        public static final double kShoulderMaxPosition = 100; // Largest encoder value the software will rotote to. TODO: Tune this value.
+        public static final double kShoulderRotationThreshold = 2; // ticks. TODO: Tune this value.
+        public static final double kShoulderProcessorPosition = 5; // ticks. TODO: Tune this value.
         public static final double kShoulderHomeSpeed = 0.2; // Percent. TODO: Tune this value.
         public static final double kShoulderHomePosition = 0; // ticks. TODO: Tune this value.
-        public static final double kShoulderLowAlgaePosition = 1000; // ticks. TODO: Tune this value.
-        public static final double kShoulderHighAlgaePosition = 2000; // ticks. TODO: Tune this value.
+        public static final double kShoulderLowAlgaePosition = 95; // ticks. TODO: Tune this value.
+        public static final double kShoulderHighAlgaePosition = 95; // ticks. TODO: Tune this value.
+        public static final double kShoulderClimbingPosition = 95; // ticks. TODO: Tune this value.
+        public static final double kShoulderDrivingWithCoralPosition = kShoulderStartingPosition;
+        public static final double kShoulderDrivingWithAlgaePosition = 60;
+        public static final double kShoulderScoreCoralPosition = 95;
+        public static final double kShoulderScoreAlgaeInProcessorPosition = 10;
     }
 
     public static final class RotationConstants {
@@ -408,6 +473,7 @@ public final class Constants {
         public static final boolean kGyroReversed = false;
 
         public static final double kBackToCenterDistance = Units.inchesToMeters(17.5); //was 15.0 until 3/5/2024
+        public static final double kFrontToCenterDistance = Units.inchesToMeters(17.5); //was 15.0 until 3/5/2024
         public static final double kBumperWidth = Units.inchesToMeters(3.0);
         public static final double kRobotWidth = Units.inchesToMeters(24.0+kBumperWidth*2.0); // Frame width plus 2 bumpers.
         public static final double kRobotLength = Units.inchesToMeters(24.0+6); // Frame length plus 2 bumpers.
@@ -494,13 +560,10 @@ public final class Constants {
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
             kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
 
-        public static String[] mode = {"PV-Score-Leave", "Leave", "US-Score-Leave","Do Nothing"};
-        public static final int PVScoreLeaveMode = 0;
-        public static final int LeaveMode = 1;
-        public static final int USScoreLeaveMode = 2;
-        public static final int DoNothingMode = 3;
-        public static final int DefaultMode = 0;
-        
+        public static final int kRobotMakesThePlan = 0;
+        public static final int kDriveOffTheLineAndStop = 1;
+        public static final int kDoNothing = 2;
+        public static final double kAlgaeIntakeTime = 1.0; // seconds
       }
     
       public static final class NeoMotorConstants {

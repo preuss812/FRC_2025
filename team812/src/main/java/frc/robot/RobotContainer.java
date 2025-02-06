@@ -384,7 +384,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return new Autonomous(this);
-    //return autoChooser.getSelected();
   }
    
   // Function to align the PoseEstimator pose and the DriveTrain pose.

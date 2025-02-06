@@ -18,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
@@ -44,6 +45,7 @@ public class TrajectoryPlans {
     public static ArrayList<Trajectory> autoPaths = new ArrayList<Trajectory>();
     public static ArrayList<String>     autoNames = new ArrayList<String>();
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
+    public static ArrayList<Integer> expectedAprilTag = new ArrayList<Integer>();
     
     // For now, default speeds are the debug/slow speeds.
     public static final TrajectoryConfig m_debugTrajectoryConfig = new TrajectoryConfig(
@@ -311,9 +313,30 @@ public class TrajectoryPlans {
         Pose2d nearAT21 = DriveConstants.robotFrontAtPose(AT21);
         Pose2d nearAT22 = DriveConstants.robotFrontAtPose(AT22);
 
+        // Add the defualt plan which is not yet defined, for now do nothing.
+        autoNames.add("Robot Makes the Plan");
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
+        waypoints.add(new Pose2d[]{}); // Empty array.
+        autoPlans.add(new SequentialCommandGroup(Commands.none()) );
+        expectedAprilTag.add(0);
+
+         // Add the defualt plan which is not yet defined, for now do nothing.
+         autoNames.add("Drive off Line and Stop");
+         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
+         waypoints.add(new Pose2d[]{}); // Empty array.
+         autoPlans.add(new SequentialCommandGroup(Commands.none()) );
+         expectedAprilTag.add(0);
+
+          // Add the defualt plan which is not yet defined, for now do nothing.
+        autoNames.add("Do Nothing");
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
+        waypoints.add(new Pose2d[]{}); // Empty array.
+        autoPlans.add(new SequentialCommandGroup(Commands.none()) );
+        expectedAprilTag.add(0);
+
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("My Barge to Opposite");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size());
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
             new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
             new Pose2d(FieldConstants.zeroToReef,AT14.getY(), startingRotation),
@@ -326,10 +349,11 @@ public class TrajectoryPlans {
             waypoints.get(waypoints.size()-1),
             m_defaultTrajectoryConfig
         ));
+        expectedAprilTag.add(20);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("My Barge to Far Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size());
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
             new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
             new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
@@ -341,9 +365,10 @@ public class TrajectoryPlans {
             waypoints.get(waypoints.size()-1),
             m_defaultTrajectoryConfig
         ));
+        expectedAprilTag.add(20);
 
         autoNames.add("My Barge to Near Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size());
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
             new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
             new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation),
@@ -355,10 +380,11 @@ public class TrajectoryPlans {
             waypoints.get(waypoints.size()-1),
             m_defaultTrajectoryConfig
         ));
+        expectedAprilTag.add(20);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("Center Straight");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size());
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
             new Pose2d(FieldConstants.blueStartLine,FieldConstants.yCenter, startingRotation),
             new Pose2d((AT21.getX()+FieldConstants.blueStartLine)/2.0,FieldConstants.yCenter, startingRotation),
@@ -370,10 +396,11 @@ public class TrajectoryPlans {
             waypoints.get(waypoints.size()-1),
             m_defaultTrajectoryConfig
         ));
+        expectedAprilTag.add(21);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("Their Barge to Near Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size());
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
             new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
             new Pose2d((AT22.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
@@ -385,10 +412,11 @@ public class TrajectoryPlans {
             waypoints.get(waypoints.size()-1),
             m_defaultTrajectoryConfig
         ));
+        expectedAprilTag.add(22);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("Their Barge to Far Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size());
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
             new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
             new Pose2d((AT17.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
@@ -400,6 +428,8 @@ public class TrajectoryPlans {
             waypoints.get(waypoints.size()-1),
             m_defaultTrajectoryConfig
         ));
+        expectedAprilTag.add(22);
+
         SmartDashboard.putData("AutoSelector", Robot.autoChooser);
     }
 
@@ -455,8 +485,22 @@ public class TrajectoryPlans {
      */
     public static boolean checkAprilTagMirroring(PoseEstimatorSubsystem poseEstimatorSubsystem) {
         if (!debug) return true;    // Dont waste time if we are not debugging.
+        boolean result = true; // Assume success.  Will reset if there is a mismatch.
         double translationThreshold = 0.002; // 2mm
         double rotationThreshold = 0.001; // 0.001 Radians which is about 1/20th of a degree
+        for (int i = 1; i <= 22; i++) {
+            if (!Utilities.comparePoses(
+                poseEstimatorSubsystem.getAprilTagPose(i),
+                poseEstimatorSubsystem.getAprilTagPose(FieldConstants.complementaryAprilTag[i]),
+                translationThreshold,
+                rotationThreshold
+                )
+            ) {
+                result = false;
+            }
+        }
+        /*
+         
         if (Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(1),poseEstimatorSubsystem.getAprilTagPose(13),translationThreshold, rotationThreshold)
         &&  Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(2),poseEstimatorSubsystem.getAprilTagPose(12),translationThreshold, rotationThreshold)
         &&  Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(3),poseEstimatorSubsystem.getAprilTagPose(16),translationThreshold, rotationThreshold)
@@ -468,10 +512,9 @@ public class TrajectoryPlans {
         &&  Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(9),poseEstimatorSubsystem.getAprilTagPose(22),translationThreshold, rotationThreshold)
         &&  Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(10),poseEstimatorSubsystem.getAprilTagPose(21),translationThreshold, rotationThreshold)
         &&  Utilities.comparePoses(poseEstimatorSubsystem.getAprilTagPose(11),poseEstimatorSubsystem.getAprilTagPose(20),translationThreshold, rotationThreshold)) {
-            return true;
-        } else {
-            return false;
-        }
+         */
+         
+        return result;
     }
 
     /**
@@ -536,7 +579,7 @@ public class TrajectoryPlans {
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-            new VerifyStartingPositionCommand(poseEstimatorSubsystem, danceMoves[0]),
+            //new VerifyStartingPositionCommand(poseEstimatorSubsystem, danceMoves[0]),
             new InstantCommand(() -> poseEstimatorSubsystem.setCurrentPose(danceMoves[0])),
             new InstantCommand(() -> poseEstimatorSubsystem.field2d.setRobotPose(danceMoves[0])), // for debug
             new InstantCommand(() -> poseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug

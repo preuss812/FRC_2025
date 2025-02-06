@@ -5,8 +5,6 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.AnalogEncoder;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -21,7 +19,6 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
   private static double targetPosition = 0;
   private static boolean m_rotateStopped = true;
   private static boolean m_capturedLimitPosition = false;
-  private static AnalogEncoder m_encoder = new AnalogEncoder(ShoulderConstants.kShoulderEncoderInputChannel);
   // In case we need AnalogPotentiometer instead of AnalogEncoder:  TalonSRX Software Reference Manual 7.5.2
   //private static AnalogPotentiometer m_potentiometer = new AnalogPotentiometer(ShoulderConstants.kShoulderEncoderInputChannel);
 
@@ -51,7 +48,6 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
       newPosition = MathUtil.clamp(newPosition, ShoulderConstants.kShoulderMinPosition, ShoulderConstants.kShoulderMaxPosition);
       setTargetPosition(newPosition);
     }
-    m_encoder.setVoltagePercentageRange(0,3.3); // TODO make constants and find out if 3.3 or 5.0 or some internal range.
     m_shoulder.configSelectedFeedbackSensor(FeedbackDevice.Analog, ShoulderConstants.kPidIdx, ShoulderConstants.kTimeoutMs);
     
   };
@@ -156,7 +152,6 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     SmartDashboard.putBoolean("Shoulder Homed", isHomed());
     SmartDashboard.putBoolean("Shoulder fwdsw", isFwdLimitSwitchClosed());
     SmartDashboard.putBoolean("Shoulder revsw", isRevLimitSwitchClosed());
-    SmartDashboard.putNumber("Shoulder encoder:", m_encoder.get());
     int analogPos = m_shoulder.getSensorCollection().getAnalogIn();
     SmartDashboard.putNumber("Shoulder analogPos:", analogPos);
     // function apparently deprecated and may not work for analog

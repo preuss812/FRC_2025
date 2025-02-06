@@ -61,12 +61,9 @@ public class Robot extends TimedRobot {
     addPeriodic(() -> Utilities.setAlliance(), 1.0 );
 
     // Add a dropdown menu to select the autonomous plan.
-    autoChooser.setDefaultOption("Robot makes the plan", 0);
 
     SmartDashboard.putNumber("AutoStartDelay", 0.0);  // This puts up a place on the dashboard we can use to modify autonomous.
-    SmartDashboard.putNumber("AutoMode", AutoConstants.DefaultMode);
-    SmartDashboard.putString("AutoModeText", AutoConstants.mode[AutoConstants.DefaultMode]);
-
+    
   }
 
   /**
@@ -78,14 +75,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    int autoMode = (int) Math.round(SmartDashboard.getNumber("AutoMode",0));
-    if (autoMode < 0 || autoMode >= AutoConstants.mode.length) {
-      autoMode = AutoConstants.DefaultMode; // Out of range values convert back to default mode, 0.
+    try {
+      int autoMode = autoChooser.getSelected();
+    
+      // These next 2 are redundant and just for debug:
       SmartDashboard.putNumber("AutoMode", autoMode);
-
+      SmartDashboard.putString("AutoModeText", TrajectoryPlans.autoNames.get(autoMode));
     }
-    SmartDashboard.putNumber("MatchTime", DriverStation.getMatchTime());
-    SmartDashboard.putString("AutoModeText", AutoConstants.mode[autoMode]);
+    catch (Exception e) {}
+
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic

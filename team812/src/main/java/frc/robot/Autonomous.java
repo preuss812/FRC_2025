@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -21,29 +23,36 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 import frc.robot.commands.ShoulderHomeCommand;
+import frc.robot.commands.VerifyStartingPositionCommand;
+import frc.robot.commands.WaitToSeeAprilTagCommand;
 import frc.robot.commands.ElbowRotationCommand;
+import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AutonomousStartDelayCommand;
+import frc.robot.commands.CompoundArmMovementCommand;
 import frc.robot.commands.DriveRobotCommand;
 import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.FindAprilTagCommand;
+import frc.robot.commands.GotoAprilTagCommand;
+import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.ScoreAlgaeInProcessor;
 import frc.robot.commands.GotoProcessorCommand;
-//import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.RotateRobotAutoCommand;
-//import frc.robot.commands.StopRobotMotion;
-//import frc.robot.commands.PushTowardsWall;
 import frc.robot.commands.PushTowardsWallUltrasonic;
 import frc.robot.Constants.ElbowConstants;
-//import frc.robot.commands.SwerveToPoseCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
-//import frc.robot.Constants.VisionConstants;
-//import frc.robot.Constants.VisionConstants.AprilTag;
+import frc.robot.Constants.ShoulderConstants;
 
-// Algae:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/latest/docs/software/commandbased/convenience-features.html
+/**
+ * Construct the autonomous command.
+ * Keep in mind that this class constructs a command.
+ * The code below is called NOT during autonomous but before
+ * autonomous begins.  As a result conditionals must be lambda functions
+ * or must be based on conditions known at the time of Robot.autonomousInit().
+ * The trap is to use getPose() or the like in the middle of the plan which will 
+ * get the starting location of the robot, not it's location at the time of the reference.
+ */
 public class Autonomous extends SequentialCommandGroup {
   /**
    * Creates a new Autonomous.
@@ -54,284 +63,136 @@ public class Autonomous extends SequentialCommandGroup {
   private final ShoulderRotationSubsystem m_ShoulderRotationSubsystem;
   private final PingResponseUltrasonicSubsystem m_PingResponseUltrasonicSubsystem;
   private final PoseEstimatorSubsystem m_PoseEstimatorSubsystem;
+  private final PhotonCamera m_PhotonCamera;
 
   public Autonomous(RobotContainer robotContainer) {
-
-    InstantCommand test = new InstantCommand(()->SmartDashboard.putString("test", "executed"));
-    test.setName("Test");
-    SmartDashboard.putString("test", "constructed");
     
+    // get the required subsystems for constructing the plans below.
     m_robotDrive = RobotContainer.m_robotDrive;
     m_AlgaeIntakeSubsystem = RobotContainer.m_AlgaeIntakeSubsystem;
     m_ElbowRotationSubsystem = RobotContainer.m_ElbowRotationSubsystem;
     m_ShoulderRotationSubsystem = RobotContainer.m_ShoulderRotationSubsystem;
     m_PoseEstimatorSubsystem = RobotContainer.m_PoseEstimatorSubsystem;
     m_PingResponseUltrasonicSubsystem = RobotContainer.m_PingResponseUltrasonicSubsystem;
+    m_PhotonCamera = RobotContainer.m_camera;
 
-    int autoMode = (int) Math.round(SmartDashboard.getNumber("AutoMode",0));
-    if (autoMode < 0 || autoMode >= AutoConstants.mode.length) {
+    int autoMode = Robot.autoChooser.getSelected();
+    if (autoMode < 0 || autoMode >= TrajectoryPlans.autoNames.size()) {
       autoMode = 0; // Out of range values convert back to default mode, 0.
-      SmartDashboard.putNumber("AutoMode", autoMode);
-    }
-    SmartDashboard.putString("AutoModeText", AutoConstants.mode[autoMode]);
-  
-    if (true || autoMode == 0) {
-      /**
-       * We are starting with the robots back to the Alliance wall.
-       * We hope we can be positioned anywhere along that wall.
-       * The command thinks in terms of field coordinates with Blue X= 0 and Red at X=16-ish.
-       * Units are in meters and radians.
-       * The sequence of steps is:
-       * o Set the gyro angle (0 for blue, 180 for red)
-       * o Home the arm.
-       * o Drive forward 1 meter (+1 meter for Blue, -1 meter for Red).
-       * o Turn toward the back of the robot toward the AMP (-90 for Blue, +90 for Red)
-       * o Find an april tag (rotate slowly until one is found).  Ideally, seen immediately.
-       * o SwerveDrive toward the Amp (if we are close, this is a NO-OP).
-       * o GotoPoseDrive to the Amp
-       * o Score the Algae.
-       * o GotoPoseDrive out of the starting box toward field center.
-       */
-      final double firstMoveX = 1.84 + 0.50 - DriveConstants.kBackToCenterDistance;
-      final double firstMoveY = 0.0;
-      final double secondMoveX = 0.0;
-      final double secondMoveY = -1.0;
-  
-      final double finalMoveX = 2.0; // Arbitrary move out of the starting box
-      final double finalMoveY = -1.0; // Arbitrary move out of the starting box and away from the wall.
-      final double noTagSeenMoveX = 2.0; // Arbitrary move 2 meters forward to exit the starting box.
-      final double noTagSeenMoveY = 0.0; // Straight ahead since we do not know where we are.
+    } 
+    SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup();
 
-      Pose2d finalMove;
-      Pose2d firstMove;
-      Pose2d secondMove;
-      Pose2d noTagSeenMove;
-      finalMove = new Pose2d(finalMoveX, finalMoveY, new Rotation2d( Math.PI/2.0)); // Pose for robot to face the center of the field.
-      firstMove = new Pose2d(firstMoveX, firstMoveY, new Rotation2d(-Math.PI/2.0)); // Pose for robot to be at the april tag.
-      secondMove = new Pose2d(secondMoveX, secondMoveY, new Rotation2d(-Math.PI/2.0)); // Pose for robot to be at the april tag.
-      noTagSeenMove = new Pose2d(noTagSeenMoveX, noTagSeenMoveY, new Rotation2d( Math.PI/2.0)); // Pose for robot to face the center of the field.
+    // Add the basic robot initialization.
+    this.addCommands(
+      new ParallelCommandGroup(
+      new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
+      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)), // TODO Should be SPEED, not PRECISION
+      new InstantCommand(() -> Utilities.allianceSetCurrentPose(
+        new Pose2d(
+          FieldConstants.blueStartLine, // This will be transformed to red if we are in the red alliance.
+          FieldConstants.yCenter,       // This will be transformed to red if we are in the red alliance
+          new Rotation2d(DriveConstants.kStartingOrientation)))),
+
+        // Home the arm (should already be homed but this sets the encoder coordinates)
+        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(ElbowConstants.kElbowHomeTimeout),
+        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(ShoulderConstants.kShoulderHomeTimeout)
+      )
+    );
+    this.addCommands(   
+      new CompoundArmMovementCommand(
+        m_ElbowRotationSubsystem
+        , m_ShoulderRotationSubsystem
+        , ElbowConstants.kElbowDrivingWithCoralPosition
+        , ShoulderConstants.kShoulderDrivingWithCoralPosition
+        , false
+        )
+      );
+
+    if (autoMode == AutoConstants.kDoNothing) {
+      // We will do nothing!!!.  Hopefully this does not get used.
+    } else if (autoMode == AutoConstants.kDriveOffTheLineAndStop) {
+      // Drive 1 meter and stop.
+      this.addCommands( new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 0, new Rotation2d(0)), true));
+    } else if (autoMode == AutoConstants.kRobotMakesThePlan) {
+      // Look for an april tag and if we see one, use the corresponding path from the 6 predefined paths.
+      // but for now, it's doing nothing TODO add something here.
+    } else { 
+      // One of the 6 predefined paths to 
+      
+      // First wait until we see an april tag.  This should return right away because if things are set up
+      // correctly, we will always have an april tag in view.
+      // This is here in case the placement on the field and the plan selected do not match.
+      this.addCommands(new WaitToSeeAprilTagCommand(m_PoseEstimatorSubsystem));
+      
+      // Check that we see the expected april tag for the plan we are trying to execute
+      // This command will wait for 15 seconds if we dont see the expected tag
+      // which will cause no more action during autonomous.
+      addCommands(new VerifyStartingPositionCommand(m_PoseEstimatorSubsystem, autoMode)) ;
       
 
-      SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup(
-        // Set the gyro starting angle based on alliance and assumed robot placement
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 1)),
-        new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-        new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.SPEED)),
-        new InstantCommand(() -> Utilities.allianceSetCurrentPose(
-          new Pose2d(
-            DriveConstants.kBackToCenterDistance,
-            DriveConstants.kApproximateStartingY,
-            new Rotation2d(DriveConstants.kStartingOrientation)))),
+      // Drive to near the selected april tag.
+      addCommands(TrajectoryPlans.autoPlans.get(autoMode));
 
-        // Home the arm (should already be homed but this sets the encoder coordinates)
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 2)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmHome")),
-        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(3.0),
-        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(3.0),
-
-        // Wait if requested to allow other robots to clear the area.
-        //new AutonomousStartDelayCommand(),
-
-        // Drive out based on drivetrain encoders to align with and face the Amp
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 3)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "Move1Meter")),
-        new DriveRobotCommand(RobotContainer.m_robotDrive, firstMove, false).withTimeout(5.0), // TODO Try controlRotation == true.
-
-        // Rotate toward the Amp.  It's really away from the amp as the camera is on the back of the robot.
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 4)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "TurnCameraTowardAmp")),
-        new DriveRobotCommand(RobotContainer.m_robotDrive, secondMove, false).withTimeout(5.0), 
-        new RotateRobotAutoCommand(RobotContainer.m_robotDrive, -Units.degreesToRadians(70), false).withTimeout(5.0),
-        
-
-        // Wait to see apriltag
-        //new InstantCommand(() -> Utilities.refineYCoordinate()),  // TODO test this and see if we can reduce or eliminate the wait.
-        new WaitCommand(2.8), // TODO reduce or eliminate wait.
-        new ConditionalCommand(
-          new SequentialCommandGroup(
-            
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 5)),
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "FindAprilTag")),
-            new FindAprilTagCommand(
-              RobotContainer.m_robotDrive,
-              RobotContainer.m_PoseEstimatorSubsystem, 
-              AutoConstants.kRotationSpeed).withTimeout(10.0), // This is too slow for just 10 seconds
-
-            // set the robot drive x,y,theta to match the pose estimator (ie use camera to set x,y,theta)
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 6)),
-            new InstantCommand(() -> robotContainer.alignDriveTrainToPoseEstimator()),
-
-            // Use a trajectory to move close to the amp.
-            // This is a place holder for the moment.
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 7)),
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "SwerveController")),
-            //new SwerveToPoseCommand(m_robotDrive, m_PoseEstimatorSubsystem, ampAprilTag),
-
-            // Move to the scoring position
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 8)),
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "GotoScoringPosition")),
-            new ParallelCommandGroup(
-              new GotoProcessorCommand(m_PoseEstimatorSubsystem, m_robotDrive).withTimeout(3.0),
-              
-            new ElbowRotationCommand(m_ElbowRotationSubsystem, ElbowConstants.kElbowMinPosition)), // TODO raise arm in parallel. 100 fudge factor
-            // TODO: Could try raising the arm in parallel with this move to the amp - dph 2024-03-06.
-
-            // Score the Algae.
-            // The StopRobotMotion keeps the swerve drive wheels from moving during the scoring.
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 9)),
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgae")),
-            new ParallelDeadlineGroup(
-              new ScoreAlgaeInProcessor(m_AlgaeIntakeSubsystem, m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem),
-              new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem)
-            ).withTimeout(10.0),
-
-            // Leave the starting box to get more points.
-            //new InstantCommand(() -> Utilities.refineYCoordinate()),  // TODO test this and see if we can reduce or eliminate the wait.
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 10)),
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "LeaveStartBox")),
-            new DriveRobotCommand(m_robotDrive, finalMove, true).withTimeout(5.0)
-          ),
-          // When no tag is in view, just leave the starting box.
-          new SequentialCommandGroup(
-            // We did not find an april tag so just leave the starting box.
-            new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "LeaveStartBox")),
-            new DriveRobotCommand(m_robotDrive, noTagSeenMove, true).withTimeout(5.0)
-          ),
-        m_PoseEstimatorSubsystem.tagInViewSupplier
-        ), // ConditionalCommand if we see a tag or not
-        // quiesce the drive and finish.
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 0)),
-        new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "Done"))
-        
+      // Now that we are near the tag, drive right up to the reef using the tag on the reef to precisely align
+      // the robot to the algae.  Note that GotoAprilTagCommand goes to whatever tag it sees.
+      // Also note that if we are too close to the target, the camera may not see it.
+      addCommands(new GotoAprilTagCommand(
+          m_PoseEstimatorSubsystem,
+          m_robotDrive,
+          m_PhotonCamera,
+          DriveConstants.kFrontToCenterDistance,
+          m_robotDrive.debugAutoConfig, // TODO change to defaultAutoConfig for faster driving.
+          false // Not simulation
+        )
       );
-      addCommands(fullCommandGroup);
-    } else if (autoMode == AutoConstants.LeaveMode) {
 
-      final double firstMoveX = 3.0; // Drive out 3 meters  // For in classroom.
-      final double firstMoveY = 0.0;
-
-      Pose2d firstMove;
-
-      firstMove = new Pose2d(firstMoveX, firstMoveY, new Rotation2d(0.0)); // face the center of the field.
-
-      SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup(
-        // Set the gyro starting angle based on alliance and assumed robot placement
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 1)),
-        new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-        new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.SPEED)),
-        new InstantCommand(() -> Utilities.allianceSetCurrentPose(
-          new Pose2d(
-            DriveConstants.kBackToCenterDistance,
-            DriveConstants.kApproximateStartingY,
-            new Rotation2d(DriveConstants.kStartingOrientation)))),
-
-        // Home the arm (should already be homed but this sets the encoder coordinates)
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 2)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmHome")),
-        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(3.0),
-        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(3.0),
-
-        // Wait if requested to allow other robots to clear the area.
-        new AutonomousStartDelayCommand(),
-
-        // Drive out based on drivetrain encoders to align with and face the Amp
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 3)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "Move1Meter")),
-        new DriveRobotCommand(RobotContainer.m_robotDrive, firstMove, true).withTimeout(5.0), // TODO Try controlRotation == true.
-         
-        // quiesce the drive and finish.
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 0)),
-        new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "Done"))
+      addCommands(
+        new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowScoreCoralPosition,
+          ShoulderConstants.kShoulderScoreCoralPosition,
+          false // This is not simulation
+        )
       );
-      addCommands(fullCommandGroup);
+      addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
 
-    } else if (autoMode == AutoConstants.USScoreLeaveMode) {
-      final double ampZoneDepth = Units.inchesToMeters(13);
-      final double startingBoxDepth = Units.inchesToMeters(76.1);
-      final double startingRobotCenterY = FieldConstants.yMax - ampZoneDepth - DriveConstants.kBackToCenterDistance;
-      final double startingRobotCenterX = FieldConstants.xMin + startingBoxDepth - DriveConstants.kRobotWidth/2.0 - Units.inchesToMeters(2.0)/* tape */;
-      final double startingRobotOrientation = Units.degreesToRadians(-90.0);
-
-      final double firstMoveX = 1.84 - startingRobotCenterX;
-      final double firstMoveY = FieldConstants.yMax - startingRobotCenterY;
-      final double firstRotation = Units.degreesToRadians(-90.0);
-      final double finalMoveX = 2.0; // Arbitrary move out of the starting box
-      final double finalMoveY = -0.5; // Arbitrary move out of the starting box and away from the wall.
-      final double finalRotation = Units.degreesToRadians(0.0);
-      Pose2d finalMove;
-      Pose2d firstMove;
-
-      finalMove = new Pose2d(finalMoveX, finalMoveY, new Rotation2d(finalRotation)); // Pose for robot to face the center of the field.
-      firstMove = new Pose2d(firstMoveX, firstMoveY, new Rotation2d(firstRotation)); // Pose for robot to be at the april tag.
-      Utilities.toSmartDashboard("firstMove", firstMove);
-      
-      SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup(
-        // Set the gyro starting angle based on alliance and assumed robot placement
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 1)),
-        new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatchProcessor()),
-        new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-        new InstantCommand(() -> Utilities.allianceSetCurrentPose(
-          new Pose2d(
-            startingRobotCenterX,
-            startingRobotCenterY,
-            new Rotation2d(startingRobotOrientation)))),
-
-        // Home the arm (should already be homed but this sets the encoder coordinates)
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 2)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmHome")),
-        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(3.0),
-        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(3.0),
-
-        // Wait if requested to allow other robots to clear the area.
-        //new AutonomousStartDelayCommand(),
-
-        // Start the arm rising to the shooting position.
-                new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "raise")),
-
-        new InstantCommand(()->RobotContainer.m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowScoringPosition)),
-
-        // Drive out based on drivetrain encoders to align with and face the Amp
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 3)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "MoveToAmp")),
-        new DriveRobotCommand(RobotContainer.m_robotDrive, firstMove, false).withTimeout(5.0), // TODO Try controlRotation == true.      
-
-        // set the robot drive x,y,theta to match the pose estimator (ie use estimated position to set x,y,theta)
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 6)),
-        new InstantCommand(() -> robotContainer.alignDriveTrainToPoseEstimator()),
-
-        // Score the Algae.
-        // The StopRobotMotion keeps the swerve drive wheels from moving during the scoring.
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 9)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgae")),
-        new ParallelDeadlineGroup(
-          new ScoreAlgaeInProcessor(m_AlgaeIntakeSubsystem, m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem),
-          new PushTowardsWallUltrasonic(m_robotDrive, m_PingResponseUltrasonicSubsystem)
-        ).withTimeout(10.0),
-
-        // Leave the starting box to get more points.
-        new InstantCommand(() -> Utilities.refineYCoordinate()), // Set pose to be exactly in front of the amp touching the amp wall.
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 10)),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "LeaveStartBox")),
-        new DriveRobotCommand(m_robotDrive, finalMove, true).withTimeout(5.0),
-
-        // quiesce the drive and finish.
-        new InstantCommand(() -> SmartDashboard.putNumber("Auto Step", 0)),
-        new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive),
-        new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "Done"))
-        
+      // grab the algae
+      addCommands(
+        new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowLowAlgaePosition,
+          ShoulderConstants.kShoulderLowAlgaePosition,
+          false // This is not simulation
+        ),
+        new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
+        new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowLowAlgaePosition,
+          ShoulderConstants.kShoulderLowAlgaePosition,
+          false // This is not simulation
+        ),
+        new GotoProcessorCommand(m_PoseEstimatorSubsystem, m_robotDrive), // This could be dangerous 
+        new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowLowAlgaePosition,
+          ShoulderConstants.kShoulderLowAlgaePosition,
+          false // This is not simulation
+        ),
+        new GotoPoseCommand(
+          m_PoseEstimatorSubsystem,
+          m_robotDrive,
+          new Pose2d(0,0,new Rotation2d(0)) // Need a process pose with the right orientation and distance from the processor
+        )
       );
-      addCommands(fullCommandGroup);
-    } else if (autoMode == AutoConstants.DoNothingMode) {
-      // Do what we can given we do not know which alliance we are in.
-      // Currently it does nothing but stop the drive train which should already be stopped.
-      addCommands(new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive));
-    } else {
-      // Do what we can given we do not know which alliance we are in.
-      // Currently it does nothing but stop the drive train which should already be stopped.
-      addCommands(new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive));
+
     }
+    addCommands(fullCommandGroup);
+
+
   }
 
 }

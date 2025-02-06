@@ -59,6 +59,7 @@ public class Utilities {
         m_isAutonomous = DriverStation.isAutonomous();
     }
 
+    
     public static boolean isAutonomous() {
         return m_isAutonomous;
     }
@@ -72,7 +73,11 @@ public class Utilities {
         SmartDashboard.putBoolean("BlueAlliance", m_isBlueAlliance);   
     }
     
-    public static boolean isRedAlliance() {
+    public static int getAllianceID() {
+        return isBlueAlliance() ? FieldConstants.BlueAlliance : FieldConstants.RedAlliance;
+    }
+     
+     public static boolean isRedAlliance() {
         return m_isRedAlliance;
     }
 
