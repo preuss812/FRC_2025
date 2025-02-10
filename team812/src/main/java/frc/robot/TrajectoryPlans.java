@@ -295,7 +295,7 @@ public class TrajectoryPlans {
     public static void buildAutoTrajectories() {
         // The staring poses will be on the blue starting line facing back toward the blue drive station
         Rotation2d startingRotation = new Rotation2d(Math.PI);
-
+        if (debug) checkAllTrajectories();
         // Get/create poses for each Reef April tag and barge april tag
         // for omre concise coding below.
         Pose2d AT14 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(14);
@@ -523,6 +523,10 @@ public class TrajectoryPlans {
      */
     public static void checkAllTrajectories() throws NullPointerException {
         if (!debug) return;  // Dont waste time if we are not debugging.
+        
+        // Verify that the apriltag info matches our expectations
+        SmartDashboard.putBoolean("AprilMirrorCheck", checkAprilTagMirroring(RobotContainer.m_PoseEstimatorSubsystem));
+        
         // Try all possible plans to makesure there are now obvious bad moves in the plans.
         for (int i = 1; i < 8; i++) {
             for (int j = 1; j < 4; j++) {
