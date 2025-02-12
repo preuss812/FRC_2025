@@ -108,10 +108,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    int autoOption = autoChooser.getSelected() - 1;
+    int autoOption = autoChooser.getSelected();
     if (autoOption >= 0 && autoOption < TrajectoryPlans.autoPlans.size())
       autoPlan = autoOption;
-    m_autonomousCommand = TrajectoryPlans.autoPlans.get(autoPlan++);
+    m_autonomousCommand = TrajectoryPlans.autoPlans.get(autoPlan);
     if (autoPlan >= TrajectoryPlans.autoPlans.size()) autoPlan = 0;  // This is part of the debug that cycles through the various plans
 
     // schedule the autonomous command (example)

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.ctre.phoenix.Util;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -41,7 +43,8 @@ public class TrajectoryPlans {
     public static int numYSquares = 4;
     public static double dx = FieldConstants.xMax/numXSquares;
     public static double dy = FieldConstants.yMax/numYSquares;
-    public static ArrayList<SequentialCommandGroup> autoPlans = new ArrayList<SequentialCommandGroup>();
+    public static ArrayList<SequentialCommandGroup> blueAutoPlans = new ArrayList<SequentialCommandGroup>();
+    public static ArrayList<SequentialCommandGroup> redAutoPlans = new ArrayList<SequentialCommandGroup>();
     public static ArrayList<Trajectory> autoPaths = new ArrayList<Trajectory>();
     public static ArrayList<String>     autoNames = new ArrayList<String>();
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
@@ -290,6 +293,31 @@ public class TrajectoryPlans {
         return command;
     }
 
+    public static void addAutoMode(
+        String name,
+        Pose2d[] waypoints,
+        TrajectoryConfig config,
+        int aprilTagID) {
+
+        autoNames.add(name);
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
+        blueAutoPlans.add(debugAutoCommand(
+            RobotContainer.m_robotDrive,
+            RobotContainer.m_PoseEstimatorSubsystem,
+            waypoints,
+            config,
+            false
+        ));
+        redAutoPlans.add(debugAutoCommand(
+            RobotContainer.m_robotDrive,
+            RobotContainer.m_PoseEstimatorSubsystem,
+            waypoints,
+            config,
+            true
+        ));
+        expectedAprilTag.add(aprilTagID);
+    }
+
     /**
      * Create predefined autonomous routines for use during the autonomous period.
      * For now, 6 routines are defined.  One for each april tag on the reef.
@@ -300,7 +328,8 @@ public class TrajectoryPlans {
      */
     public static void buildAutoTrajectories() {
         // The staring poses will be on the blue starting line facing back toward the blue drive station
-        Rotation2d startingRotation = new Rotation2d(Math.PI);
+        Rotation2d startingRotation = new Rotation2d(0.0);
+        double offsetFromAprilTag = 0.0; // 0.5 meters from the april tag
         if (debug) checkAllTrajectories();
         // Get/create poses for each Reef April tag and barge april tag
         // for omre concise coding below.
@@ -312,132 +341,109 @@ public class TrajectoryPlans {
         Pose2d AT20 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(20);
         Pose2d AT21 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(21);
         Pose2d AT22 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(22);
-        Pose2d nearAT17 = DriveConstants.robotRearAtPose(AT17);
-        Pose2d nearAT18 = DriveConstants.robotRearAtPose(AT18);
-        Pose2d nearAT19 = DriveConstants.robotRearAtPose(AT19);
-        Pose2d nearAT20 = DriveConstants.robotRearAtPose(AT20);
-        Pose2d nearAT21 = DriveConstants.robotRearAtPose(AT21);
-        Pose2d nearAT22 = DriveConstants.robotRearAtPose(AT22);
+
+        Pose2d nearAT17 = DriveConstants.robotRearAtPose(AT17, offsetFromAprilTag);
+        Pose2d nearAT18 = DriveConstants.robotRearAtPose(AT18, offsetFromAprilTag);
+        Pose2d nearAT19 = DriveConstants.robotRearAtPose(AT19, offsetFromAprilTag);
+        Pose2d nearAT20 = DriveConstants.robotRearAtPose(AT20, offsetFromAprilTag);
+        Pose2d nearAT21 = DriveConstants.robotRearAtPose(AT21, offsetFromAprilTag);
+        Pose2d nearAT22 = DriveConstants.robotRearAtPose(AT22, offsetFromAprilTag);
+        //TrajectoryConfig config = m_debugTrajectoryConfig;
+        TrajectoryConfig config = m_fullSpeedTrajectoryConfig;
 
         // Add the defualt plan which is not yet defined, for now do nothing.
         autoNames.add("Robot Makes the Plan");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
-        autoPlans.add(new SequentialCommandGroup(Commands.none()) );
+        blueAutoPlans.add(new SequentialCommandGroup(Commands.none()) ); // TODO; Handle here or in getAutonomousCommand
+        redAutoPlans.add(new SequentialCommandGroup(Commands.none()) ); // TODO; Handle here or in getAutonomousCommand
         expectedAprilTag.add(0);
 
          // Add the defualt plan which is not yet defined, for now do nothing.
          autoNames.add("Drive off Line and Stop");
          Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
          waypoints.add(new Pose2d[]{}); // Empty array.
-         autoPlans.add(new SequentialCommandGroup(Commands.none()) );
+         blueAutoPlans.add(new SequentialCommandGroup(Commands.none()) );  // TODO: add drive command
+         redAutoPlans.add(new SequentialCommandGroup(Commands.none()) );  // TODO: add drive command
          expectedAprilTag.add(0);
 
           // Add the defualt plan which is not yet defined, for now do nothing.
         autoNames.add("Do Nothing");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
-        autoPlans.add(new SequentialCommandGroup(Commands.none()) );
+        blueAutoPlans.add(new SequentialCommandGroup(Commands.none()) );
+        redAutoPlans.add(new SequentialCommandGroup(Commands.none()) );
         expectedAprilTag.add(0);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
-        autoNames.add("My Barge to Opposite");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-            new Pose2d(FieldConstants.zeroToReef,AT14.getY(), startingRotation),
-            new Pose2d(FieldConstants.zeroToReef*0.66,AT18.getY(), startingRotation),
-            nearAT18
-        });
-        autoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints.get(waypoints.size()-1),
-            m_defaultTrajectoryConfig
-        ));
-        expectedAprilTag.add(20);
+        addAutoMode(
+            "My Barge to Opposite"
+            ,new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
+                new Pose2d(FieldConstants.zeroToReef,AT14.getY(), startingRotation),
+                new Pose2d(FieldConstants.zeroToReef*0.66,AT18.getY()+1.0, new Rotation2d(Math.PI*0.5)),
+                nearAT18
+            },
+            config,
+            20);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
-        autoNames.add("My Barge to Far Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-            new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
-            nearAT19
-        });
-        autoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints.get(waypoints.size()-1),
-            m_defaultTrajectoryConfig
-        ));
-        expectedAprilTag.add(20);
+        addAutoMode("My Barge to Far Side"
+            ,new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
+                new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
+                nearAT19
+            }
+            ,config
+            ,20
+        );
 
-        autoNames.add("My Barge to Near Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-            new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation),
-            nearAT20
-        });
-        autoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints.get(waypoints.size()-1),
-            m_debugTrajectoryConfig
-        ));
-        expectedAprilTag.add(20);
-        myBargeNear = autoPlans.get(autoPlans.size()-1);
-
+        addAutoMode(
+            "My Barge to Near Side"
+            , new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
+                new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation),
+                nearAT20
+            }
+            , config
+            , 20
+        );
+        
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
-        autoNames.add("Center Straight");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine+2.d ,FieldConstants.yCenter, startingRotation),
-            new Pose2d((AT21.getX()+FieldConstants.blueStartLine)/2.0,FieldConstants.yCenter, startingRotation),
-            nearAT21
-        });
-        autoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints.get(waypoints.size()-1),
-            m_debugTrajectoryConfig
-        ));
-        expectedAprilTag.add(21);
-        centerStraight = autoPlans.get(autoPlans.size()-1);
+        addAutoMode(
+            "Center Straight"
+            , new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine ,FieldConstants.yCenter, startingRotation),
+                new Pose2d((AT21.getX()+FieldConstants.blueStartLine)/2.0,FieldConstants.yCenter, startingRotation),
+                nearAT21
+            }
+            , config
+            , 21
+            );
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
-        autoNames.add("Their Barge to Near Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
-            new Pose2d((AT22.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
+        addAutoMode(
+            "Their Barge to Near Side"  
+            , new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
+                new Pose2d((AT22.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
             nearAT22
-        });
-        autoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints.get(waypoints.size()-1),
-            m_defaultTrajectoryConfig
-        ));
-        expectedAprilTag.add(22);
+            }
+            , config
+            , 22
+        );
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
-        autoNames.add("Their Barge to Far Side");
-        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
-            new Pose2d((AT17.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
-            nearAT17
-        });
-        autoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints.get(waypoints.size()-1),
-            m_defaultTrajectoryConfig
-        ));
-        expectedAprilTag.add(22);
+        addAutoMode("Their Barge to Far Side"
+            , new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
+                new Pose2d((AT17.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
+                nearAT17
+            }
+            , config
+            , 22
+        );
 
         SmartDashboard.putData("AutoSelector", Robot.autoChooser);
     }
@@ -452,13 +458,28 @@ public class TrajectoryPlans {
      * @param config                    - drive train parameters to control robot speeds
      * @return
      */
-    public static SequentialCommandGroup debugAutoCommand(DriveSubsystemSRX driveTrain, PoseEstimatorSubsystem poseEstimatorSubsystem, Pose2d[] waypoints, TrajectoryConfig config) {
+    public static SequentialCommandGroup debugAutoCommand(
+        DriveSubsystemSRX driveTrain
+        , PoseEstimatorSubsystem poseEstimatorSubsystem
+        , Pose2d[] blueWaypoints
+        , TrajectoryConfig config
+        , boolean convertToRed) {
         SwerveControllerCommand command = null;
-        
+        Pose2d[] waypoints;
+        Pose2d[] redWaypoints;
         ProfiledPIDController thetaController = new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-
+        // If we are the red alliance, we need to transform the waypoints to be red alliance waypoints.
+        if (convertToRed) {
+            redWaypoints = new Pose2d[blueWaypoints.length];
+            for (int i = 0; i < blueWaypoints.length; i++) {
+                redWaypoints[i] = FieldConstants.BlueToRedPose(blueWaypoints[i]);
+            }
+            waypoints = redWaypoints;
+        } else {
+            waypoints = blueWaypoints;
+        }
         Trajectory trajectory = createTrajectory(driveTrain, waypoints, config);
         if (trajectory != null) {
             command = new SwerveControllerCommand(
@@ -479,8 +500,9 @@ public class TrajectoryPlans {
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
-            command
-            //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
+            command,
+            new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1])),
+            new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.
             // will need some arm motion to socre the coral.
             // could add additional actions to grab an algea and drive to the processor and score there.

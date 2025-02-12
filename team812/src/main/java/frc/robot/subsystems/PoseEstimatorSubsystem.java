@@ -210,8 +210,13 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   public BooleanSupplier tagInViewSupplier = () -> (m_lastAprilTagSeen > 0);
 
   // Return the pose for a robot to be directly in front of the specified apriltag
-  public Pose2d robotPoseAtApriltag(int id) {
-    return DriveConstants.robotFrontAtPose(getAprilTagPose(id));
+  public Pose2d robotFrontAtApriltag(int id, double offset) {
+    return DriveConstants.robotFrontAtPose(getAprilTagPose(id), offset);
+  }
+
+  // Return the pose for a robot to be directly in front of the specified apriltag
+  public Pose2d robotRearAtApriltag(int id, double offset) {
+    return DriveConstants.robotRearAtPose(getAprilTagPose(id), offset);
   }
 
    /**
@@ -219,6 +224,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
    * @param maximumAmbiguity - (double) the maximum ambiguity that is acceptable.  Range from 0.0..1.0
    * @return - the id of the best april tag or -1
    */
+  
   public int getBestAprilTag(double maximumAmbiguity) {
     int fiducialID = NO_TAG_FOUND; // Sentinel value indicating no tag found
     var pipelineResult = photonCamera.getLatestResult();

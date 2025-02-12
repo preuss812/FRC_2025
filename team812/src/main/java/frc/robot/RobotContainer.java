@@ -192,6 +192,7 @@ public class RobotContainer {
     //autoChooser = AutoBuilder.buildAutoChooser("autos");
     //SmartDashboard.putData("Auto Mode", autoChooser);
     TrajectoryPlans.buildAutoTrajectories(); 
+
     SmartDashboard.putNumber("y",99.0);
     // Configure the button bindings
     configureButtonBindings();
@@ -372,10 +373,16 @@ public class RobotContainer {
         // Climbing
         SmartDashboard.putData("AP4",
           new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(-45),Units.degreesToRadians(95.0), true));
-          SmartDashboard.putData("AutoStraight", TrajectoryPlans.centerStraight);
-          SmartDashboard.putData("AutoMyBarge", TrajectoryPlans.myBargeNear);
 
-      }
+          SmartDashboard.putData("AA4", new ConditionalCommand(
+            TrajectoryPlans.blueAutoPlans.get(4),
+            TrajectoryPlans.redAutoPlans.get(4),
+            () -> Utilities.isBlueAlliance()
+          ));
+          //SmartDashboard.putData("AA5", TrajectoryPlans.autoPlans.get(5));
+          //SmartDashboard.putData("AA6", TrajectoryPlans.autoPlans.get(6));
+          //SmartDashboard.putData("AA7", TrajectoryPlans.autoPlans.get(7));
+        }
     } // (debug)
   } // (configureButtonBindings)
 

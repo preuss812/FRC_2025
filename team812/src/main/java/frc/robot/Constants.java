@@ -479,31 +479,54 @@ public final class Constants {
         public static final double kRobotLength = Units.inchesToMeters(33.25)+kBumperWidth*2.0; // Frame length plus 2 bumpers.
         public static final double kApproximateStartingY = FieldConstants.yMax - Units.inchesToMeters(36.0); // Meters (ie near the amp)
         public static final double kStartingOrientation = 0.0; // Starting orientation in radians (ie robot back against the alliance wall)
-        public static final Translation2d robotCenterToFrontBumper = new Translation2d(kRobotLength/2 + kBumperWidth, 0);
-        public static final Translation2d robotCenterToRearBumper = new Translation2d(-(kRobotLength/2 + kBumperWidth), 0);
+        public static final Translation2d robotCenterToFrontBumper = new Translation2d(kRobotLength/2, 0);
+        public static final Translation2d robotCenterToRearBumper = new Translation2d(-(kRobotLength/2), 0);
         public static final Rotation2d rotate180 = new Rotation2d(Math.PI);
-        public static final Translation2d rotatedRobotFrontBumper(Rotation2d rotation) {
-            return robotCenterToFrontBumper.rotateBy(rotation);
+
+        /**
+         * Returns the translation of the robot's center to the center of the front bumper.
+         * @param rotation (radians)
+         * @return (x,y) (meters) the translation of the robot's center to the center of the front bumper
+         */
+        public static final Translation2d rotatedRobotFrontBumper(Rotation2d rotation, double offset) {
+            return robotCenterToFrontBumper.plus(new Translation2d(offset, 0.0)).rotateBy(rotation);
         }
 
-        public static final Translation2d rotatedRobotRearBumper(Rotation2d rotation) {
-            return robotCenterToFrontBumper.rotateBy(rotation);
+        /**
+         * Returns the translation of the robot's center to the center of the rear bumper.
+         * @param rotation (radians)
+         * @return (x,y) (meters) the translation of the robot's center to the center of the rear bumper
+         */
+        public static final Translation2d rotatedRobotRearBumper(Rotation2d rotation, double offset) {
+            return robotCenterToRearBumper.minus(new Translation2d(offset, 0)).rotateBy(rotation.plus(RotationConstants.rotate180));
         }
-        // Return a pose for the robot to be facing the pose with the center of it's front bumper touching the pose
-        public static Pose2d robotFrontAtPose(Pose2d pose) {
-            Translation2d position = pose.getTranslation().plus(rotatedRobotFrontBumper(pose.getRotation()));
+
+        /**
+         * Return a pose for the robot to be facing the pose with the center of it's front bumper touching the pose.
+         * @param pose - The pose you want to be facing.  Persumably, an AprilTag's pose.
+         * @param offset - (meters) the distance to be away from the pose.
+         * @return - The pose of the robot facing the pose with the center of it's front bumper aligned to the pose.
+         */
+        public static Pose2d robotFrontAtPose(Pose2d pose, double offset) {
+            Translation2d position = pose.getTranslation().plus(rotatedRobotFrontBumper(pose.getRotation(), offset));
             Rotation2d rotation = pose.getRotation().rotateBy(rotate180);
             return new Pose2d(position, rotation);
         }
-         // Return a pose for the robot to be facing the pose with the center of it's front bumper touching the pose
-         public static Pose2d robotRearAtPose(Pose2d pose) {
-            Translation2d position = pose.getTranslation().plus(rotatedRobotRearBumper(new Rotation2d(0)));
+    
+        /**
+         * Return a pose for the robot to be facing the pose with the center of it's rear bumper touching the pose.
+         * @param pose - The pose you want to back up to.  Persumably, an AprilTag's pose.
+         * @param offset - (meters) the distance to be away from the pose.
+         * @return - The pose of the robot backed up to the pose with the center of it's rear bumper aligned to the pose.
+         */
+        public static Pose2d robotRearAtPose(Pose2d pose, double offset) {
+            Translation2d position = pose.getTranslation().plus(rotatedRobotRearBumper(pose.getRotation(), offset));
             Rotation2d rotation = pose.getRotation();
             return new Pose2d(position, rotation);
         }
-      }
-    
-      public static final class ModuleConstants {
+    }
+
+    public static final class ModuleConstants {
         // The MAXSwerve module can be configured with one of three pinion gears: 12T, 13T, or 14T.
         // This changes the drive speed of the module (a pinion gear with more teeth will result in a
         // robot that drives faster).
