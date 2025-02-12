@@ -372,6 +372,8 @@ public class RobotContainer {
         // Climbing
         SmartDashboard.putData("AP4",
           new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(-45),Units.degreesToRadians(95.0), true));
+          SmartDashboard.putData("AutoStraight", TrajectoryPlans.centerStraight);
+          SmartDashboard.putData("AutoMyBarge", TrajectoryPlans.myBargeNear);
 
       }
     } // (debug)

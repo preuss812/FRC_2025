@@ -475,20 +475,30 @@ public final class Constants {
         public static final double kBackToCenterDistance = Units.inchesToMeters(17.5); //was 15.0 until 3/5/2024
         public static final double kFrontToCenterDistance = Units.inchesToMeters(17.5); //was 15.0 until 3/5/2024
         public static final double kBumperWidth = Units.inchesToMeters(3.0);
-        public static final double kRobotWidth = Units.inchesToMeters(24.0+kBumperWidth*2.0); // Frame width plus 2 bumpers.
-        public static final double kRobotLength = Units.inchesToMeters(24.0+6); // Frame length plus 2 bumpers.
+        public static final double kRobotWidth = Units.inchesToMeters(24.0)+kBumperWidth*2.0; // Frame width plus 2 bumpers.
+        public static final double kRobotLength = Units.inchesToMeters(33.25)+kBumperWidth*2.0; // Frame length plus 2 bumpers.
         public static final double kApproximateStartingY = FieldConstants.yMax - Units.inchesToMeters(36.0); // Meters (ie near the amp)
         public static final double kStartingOrientation = 0.0; // Starting orientation in radians (ie robot back against the alliance wall)
         public static final Translation2d robotCenterToFrontBumper = new Translation2d(kRobotLength/2 + kBumperWidth, 0);
-        public static final Translation2d robotCenterToBackBumper = new Translation2d(-(kRobotLength/2 + kBumperWidth), 0);
+        public static final Translation2d robotCenterToRearBumper = new Translation2d(-(kRobotLength/2 + kBumperWidth), 0);
         public static final Rotation2d rotate180 = new Rotation2d(Math.PI);
         public static final Translation2d rotatedRobotFrontBumper(Rotation2d rotation) {
+            return robotCenterToFrontBumper.rotateBy(rotation);
+        }
+
+        public static final Translation2d rotatedRobotRearBumper(Rotation2d rotation) {
             return robotCenterToFrontBumper.rotateBy(rotation);
         }
         // Return a pose for the robot to be facing the pose with the center of it's front bumper touching the pose
         public static Pose2d robotFrontAtPose(Pose2d pose) {
             Translation2d position = pose.getTranslation().plus(rotatedRobotFrontBumper(pose.getRotation()));
             Rotation2d rotation = pose.getRotation().rotateBy(rotate180);
+            return new Pose2d(position, rotation);
+        }
+         // Return a pose for the robot to be facing the pose with the center of it's front bumper touching the pose
+         public static Pose2d robotRearAtPose(Pose2d pose) {
+            Translation2d position = pose.getTranslation().plus(rotatedRobotRearBumper(new Rotation2d(0)));
+            Rotation2d rotation = pose.getRotation();
             return new Pose2d(position, rotation);
         }
       }

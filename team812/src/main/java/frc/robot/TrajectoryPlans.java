@@ -46,16 +46,22 @@ public class TrajectoryPlans {
     public static ArrayList<String>     autoNames = new ArrayList<String>();
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
     public static ArrayList<Integer> expectedAprilTag = new ArrayList<Integer>();
+
+    public static SequentialCommandGroup centerStraight;
+    public static SequentialCommandGroup myBargeNear;
     
     // For now, default speeds are the debug/slow speeds.
     public static final TrajectoryConfig m_debugTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond/5.0,
         AutoConstants.kMaxAccelerationMetersPerSecondSquared/5.0)
-        .setKinematics(DriveConstants.kDriveKinematics);
+        .setKinematics(DriveConstants.kDriveKinematics)
+        .setReversed(true);
     public static final TrajectoryConfig m_fullSpeedTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
         AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-        .setKinematics(DriveConstants.kDriveKinematics);
+        .setKinematics(DriveConstants.kDriveKinematics)
+        .setReversed(true);
+        ;
         public static final TrajectoryConfig m_defaultTrajectoryConfig = m_debugTrajectoryConfig;
 
     // Define a gridded map of the field to define a path from each square to the blue alliance processor.
@@ -306,12 +312,12 @@ public class TrajectoryPlans {
         Pose2d AT20 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(20);
         Pose2d AT21 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(21);
         Pose2d AT22 = RobotContainer.m_PoseEstimatorSubsystem.getAprilTagPose(22);
-        Pose2d nearAT17 = DriveConstants.robotFrontAtPose(AT17);
-        Pose2d nearAT18 = DriveConstants.robotFrontAtPose(AT18);
-        Pose2d nearAT19 = DriveConstants.robotFrontAtPose(AT19);
-        Pose2d nearAT20 = DriveConstants.robotFrontAtPose(AT20);
-        Pose2d nearAT21 = DriveConstants.robotFrontAtPose(AT21);
-        Pose2d nearAT22 = DriveConstants.robotFrontAtPose(AT22);
+        Pose2d nearAT17 = DriveConstants.robotRearAtPose(AT17);
+        Pose2d nearAT18 = DriveConstants.robotRearAtPose(AT18);
+        Pose2d nearAT19 = DriveConstants.robotRearAtPose(AT19);
+        Pose2d nearAT20 = DriveConstants.robotRearAtPose(AT20);
+        Pose2d nearAT21 = DriveConstants.robotRearAtPose(AT21);
+        Pose2d nearAT22 = DriveConstants.robotRearAtPose(AT22);
 
         // Add the defualt plan which is not yet defined, for now do nothing.
         autoNames.add("Robot Makes the Plan");
@@ -378,15 +384,17 @@ public class TrajectoryPlans {
             RobotContainer.m_robotDrive,
             RobotContainer.m_PoseEstimatorSubsystem,
             waypoints.get(waypoints.size()-1),
-            m_defaultTrajectoryConfig
+            m_debugTrajectoryConfig
         ));
         expectedAprilTag.add(20);
+        myBargeNear = autoPlans.get(autoPlans.size()-1);
+
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("Center Straight");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[] {
-            new Pose2d(FieldConstants.blueStartLine,FieldConstants.yCenter, startingRotation),
+            new Pose2d(FieldConstants.blueStartLine+2.d ,FieldConstants.yCenter, startingRotation),
             new Pose2d((AT21.getX()+FieldConstants.blueStartLine)/2.0,FieldConstants.yCenter, startingRotation),
             nearAT21
         });
@@ -394,9 +402,10 @@ public class TrajectoryPlans {
             RobotContainer.m_robotDrive,
             RobotContainer.m_PoseEstimatorSubsystem,
             waypoints.get(waypoints.size()-1),
-            m_defaultTrajectoryConfig
+            m_debugTrajectoryConfig
         ));
         expectedAprilTag.add(21);
+        centerStraight = autoPlans.get(autoPlans.size()-1);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
         autoNames.add("Their Barge to Near Side");
@@ -466,11 +475,12 @@ public class TrajectoryPlans {
         }
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
+            //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
-            new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
+           // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
-            command,
-            new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
+            command
+            //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.
             // will need some arm motion to socre the coral.
             // could add additional actions to grab an algea and drive to the processor and score there.
