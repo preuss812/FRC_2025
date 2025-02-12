@@ -64,13 +64,16 @@ public class Utilities {
         return m_isAutonomous;
     }
 
-    public static void setAlliance() {
+    public static boolean setAlliance() {
+        boolean result = false;
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent()) {
             m_isBlueAlliance = (alliance.get() == Alliance.Blue);  // Remember which alliance we are in.
             m_isRedAlliance =  (alliance.get() == Alliance.Red);
+            result = true;
         }
-        SmartDashboard.putBoolean("BlueAlliance", m_isBlueAlliance);   
+        SmartDashboard.putBoolean("BlueAlliance", m_isBlueAlliance);
+        return result; 
     }
     
     public static int getAllianceID() {

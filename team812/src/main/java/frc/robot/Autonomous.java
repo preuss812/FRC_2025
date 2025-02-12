@@ -131,7 +131,7 @@ public class Autonomous extends SequentialCommandGroup {
       
 
       // Drive to near the selected april tag.
-      addCommands(TrajectoryPlans.autoPlans.get(autoMode));
+      addCommands(TrajectoryPlans.blueAutoPlans.get(autoMode));
 
       // Now that we are near the tag, drive right up to the reef using the tag on the reef to precisely align
       // the robot to the algae.  Note that GotoAprilTagCommand goes to whatever tag it sees.

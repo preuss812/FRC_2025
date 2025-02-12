@@ -108,11 +108,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    Utilities.setAlliance();
     int autoOption = autoChooser.getSelected();
-    if (autoOption >= 0 && autoOption < TrajectoryPlans.autoPlans.size())
+    if (autoOption >= 0 && autoOption < TrajectoryPlans.blueAutoPlans.size())
       autoPlan = autoOption;
-    m_autonomousCommand = TrajectoryPlans.autoPlans.get(autoPlan);
-    if (autoPlan >= TrajectoryPlans.autoPlans.size()) autoPlan = 0;  // This is part of the debug that cycles through the various plans
+      if (Utilities.isBlueAlliance()) {
+        m_autonomousCommand = TrajectoryPlans.blueAutoPlans.get(autoPlan);
+      } else {
+        m_autonomousCommand = TrajectoryPlans.redAutoPlans.get(autoPlan);
+      }
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
