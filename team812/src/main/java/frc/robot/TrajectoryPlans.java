@@ -293,6 +293,20 @@ public class TrajectoryPlans {
         return command;
     }
 
+    /**
+     * 
+     * @param name       - the display name for this autonomous mode.
+     * @param waypoints  - an array of poses to be used to generate the driving path
+     * @param config     - the trajectory configuration to be used to generate the driving path.
+     * @param aprilTagID - the apriltag expected to be seen when the driving begins.
+     *                     This is used to verify the starting position and possibly terminate the
+     *                     autonomous mode if the robot is not where it is expected to be.
+     *                     For now, the checking is done in the VerifyStartingPositionCommand which
+     *                     is added to a sequential command group which would prevent this command from
+     *                     being executed.
+     * 
+     * Note: the grouping of commands here and in Autonomous.java is not ideal and should be refactored.
+     */
     public static void addAutoMode(
         String name,
         Pose2d[] waypoints,
@@ -321,10 +335,14 @@ public class TrajectoryPlans {
     /**
      * Create predefined autonomous routines for use during the autonomous period.
      * For now, 6 routines are defined.  One for each april tag on the reef.
-     * Currently, this only supports blue alliance.
-     * It needs to be enhanced to also or alternatively create proper paths for the red
-     * alliance by transforming the routines using the DriveTrain.blueToRedPose() method
-     * if the robot is in the red alliance.
+     * It creates paths for both blue and red alliances.
+     * Both paths are generated at startup so that it will be certain that the
+     * required path (red or blue) can be selected at autonomousInit when the alliance
+     * is sure to be known.
+     * 
+     * Note: Path numbering is problematic so be careful when adding new options to keep the
+     * numbering consistent.
+     * 
      */
     public static void buildAutoTrajectories() {
         // The staring poses will be on the blue starting line facing back toward the blue drive station
@@ -456,6 +474,7 @@ public class TrajectoryPlans {
      * @param poseEstimatorSubsystem    - the pose estimator
      * @param waypoints                 - an array of poses for the start, waypoints and end of the driving path.
      * @param config                    - drive train parameters to control robot speeds
+     * @param convertToRed              - if true, the waypoints will be converted to red alliance waypoints.
      * @return
      */
     public static SequentialCommandGroup debugAutoCommand(
