@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -19,6 +21,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
   private static double targetPosition = 0;
   private static boolean m_rotateStopped = true;
   private static boolean m_capturedLimitPosition = false;
+  private static AnalogEncoder m_encoder = new AnalogEncoder(new AnalogInput(0));
   // In case we need AnalogPotentiometer instead of AnalogEncoder:  TalonSRX Software Reference Manual 7.5.2
   //private static AnalogPotentiometer m_potentiometer = new AnalogPotentiometer(ShoulderConstants.kShoulderEncoderInputChannel);
 
@@ -154,6 +157,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     SmartDashboard.putBoolean("Shoulder revsw", isRevLimitSwitchClosed());
     int analogPos = m_shoulder.getSensorCollection().getAnalogIn();
     SmartDashboard.putNumber("Shoulder analogPos:", analogPos);
+    SmartDashboard.putNumber("AnalogPot", m_encoder.get());
     // function apparently deprecated and may not work for analog
     //FeedbackDeviceStatus encoderStatus = m_shoulder.isSensorPresent(FeedbackDevice.Analog);
 
