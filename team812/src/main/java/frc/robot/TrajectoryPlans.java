@@ -29,6 +29,7 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
+import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 
 /** 
  * This class supplies data to create trajectories from any point on the field to the Processor 
@@ -367,7 +368,7 @@ public class TrajectoryPlans {
         Pose2d nearAT21 = DriveConstants.robotRearAtPose(AT21, offsetFromAprilTag);
         Pose2d nearAT22 = DriveConstants.robotRearAtPose(AT22, offsetFromAprilTag);
         //TrajectoryConfig config = m_debugTrajectoryConfig;
-        TrajectoryConfig config = m_fullSpeedTrajectoryConfig;
+        TrajectoryConfig config = m_defaultTrajectoryConfig;
 
         // Add the defualt plan which is not yet defined, for now do nothing.
         autoNames.add("Robot Makes the Plan");
@@ -420,7 +421,7 @@ public class TrajectoryPlans {
             "My Barge to Near Side"
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-                new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation),
+                new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation.plus(new Rotation2d(Math.PI/6.0)) ),
                 nearAT20
             }
             , config
@@ -516,6 +517,8 @@ public class TrajectoryPlans {
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
+            new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
+
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
@@ -634,6 +637,7 @@ public class TrajectoryPlans {
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
+            new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
             //new VerifyStartingPositionCommand(poseEstimatorSubsystem, danceMoves[0]),
             new InstantCommand(() -> poseEstimatorSubsystem.setCurrentPose(danceMoves[0])),
             new InstantCommand(() -> poseEstimatorSubsystem.field2d.setRobotPose(danceMoves[0])), // for debug
