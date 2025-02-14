@@ -331,13 +331,13 @@ public final class Constants {
             new Translation3d(
                 Units.inchesToMeters(-17.5),
                 Units.inchesToMeters(0.0),
-                Units.inchesToMeters(0.0) // Distance is 10.5 inches but emperically 0 works better.
+                Units.inchesToMeters(15.0) // Distance is 10.5 inches but emperically 0 works better.
             ),
             new Rotation3d(0.0,0.0, Math.PI)
         );
         public static double cameraXOffsetToRobot = Units.inchesToMeters(-12.5);
         public static double cameraYOffsetToRobot = Units.inchesToMeters(0.0);
-        public static double cameraHeightToGround = Units.inchesToMeters(0.0);
+        public static double cameraHeightToGround = Units.inchesToMeters(15.0);
         public static double cameraRoll  = Units.degreesToRadians(0.0);
         public static double cameraPitch = Units.degreesToRadians(0.0); 
         public static double cameraYaw   = Units.degreesToRadians(180.0); // Rear facing camera.
@@ -427,7 +427,7 @@ public final class Constants {
         public static final double kRotationalDecreaseSlewRate = 4.0;
 
         // Driving Parameters for PRECISION DrivingMode.  This is a slower mode for more precise positioning.
-        public static final double kMaxSpeedMetersPerSecondPM = 0.8; //4.5; 1.0 in the lab // Limit how violently swerve works
+        public static final double kMaxSpeedMetersPerSecondPM = 1.6; //4.5; 1.0 in the lab // Limit how violently swerve works
         public static final double kMaxAngularSpeedPM = 1 * Math.PI; // radians per second
     
         public static final double kDirectionSlewRatePM = 0.6; // radians per second

@@ -17,6 +17,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -26,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.commands.RotateRobotCommand;
+import frc.robot.commands.VerifyExpectedAprilTagCommand;
 import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
@@ -56,8 +59,8 @@ public class TrajectoryPlans {
     
     // For now, default speeds are the debug/slow speeds.
     public static final TrajectoryConfig m_debugTrajectoryConfig = new TrajectoryConfig(
-        AutoConstants.kMaxSpeedMetersPerSecond/5.0,
-        AutoConstants.kMaxAccelerationMetersPerSecondSquared/5.0)
+        AutoConstants.kMaxSpeedMetersPerSecond/2.5,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared/2.5)
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
     public static final TrajectoryConfig m_fullSpeedTrajectoryConfig = new TrajectoryConfig(
@@ -348,7 +351,7 @@ public class TrajectoryPlans {
     public static void buildAutoTrajectories() {
         // The staring poses will be on the blue starting line facing back toward the blue drive station
         Rotation2d startingRotation = new Rotation2d(0.0);
-        double offsetFromAprilTag = 0.0; // 0.5 meters from the april tag
+        double offsetFromAprilTag = Units.inchesToMeters(-5.0); // 0.5 meters from the april tag
         if (debug) checkAllTrajectories();
         // Get/create poses for each Reef April tag and barge april tag
         // for omre concise coding below.
@@ -518,13 +521,14 @@ public class TrajectoryPlans {
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
             new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-
+            new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
+            new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
-            command,
-            new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1])),
-            new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
+            command
+            //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1])),
+            //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.
             // will need some arm motion to socre the coral.
             // could add additional actions to grab an algea and drive to the processor and score there.
