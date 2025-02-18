@@ -25,6 +25,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -53,7 +55,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
    * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then meters.
    */
   private static final Vector<N3> stateStdDevs = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
-  
+  private static StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("/MyPose", Pose2d.struct).publish();
+
   /**
    * Standard deviations of the vision measurements. Increase these numbers to trust global measurements from vision
    * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
@@ -88,7 +91,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     }
     this.aprilTagFieldLayout = layout;
 
-    ShuffleboardTab tab = Shuffleboard.getTab("Vision");
+    //ShuffleboardTab tab = Shuffleboard.getTab("Vision");
 
     poseEstimator =  new SwerveDrivePoseEstimator(
         DriveConstants.kDriveKinematics,
@@ -98,8 +101,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         stateStdDevs,
         visionMeasurementStdDevs);
     
-    tab.addString("Pose", this::getFomattedPose).withPosition(0, 0).withSize(2, 0);
-    tab.add("Field", field2d).withPosition(2, 0).withSize(6, 4);
+    //tab.addString("Pose", this::getFomattedPose).withPosition(0, 0).withSize(2, 0);
+    //tab.add("Field", field2d).withPosition(2, 0).withSize(6, 4);
+    SmartDashboard.putData("Field", field2d);
     if (trajectory != null) 
       field2d.getObject("trajectory").setTrajectory(trajectory);
 
@@ -147,6 +151,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
       drivetrainSubsystem.getModulePositions());
 
     field2d.setRobotPose(getCurrentPose());
+    publisher.set(getCurrentPose());
+
     if (trajectory != null) 
       field2d.getObject("trajectory").setTrajectory(trajectory);
       

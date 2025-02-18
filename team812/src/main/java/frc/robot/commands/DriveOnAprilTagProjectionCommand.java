@@ -4,16 +4,12 @@
 
 package frc.robot.commands;
 
-import org.ejml.dense.row.decomposition.eig.WatchedDoubleStepQRDecomposition_DDRM;
 import org.photonvision.PhotonCamera;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +19,7 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.utils.Line;
 import frc.utils.DrivingConfig;
 import frc.utils.PreussAutoDrive;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Utilities;
 
@@ -47,11 +44,12 @@ public class DriveOnAprilTagProjectionCommand extends Command {
   private double ySign; // The sign of y axis motion toward the april tag. 
   private double projectionM;
   private double projectionB;
-  private Line projection;
   private static double sqrtOfTwoOverTwo = Math.sqrt(2.0)/2.0;
   private boolean debug = true;
-  private static final double[] simulatedJoystick = new double[] {0.3,0.1,0.1};
+  private static final double[] simulatedJoystick = new double[] {0.8,0.1,0.1};
   private int simulationCycleCount = 0;
+  private int simulationMinCount = -500;
+  private int simulationMaxCount = 500;
   private static final Pose2d simulationStartingPose = new Pose2d(15.5, 2.6, new Rotation2d(Math.PI));
   private static final double needToBeOnLineDistance = 1.0; // (meters)
   private Translation2d lastThrottle = new Translation2d(0,0);
@@ -106,7 +104,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     
     if (simulation) {
       fiducialId = 6;
-      simulationCycleCount = -500;
+      simulationCycleCount = simulationMinCount;
       autoDrive.setCurrentPose(simulationStartingPose);
     } else {
       fiducialId = poseEstimatorSubsystem.getBestAprilTag(0.2); 
@@ -121,7 +119,6 @@ public class DriveOnAprilTagProjectionCommand extends Command {
       // This y = mx+b will be used in execute() to save compute cycles
       // I'm using the "normal form" of the line.
       double theta = aprilTagPose.getRotation().getRadians();
-      projection = new Line(aprilTagPose.getTranslation(), Math.atan(aprilTagPose.getRotation().getRadians()));
       
       SmartDashboard.putNumber("DP theta", theta);
       SmartDashboard.putNumber("DP cos", Math.cos(theta));
@@ -167,11 +164,27 @@ public class DriveOnAprilTagProjectionCommand extends Command {
 
     if (aprilTagPose == null)  return;
 
+    robotPose = autoDrive.getCurrentPose();
+
     throttle = -xbox.getRightY(); // Driver controls +/-X on the projection line
     if (simulation) {
       simulationCycleCount++;
-      if (simulationCycleCount > 500) {
-        simulationCycleCount = -500;
+      if (robotPose.getX() < FieldConstants.xMin 
+       || robotPose.getX() > FieldConstants.xMax 
+       || robotPose.getY() < FieldConstants.yMin 
+       || robotPose.getY() > FieldConstants.yMax
+      ) {
+        if (simulationCycleCount > 0) {
+          simulationMaxCount = simulationCycleCount - 1;
+          simulationMinCount = -simulationMaxCount;
+        }
+        else {
+          simulationMinCount = simulationCycleCount + 1;
+          simulationMaxCount = -simulationMinCount;
+        }
+      }
+      if (simulationCycleCount > simulationMaxCount) {
+        simulationCycleCount = simulationMinCount;
       }
       if (simulationCycleCount < 0) {
         throttle = -simulatedJoystick[0];
@@ -185,7 +198,6 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     SmartDashboard.putNumber("DA throttle", throttle);
     
     // Calculate rotation required for the camera to face the april tag.
-    robotPose = autoDrive.getCurrentPose();
     desiredRotation = MathUtil.angleModulus(Utilities.getHeading(robotPose.getTranslation(), aprilTagPose.getTranslation() )+ cameraToRobotAngle);
     rotationError = MathUtil.angleModulus(desiredRotation - robotPose.getRotation().getRadians());
     rotationSpeed = autoDrive.calculateClampedRotation(rotationError);
@@ -193,6 +205,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     Translation2d robotInAprilTagSpace = new Translation2d(robotPose.getX() - aprilTagPose.getX(), robotPose.getY() - aprilTagPose.getY()).rotateBy(aprilTagPose.getRotation().times(-1.0));
 
     double epsilon = 0.05; // 5cm
+    epsilon = 1.0; // debug, a test
     if (throttle > 0) {
       // We are moving away from the target.
       // Therefore the target position will be diagonally toward the projection lihe, Y = 0 in april tag space.
@@ -203,9 +216,16 @@ public class DriveOnAprilTagProjectionCommand extends Command {
         SmartDashboard.putString("DOA Path", "+ +");
       } else if (robotInAprilTagSpace.getY() > -epsilon) {
         // On the line, stay on the line.
-        double r = Line.vectorLength(robotInAprilTagSpace);
-        aprilThrustVector = new Translation2d(-Math.cos(robotInAprilTagSpace.getX()), Math.sin(robotInAprilTagSpace.getY()/r)); 
-        SmartDashboard.putString("DOA Path", "+ 0");
+        if (robotInAprilTagSpace.getX() < 0.0) {
+          // We are "behind" the tag.  move forward along the projection line.
+          aprilThrustVector = new Translation2d(-1.0, 0);
+          SmartDashboard.putString("DOA Path", "+ 0 -");
+        } else {
+          double heading = Math.atan2(robotInAprilTagSpace.getY(), robotInAprilTagSpace.getX());
+          //double r = Line.vectorLength(robotInAprilTagSpace);
+          aprilThrustVector = new Translation2d(-Math.cos(heading), Math.sin(heading)); 
+          SmartDashboard.putString("DOA Path", "+ 0 "+Units.radiansToDegrees(heading));
+        }
       } else {
         // we need to move up toward the projection
         aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, -sqrtOfTwoOverTwo);
@@ -222,13 +242,15 @@ public class DriveOnAprilTagProjectionCommand extends Command {
           aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, -sqrtOfTwoOverTwo);
         } else if (robotInAprilTagSpace.getY() > -epsilon) {
           // On the line, stay on the line.
-          double r = Line.vectorLength(robotInAprilTagSpace);
-          aprilThrustVector = new Translation2d(-Math.cos(robotInAprilTagSpace.getX()), Math.sin(robotInAprilTagSpace.getY()/r)); 
+          double heading = Math.atan2(-robotInAprilTagSpace.getY(), robotInAprilTagSpace.getX());
+          //ouble r = Line.vectorLength(robotInAprilTagSpace);
+          aprilThrustVector = new Translation2d(-Math.cos(heading), Math.sin(heading)); 
           SmartDashboard.putString("DOA Path", "- + 0");
         } else {
           // we need to move up toward the projection
           aprilThrustVector = new Translation2d(-sqrtOfTwoOverTwo, sqrtOfTwoOverTwo);
           SmartDashboard.putString("DOA Path", "- + -");
+          simulationMinCount = simulationCycleCount + 1;
         }
       } else {
         //  We are wider away from the target so we need to exert more centering force.

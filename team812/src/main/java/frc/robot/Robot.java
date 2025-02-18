@@ -109,6 +109,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Utilities.setAlliance();
+    Autonomous.setReefCenter();
     int autoOption = autoChooser.getSelected();
     if (autoOption >= 0 && autoOption < TrajectoryPlans.blueAutoPlans.size())
       autoPlan = autoOption;

@@ -9,7 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.ctre.phoenix.Util;
+import com.revrobotics.servohub.ServoHubLowLevel.PeriodicStatus0;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,12 +23,15 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.commands.PreussSwerveControllerCommand;
 import frc.robot.commands.RotateRobotCommand;
 import frc.robot.commands.VerifyExpectedAprilTagCommand;
 import frc.robot.commands.VerifyStartingPositionCommand;
@@ -54,9 +59,6 @@ public class TrajectoryPlans {
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
     public static ArrayList<Integer> expectedAprilTag = new ArrayList<Integer>();
 
-    public static SequentialCommandGroup centerStraight;
-    public static SequentialCommandGroup myBargeNear;
-    
     // For now, default speeds are the debug/slow speeds.
     public static final TrajectoryConfig m_debugTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond/2.5,
@@ -69,7 +71,7 @@ public class TrajectoryPlans {
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
         ;
-        public static final TrajectoryConfig m_defaultTrajectoryConfig = m_debugTrajectoryConfig;
+        public static final TrajectoryConfig m_defaultTrajectoryConfig = m_fullSpeedTrajectoryConfig;
 
     // Define a gridded map of the field to define a path from each square to the blue alliance processor.
     // Currently these paths are crude and need some refinement if they are to be used during a match.
@@ -78,29 +80,28 @@ public class TrajectoryPlans {
         // column 0
         {
             fieldSquareToPose(1,0),
-            fieldSquareToPose(1,0),
-            fieldSquareToPose(0,1),
+            fieldSquareToPose(2,0),
+            fieldSquareToPose(1,1),
             fieldSquareToPose(0,2)
         },
         // column 1
         {
+            fieldSquareToPose(1,0),
             fieldSquareToPose(2,0),
-            fieldSquareToPose(2,0),
-            fieldSquareToPose(0,1),
+            fieldSquareToPose(0,2),
             fieldSquareToPose(0,2),
         },
         // column 2
         {
             fieldSquareToPose(2,0),
-            fieldSquareToPose(2,0),
+            fieldSquareToPose(2,1),
             fieldSquareToPose(3,2),
             fieldSquareToPose(3,2)
         },
         // column 3
         {
-            // column 0
-            fieldSquareToPose(2,0),
             fieldSquareToPose(3,0),
+            fieldSquareToPose(3,1),
             fieldSquareToPose(3,1),
             fieldSquareToPose(3,2)
         },
@@ -122,7 +123,7 @@ public class TrajectoryPlans {
         {
             fieldSquareToPose(5,0),
             fieldSquareToPose(7,2),
-            fieldSquareToPose(5,3),
+            fieldSquareToPose(5,2),
             fieldSquareToPose(5,3)
         },  
         // column 7
@@ -176,7 +177,7 @@ public class TrajectoryPlans {
         int j = ij[1];
         int n = 0;
         boolean done = false;
-        //list.add(startingPose);
+        list.add(startingPose);
         while (!done) {
             Pose2d nextPose = trajectoryPlan[i][j];
             int [] nextid = poseToFieldSquare(nextPose);
@@ -202,8 +203,8 @@ public class TrajectoryPlans {
      */
     public static int[] poseToFieldSquare(Pose2d fieldLocation) {
         int[] square = new int[2];
-        square[0] = (int)(fieldLocation.getX()/dx);
-        square[1] = (int)(fieldLocation.getY()/dy);
+        square[0] = MathUtil.clamp((int)(fieldLocation.getX()/dx), 0, numXSquares-1);
+        square[1] = MathUtil.clamp((int)(fieldLocation.getY()/dy), 0, numYSquares-1);
         return square;
     }
     
@@ -214,7 +215,25 @@ public class TrajectoryPlans {
      * @return - a Pose2d for driving to/through that field square.  Currently the center of that square.
      */
     public static Pose2d fieldSquareToPose(int i, int j) {
-        return new Pose2d(dx*(i+0.5),dy*(j+0.5), new Rotation2d(0));
+        double x = dx*(i+0.5);
+        double y = dy*(j+0.5);
+
+        if (i == 0) {
+            x += 0.3*dx;
+        } else if (i == 1) {
+            x -= 0.4*dx;
+        } else if (i == 3) {
+            x -= 0.3*dx;
+        }
+        if (j == 1) {
+            y -= 0.4 *dy;
+        } else if (j == 2) {
+            y += 0.2 * dy;
+        } else if (j == 3) {
+            y -= 0.1*dy;
+        }
+        
+        return new Pose2d(x,y, new Rotation2d(0));
         
     }
 
@@ -337,6 +356,15 @@ public class TrajectoryPlans {
     }
 
     /**
+     * Pose facing reef, create a pose that rotates the robot so the camera faces the center of the reef.
+     * @param x - a double that is the x field coordinate.
+     * @param y = a double that is the y field coordinate.
+     * @return - a Pose2d object using the supplied x and y and a rotation that will rotate the robot to face the reef.
+     */
+    public static Pose2d poseWithCameraFacingTheReef(double x, double y) {
+        return new Pose2d(x, y, new Rotation2d(FieldConstants.robotHeadingForCameraToBlueReefCenter(x,y)));
+    }
+    /**
      * Create predefined autonomous routines for use during the autonomous period.
      * For now, 6 routines are defined.  One for each april tag on the reef.
      * It creates paths for both blue and red alliances.
@@ -402,6 +430,8 @@ public class TrajectoryPlans {
             "My Barge to Opposite"
             ,new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
+                //new Pose2d(AT20.getX(),AT14.getY(), startingRotation),
+                //new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
                 new Pose2d(FieldConstants.zeroToReef,AT14.getY(), startingRotation),
                 new Pose2d(FieldConstants.zeroToReef*0.66,AT18.getY()+1.0, new Rotation2d(Math.PI*0.5)),
                 nearAT18
@@ -414,7 +444,7 @@ public class TrajectoryPlans {
             ,new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
                 new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
-                nearAT19
+                nearAT19           
             }
             ,config
             ,20
@@ -424,14 +454,14 @@ public class TrajectoryPlans {
             "My Barge to Near Side"
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-                new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation.plus(new Rotation2d(Math.PI/6.0)) ),
+                new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation),
+                //poseWithCameraFacingTheReef((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY()),  Adds extra squiggles to the path
                 nearAT20
             }
             , config
             , 20
         );
         
-
         // Build a path adding it to the autoChooser which will select the autonomous routine
         addAutoMode(
             "Center Straight"
@@ -460,7 +490,8 @@ public class TrajectoryPlans {
         addAutoMode("Their Barge to Far Side"
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
-                new Pose2d((AT17.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
+                new Pose2d(AT22.getX(),AT15.getY(), startingRotation),
+                new Pose2d(AT17.getX(),AT15.getY(), startingRotation),
                 nearAT17
             }
             , config
@@ -470,6 +501,72 @@ public class TrajectoryPlans {
         SmartDashboard.putData("AutoSelector", Robot.autoChooser);
     }
 
+    public static Command getSwerveCommand(
+        DriveSubsystemSRX driveTrain
+        ,PoseEstimatorSubsystem poseEstimatorSubsystem
+        ,Trajectory trajectory
+     ) {
+        Command command;
+        if (trajectory != null) {
+            command = new PreussSwerveControllerCommand(
+            trajectory,
+            poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
+            DriveConstants.kDriveKinematics,
+
+            // Position controllers
+            new PIDController(AutoConstants.kPXController, 0, 0),
+            new PIDController(AutoConstants.kPYController, 0, 0),
+            new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints),
+            driveTrain::setModuleStates,
+            driveTrain);
+        } else {
+            command = Commands.none();
+        }
+        return command;
+    }
+
+    /**
+     * Returns a rotation for the robot to face the reef.  Used as a lambda function to supply the rotation to the SwerveControllerCommand.
+     * @param poseEstimatorSubsystem
+     * @return - the rotation in radians for the robot to face the reef in field coordinates.
+     */
+    public static Rotation2d reefFacingRotationSupplier(PoseEstimatorSubsystem poseEstimatorSubsystem) {
+        Rotation2d rotation = new Rotation2d(
+                Autonomous.robotHeadingForCameraToReefCenter(
+                    poseEstimatorSubsystem.getCurrentPose().getX()
+                    , poseEstimatorSubsystem.getCurrentPose().getY()
+                ) 
+        );
+        return rotation;
+    } 
+
+    public static Command getReefFacingSwerveCommand(
+        DriveSubsystemSRX driveTrain
+        ,PoseEstimatorSubsystem poseEstimatorSubsystem
+        ,Trajectory trajectory
+     ) {
+        Command command;
+        if (trajectory != null) {
+            ProfiledPIDController thetaController = new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
+            thetaController.enableContinuousInput(-Math.PI, Math.PI);
+            command = new PreussSwerveControllerCommand(
+            trajectory,
+            poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
+            DriveConstants.kDriveKinematics,
+
+            // Position controllers
+            new PIDController(AutoConstants.kPXController, 0, 0),
+            new PIDController(AutoConstants.kPYController, 0, 0),
+            thetaController,
+            () -> reefFacingRotationSupplier(poseEstimatorSubsystem),
+            driveTrain::setModuleStates,
+            driveTrain);
+        } else {
+            command = Commands.none();
+        }
+        return command;
+    }
+    
     /**
      * Returns a sequential command group that displays and executes an autonomous routine.
      * This should be enhanced to score the coral and possible grab an algae and score it in
@@ -487,12 +584,11 @@ public class TrajectoryPlans {
         , Pose2d[] blueWaypoints
         , TrajectoryConfig config
         , boolean convertToRed) {
-        SwerveControllerCommand command = null;
+        Command  command = null;
         Pose2d[] waypoints;
         Pose2d[] redWaypoints;
-        ProfiledPIDController thetaController = new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
+        
+        boolean testing = false;
         // If we are the red alliance, we need to transform the waypoints to be red alliance waypoints.
         if (convertToRed) {
             redWaypoints = new Pose2d[blueWaypoints.length];
@@ -504,30 +600,25 @@ public class TrajectoryPlans {
             waypoints = blueWaypoints;
         }
         Trajectory trajectory = createTrajectory(driveTrain, waypoints, config);
-        if (trajectory != null) {
-            command = new SwerveControllerCommand(
-            trajectory,
-            poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
-            DriveConstants.kDriveKinematics,
-
-            // Position controllers
-            new PIDController(AutoConstants.kPXController, 0, 0),
-            new PIDController(AutoConstants.kPYController, 0, 0),
-            thetaController,
-            driveTrain::setModuleStates,
-            driveTrain);
+        if (!testing) {
+            if (trajectory != null) {
+                command = getSwerveCommand(driveTrain, poseEstimatorSubsystem, trajectory);
+            }
+        } else {
+            command = getReefFacingSwerveCommand(driveTrain, poseEstimatorSubsystem, trajectory);
         }
+
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
-            //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
-            new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-            new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
-            new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
+            new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
+            //new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
+            //new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
+            //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
             command
-            //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1])),
+            ,new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1]))
             //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.
             // will need some arm motion to socre the coral.
@@ -609,7 +700,7 @@ public class TrajectoryPlans {
     }
 
     public static SequentialCommandGroup robotDanceCommand(DriveSubsystemSRX driveTrain, PoseEstimatorSubsystem poseEstimatorSubsystem, TrajectoryConfig config) {
-        SwerveControllerCommand command = null;
+        Command command = null;
         
         ProfiledPIDController thetaController = new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -626,7 +717,7 @@ public class TrajectoryPlans {
 
         Trajectory trajectory = createTrajectory(driveTrain, danceMoves, config);
         if (trajectory != null) {
-            command = new SwerveControllerCommand(
+            command = new PreussSwerveControllerCommand(
             trajectory,
             poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
             DriveConstants.kDriveKinematics,

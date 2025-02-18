@@ -95,7 +95,7 @@ public class Utilities {
     public static void toSmartDashboard(String label, List<Pose2d> poses) {
         String s = "";
         for(Pose2d p : poses) {
-            s += String.format("(%4.2f,%4.2f),", p.getX(), p.getY());
+            s += String.format("(%4.2f,%4.2f,%3.0f),", p.getX(), p.getY(),p.getRotation().getDegrees());
         }
         SmartDashboard.putString(label, s );
     }

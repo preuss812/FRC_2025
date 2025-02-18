@@ -9,6 +9,7 @@ package frc.robot;
 
 import org.photonvision.PhotonCamera;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 import frc.robot.commands.ShoulderHomeCommand;
+import frc.robot.commands.SwerveToProcessorCommand;
 import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.commands.WaitToSeeAprilTagCommand;
 import frc.robot.commands.ElbowRotationCommand;
@@ -36,13 +38,14 @@ import frc.robot.commands.GotoAprilTagCommand;
 import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.ScoreAlgaeInProcessor;
 import frc.robot.commands.GotoProcessorCommand;
-import frc.robot.commands.RotateRobotAutoCommand;
+//mport frc.robot.commands.RotateRobotAutoCommand;
 import frc.robot.commands.PushTowardsWallUltrasonic;
 import frc.robot.Constants.ElbowConstants;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.ShoulderConstants;
+import frc.robot.Constants.VisionConstants;
 
 /**
  * Construct the autonomous command.
@@ -64,7 +67,35 @@ public class Autonomous extends SequentialCommandGroup {
   private final PingResponseUltrasonicSubsystem m_PingResponseUltrasonicSubsystem;
   private final PoseEstimatorSubsystem m_PoseEstimatorSubsystem;
   private final PhotonCamera m_PhotonCamera;
+  public static boolean reefCenterSet = false;
+  public static double myReefX;
+  public static double myReefY;
 
+  /**
+   * robotHeadingForCameraToReefCenter - helper function for controlling rotation during autonomous driving.
+   * @param x - (double) robot x field coordinate.
+   * @param y - (double) robot y field coordinate.
+   * @return  - (double) the heading in radians from the robot to the reef center.
+   */
+  public static double robotHeadingForCameraToReefCenter(double x, double y) {
+    return MathUtil.angleModulus(
+        Math.atan2(myReefY - y,myReefX - x) + VisionConstants.cameraHeading);
+  }
+
+  /**
+   * set up the reef center for autonomous driving based on the alliance color.
+   */
+  public static void setReefCenter() {
+    if (Utilities.isBlueAlliance()) {
+      myReefX = FieldConstants.blueReefCenter.getX();
+      myReefY = FieldConstants.blueReefCenter.getY();
+      reefCenterSet = true;
+    } else if (Utilities.isRedAlliance()) {
+      myReefX = FieldConstants.redReefCenter.getX();
+      myReefY = FieldConstants.redReefCenter.getY();
+      reefCenterSet = true;
+    }
+  }
   public Autonomous(RobotContainer robotContainer) {
     
     // get the required subsystems for constructing the plans below.
@@ -84,6 +115,7 @@ public class Autonomous extends SequentialCommandGroup {
 
     // Add the basic robot initialization.
     this.addCommands(
+      new InstantCommand(() -> setReefCenter()),  // Set upf aliiance reef center as myReef X/Y to simplicy rotation control.
       new ParallelCommandGroup(
       new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
       new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)), // TODO Should be SPEED, not PRECISION
@@ -174,7 +206,7 @@ public class Autonomous extends SequentialCommandGroup {
           ShoulderConstants.kShoulderLowAlgaePosition,
           false // This is not simulation
         ),
-        new GotoProcessorCommand(m_PoseEstimatorSubsystem, m_robotDrive), // This could be dangerous 
+        new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null), // This could be dangerous 
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
@@ -182,10 +214,9 @@ public class Autonomous extends SequentialCommandGroup {
           ShoulderConstants.kShoulderLowAlgaePosition,
           false // This is not simulation
         ),
-        new GotoPoseCommand(
-          m_PoseEstimatorSubsystem,
-          m_robotDrive,
-          new Pose2d(0,0,new Rotation2d(0)) // Need a process pose with the right orientation and distance from the processor
+        new SwerveToProcessorCommand(
+            m_robotDrive
+          , m_PoseEstimatorSubsystem
         )
       );
 

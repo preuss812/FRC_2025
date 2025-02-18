@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,8 +21,9 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 //import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import frc.robot.commands.PreussSwerveControllerCommand;
 import frc.robot.RobotContainer;
+import frc.robot.Utilities;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DriveSubsystemSRX;
@@ -42,44 +44,65 @@ public class FollowTrajectoryCommand extends SequentialCommandGroup {
     DriveSubsystemSRX robotDrive,
     PoseEstimatorSubsystem poseEstimatorSubsystem,
     TrajectoryConfig config,
-    Pose2d startingPose,
-    List<Pose2d> waypoints,
-    Pose2d targetPose) 
-  {
+    List<Pose2d> waypoints
+  ) {
     Trajectory trajectory;
-    List<Translation2d>  translationWaypoints = new ArrayList<Translation2d>();
-
+    List<Pose2d>  translationWaypoints = new ArrayList<Pose2d>();
     try {
-      Pose2d fakeTargetPose = new Pose2d(targetPose.getTranslation(), new Rotation2d(0));
-      for (Pose2d pose : waypoints) {
-        translationWaypoints.add(pose.getTranslation());
+      // set up the rotation for each waypoint to point the robot to the next waypoint.
+      for (int i = 0; i < waypoints.size(); i++) {
+        Pose2d pose = waypoints.get(i);
+  
+        if (i == 0) {
+          if (waypoints.size() > 1) {
+            Pose2d thisPose = waypoints.get(i);
+            Pose2d nextPose = waypoints.get(i+1);
+            double directionToNext = Math.atan2(nextPose.getTranslation().getY() - thisPose.getTranslation().getY(), nextPose.getTranslation().getX() - thisPose.getTranslation().getX());  
+            translationWaypoints.add(new Pose2d(waypoints.get(i).getTranslation(), new Rotation2d(directionToNext))); // Lying about the orientation to get smoother path.
+          } else {
+            translationWaypoints.add(pose); // There is only one pose, should not happen but keep the orientation.
+          }
+        } else if (i == waypoints.size() -1) {
+          translationWaypoints.add(pose); // For the ending pose, keep the requested ending orientation.
+        } else {
+          // Not the end, point to the next waypoint.
+          Pose2d lastPose = waypoints.get(i-1);
+          Pose2d thisPose = waypoints.get(i);
+          Pose2d nextPose = waypoints.get(i+1);
+          double directionFromLast = Math.atan2(thisPose.getTranslation().getY() - lastPose.getTranslation().getY(), thisPose.getTranslation().getX() - lastPose.getTranslation().getX());  
+          double directionToNext = Math.atan2(nextPose.getTranslation().getY() - thisPose.getTranslation().getY(), nextPose.getTranslation().getX() - thisPose.getTranslation().getX());  
+          double direction = (MathUtil.angleModulus(directionFromLast) + MathUtil.angleModulus(directionToNext))/2.0;
+          direction = MathUtil.angleModulus(directionToNext);
+          translationWaypoints.add(new Pose2d(waypoints.get(i).getTranslation(), new Rotation2d(direction)));
+        }
+        Utilities.toSmartDashboard("TTR", translationWaypoints);
+
       }
       trajectory = TrajectoryGenerator.generateTrajectory(          
-          startingPose,  // We are starting where we are.
           // Pass through these zero interior waypoints, this should probably be something to make sure we dont crash into other robots.
           translationWaypoints,
-          fakeTargetPose,
           config != null ? config : FollowTrajectoryCommand.config); // use default config is none was specified.
           SmartDashboard.putNumber("PTS", translationWaypoints.size());
+          RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory);
+
     } catch (Exception e) {
-        ListIterator<Translation2d> iter = translationWaypoints.listIterator();
+        ListIterator<Pose2d> iter = translationWaypoints.listIterator();
         while (iter.hasNext()) {
-          addCommands(new GotoPoseCommand(poseEstimatorSubsystem, robotDrive, new Pose2d(iter.next(), targetPose.getRotation()))); // For each waypoint.
+          addCommands(new GotoPoseCommand(robotDrive, poseEstimatorSubsystem, iter.next(), null)); // For each waypoint.
         }
 
-        addCommands(new GotoPoseCommand(poseEstimatorSubsystem, robotDrive, targetPose)); // For each waypoint.
         if (debug) SmartDashboard.putString("FT", "catch->gotoPose");
       return;
     }
     //if (true || debug) {
-      RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory);
+      //RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory);
     //}
 
     var thetaController = new ProfiledPIDController(
       AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
       thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
+    PreussSwerveControllerCommand debugSwerveControllerCommand = new PreussSwerveControllerCommand(
       trajectory,
       poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
       DriveConstants.kDriveKinematics,
@@ -91,7 +114,7 @@ public class FollowTrajectoryCommand extends SequentialCommandGroup {
       robotDrive::setModuleStates,
       robotDrive);
     
-    addCommands(swerveControllerCommand);
+    addCommands(debugSwerveControllerCommand);
     if (debug) SmartDashboard.putString("FT", "added");
   }
 

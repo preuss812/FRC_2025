@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -197,6 +198,9 @@ public final class Constants {
         public static double ySquareSize = yMax/4;
         public static double bargeWidth = Units.inchesToMeters(46.0);
         public static double tapeWidth = Units.inchesToMeters(2.0);
+        public static double blueReefCenterX = Units.inchesToMeters(176.75);
+        public static Translation2d blueReefCenter = new Translation2d(blueReefCenterX, yCenter);
+        public static Translation2d redReefCenter = BlueToRedTranslation(blueReefCenter);
         public static double reefToStart = Units.inchesToMeters(88.0);
         public static double tapeToReef = Units.inchesToMeters(14.0);
         public static double zeroToReef = Units.inchesToMeters(144.0);
@@ -226,7 +230,8 @@ public final class Constants {
          * Transform a Translation2d for the blue alliance to the complementary Translation2d for the red alliance.
          * @param blueRotation - the Translation2d for the robot in the blue alliance.
          * @return - the Translation2d for the robot in the red alliance.
-         */public static Translation2d BlueToRedTranslation(Translation2d blueTranslation) {
+         */
+        public static Translation2d BlueToRedTranslation(Translation2d blueTranslation) {
             return new Translation2d(xMax - blueTranslation.getX(), yMax - blueTranslation.getY());
         }
 
@@ -246,6 +251,15 @@ public final class Constants {
          */
         public static Pose2d BlueToRedPose(Pose2d bluePose) {
             return new Pose2d(BlueToRedTranslation(bluePose.getTranslation()), BlueToRedRotation(bluePose.getRotation()));
+        }
+
+        public static double robotHeadingForCameraToBlueReefCenter(double x, double y) {
+            return MathUtil.angleModulus(
+                Math.atan2(
+                    blueReefCenter.getY() - y
+                    , blueReefCenter.getX() - x
+                ) + VisionConstants.cameraHeading
+            );
         }
 
         // Field Coordinate transformations for alliances.
@@ -314,26 +328,22 @@ public final class Constants {
     public static final class VisionConstants {
         /**
         * Physical location of the camera on the robot, relative to the center of the robot.
+        * Distance in meters, angles in radians
         */
-        // Values in Meters.
+        public static final double cameraHeading = Units.degreesToRadians(180.0); // Camera is facing backwards.
+        public static final double cameraHeight = Units.inchesToMeters(15.0);
+        public static final double cameraXOffsetToRobotCenter = Units.inchesToMeters(-17.5);
+        public static final double cameraYOffsetToRobotCenter = Units.inchesToMeters(0.0);
+        
         public static final Transform3d XCAMERA_TO_ROBOT =
-        // x pos or neg doesn't get us where we want to go      w/apriltag 1    
-        //new Transform3d(new Translation3d(-0.3425, 0.0, -0.233), new Rotation3d()); // Before we rotated the RoboRio
-        // new Transform3d(new Translation3d(0.0, -0.3425, -0.233), new Rotation3d());
-        //new Transform3d(new Translation3d(Units.inchesToMeters(-10.5), Units.inchesToMeters(0.0), -0.233), new Rotation3d());
-        // worked nicely 2024-01-16 1700     w/ap-riltag 1       new Transform3d(new Translation3d(0, 0.3425, -0.233), new Rotation3d());
-
-        // Camera is located 10.5 inches behind the center of the robot,
-        // 0 meters offset to the side, 
-        // 0.233 meters above the ground.
         // TODO Check values and signs of values.
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-17.5),
-                Units.inchesToMeters(0.0),
-                Units.inchesToMeters(15.0) // Distance is 10.5 inches but emperically 0 works better.
+                cameraXOffsetToRobotCenter,
+                cameraYOffsetToRobotCenter,
+                cameraHeight
             ),
-            new Rotation3d(0.0,0.0, Math.PI)
+            new Rotation3d(0.0,0.0, cameraHeading)
         );
         public static double cameraXOffsetToRobot = Units.inchesToMeters(-12.5);
         public static double cameraYOffsetToRobot = Units.inchesToMeters(0.0);

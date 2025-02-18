@@ -18,6 +18,7 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.utils.DrivingConfig;
 import frc.utils.PreussAutoDrive;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.RobotContainer;
 import frc.robot.Utilities;
 
 public class GotoAprilTagCommand extends Command {
@@ -35,7 +36,7 @@ public class GotoAprilTagCommand extends Command {
   private boolean onTarget;
   private double cameraToRobotAngle; // Radians the rotation to get from the camera to the front of the robot.
   private boolean debug = true; // turn on/off SmartDashBoard feedback
-  private boolean simulatingRobot = true; // force robot starting position and april tag number for debugging purposes.
+  private boolean simulatingRobot = RobotContainer.isSimulation; // force robot starting position and april tag number for debugging purposes.
   private int simulationNumber = 0;
   private Pose2d simulatedRobotPose;
   private int[] simulationAprilTagIDs = new int [] {

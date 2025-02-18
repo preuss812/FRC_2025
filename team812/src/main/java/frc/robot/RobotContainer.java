@@ -57,6 +57,7 @@ import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.CompoundArmMovementCommand;
 import frc.robot.commands.GotoAprilTagCommand;
+import frc.robot.commands.GotoPoseCommand;
 //import frc.robot.subsystems.CameraVisionSubsystem;
 //import frc.robot.subsystems.ColorDetectionSubsytem;
 import frc.robot.commands.ShoulderHomeCommand;
@@ -76,6 +77,7 @@ import frc.robot.commands.OpticalLimitSwitch;
 //import frc.robot.commands.AlgaeIntakeCommand;
 //import frc.robot.commands.RotateRobotAutoCommand;
 import frc.robot.commands.RotateRobotCommand;
+import frc.robot.commands.SetCurrentPoseCommand;
 //import frc.robot.commands.ScoreAlgaeInProcessor;
 //import frc.robot.commands.ShooterCommand;
 import frc.robot.commands.ResetDriveTrainCommand;
@@ -85,7 +87,8 @@ import frc.robot.commands.ShoulderRotationCommand;
 //import frc.robot.commands.SwerveToProcessorCommand;
 //import frc.robot.commands.SwerveToPoseCommand;
 //import frc.robot.commands.SwerveToSourceCommand;
-import frc.robot.commands.SwerveToPoseTest;
+import frc.robot.commands.SwerveToProcessorCommand;
+import frc.robot.commands.SwerveToProcessorCommand;
 import frc.robot.commands.TakeInAlgaeOLSCommand;
 //import frc.robot.commands.GotoSourceCommand;
 //import frc.robot.commands.DetectColorCommand;
@@ -125,6 +128,8 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
+  public static final boolean isSimulation = true;
+  public static final boolean isDebug = true;
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE);
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
   //public static AnalogUltrasonicDistanceSubsystem m_UltrasonicDistanceSubsystem = new AnalogUltrasonicDistanceSubsystem();
@@ -351,13 +356,20 @@ public class RobotContainer {
       
       if (true || debug) {
         SmartDashboard.putData("Dance", TrajectoryPlans.robotDanceCommand(m_robotDrive, m_PoseEstimatorSubsystem, null /*=default*/) );
-        SmartDashboard.putData("TTcmd", new SwerveToPoseTest(m_robotDrive, m_PoseEstimatorSubsystem));
+        SmartDashboard.putData("S2P", new SwerveToProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem));
         SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, 0.0, false));
         SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
         SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.defaultAutoConfig, true));
         SmartDashboard.putData("DOP",new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController, m_robotDrive.defaultAutoConfig, true));
         SmartDashboard.putData("SHP", new InstantCommand(() -> m_ShoulderRotationSubsystem.setSensorPosition(45)));
         SmartDashboard.putData("ELP", new InstantCommand(() -> m_ElbowRotationSubsystem.setSensorPosition(45)));
+        SmartDashboard.putData("G2P", new GotoPoseCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(FieldConstants.blueStartLine, m_PoseEstimatorSubsystem.getAprilTagPose(14).getY(), new Rotation2d(0.0)), null));
+        SmartDashboard.putData("TTcmd", new SequentialCommandGroup(
+            new SetCurrentPoseCommand(m_PoseEstimatorSubsystem)
+          , new SwerveToProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem)
+        ));
+         SmartDashboard.putData("SCP", new SetCurrentPoseCommand(m_PoseEstimatorSubsystem));
+
         // Start the game
         SmartDashboard.putData("AP0",
           new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(170), Units.degreesToRadians(60), true));
@@ -374,11 +386,12 @@ public class RobotContainer {
         SmartDashboard.putData("AP4",
           new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(-45),Units.degreesToRadians(95.0), true));
 
-          SmartDashboard.putData("AA4", new ConditionalCommand(
+          /*SmartDashboard.putData("AA4", new ConditionalCommand(
             TrajectoryPlans.blueAutoPlans.get(4),
             TrajectoryPlans.redAutoPlans.get(4),
             () -> Utilities.isBlueAlliance()
           ));
+          */
           //SmartDashboard.putData("AA5", TrajectoryPlans.autoPlans.get(5));
           //SmartDashboard.putData("AA6", TrajectoryPlans.autoPlans.get(6));
           //SmartDashboard.putData("AA7", TrajectoryPlans.autoPlans.get(7));
