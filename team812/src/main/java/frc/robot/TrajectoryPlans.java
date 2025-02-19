@@ -71,7 +71,7 @@ public class TrajectoryPlans {
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
         ;
-        public static final TrajectoryConfig m_defaultTrajectoryConfig = m_fullSpeedTrajectoryConfig;
+        public static final TrajectoryConfig m_defaultTrajectoryConfig = m_debugTrajectoryConfig;
 
     // Define a gridded map of the field to define a path from each square to the blue alliance processor.
     // Currently these paths are crude and need some refinement if they are to be used during a match.
@@ -588,7 +588,7 @@ public class TrajectoryPlans {
         Pose2d[] waypoints;
         Pose2d[] redWaypoints;
         
-        boolean testing = false;
+        boolean testing = true;
         // If we are the red alliance, we need to transform the waypoints to be red alliance waypoints.
         if (convertToRed) {
             redWaypoints = new Pose2d[blueWaypoints.length];
@@ -618,7 +618,7 @@ public class TrajectoryPlans {
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
             command
-            ,new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1]))
+            //,new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1]))
             //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.
             // will need some arm motion to socre the coral.
