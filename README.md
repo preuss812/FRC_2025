@@ -50,4 +50,3 @@
 * [WPILib Using Gyroscopes](https://docs.wpilib.org/en/stable/docs/software/hardware-apis/sensors/gyros-software.html)
 * [Kauai Labs navX-MXP Robotics Navigation Sensor User Guide](https://pdocs.kauailabs.com/navx-mxp/wp-content/uploads/2019/02/navx-mxp_robotics_navigation_sensor_user_guide.pdf)
 
-
