@@ -103,8 +103,8 @@ public class GotoAprilTagCommand extends Command {
     // Reset the pid controllers
     autoDrive.reset();
 
-    var results = photonCamera.getAllUnreadResults();
-    var pipelineResult = results.get(results.size() - 1);
+    var pipelineResult = poseEstimatorSubsystem.getLatestResult();
+
     if (pipelineResult.hasTargets() || simulatingRobot) {
       int fiducialId = -1; // Sentinel value
 

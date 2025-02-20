@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
@@ -114,8 +115,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     Utilities.toSmartDashboard("PE CurrentPose", getCurrentPose());
 
     // Update pose estimator with the best visible target
-    var results = photonCamera.getAllUnreadResults();
-    var pipelineResult = results.get(results.size() - 1);
+    var pipelineResult = getLatestResult();
 
     var resultTimestamp = pipelineResult.getTimestampSeconds();
     if (resultTimestamp != previousPipelineTimestamp && pipelineResult.hasTargets()) {
@@ -235,8 +235,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   
   public int getBestAprilTag(double maximumAmbiguity) {
     int fiducialID = NO_TAG_FOUND; // Sentinel value indicating no tag found
-    var results = photonCamera.getAllUnreadResults();
-    var pipelineResult = results.get(results.size() - 1);
+    var pipelineResult = getLatestResult();
 
     if (pipelineResult.hasTargets()) {
       var target = pipelineResult.getBestTarget();
@@ -248,4 +247,18 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     return fiducialID;  
   }
 
+  public PhotonPipelineResult getLatestResult() {
+        //verifyVersion();
+
+        // Grab the latest result. We don't care about the timestamp from NT - the metadata header has
+        // this, latency compensated by the Time Sync Client
+        var results = photonCamera.getAllUnreadResults();
+        //var ret = resultSubscriber.get();
+        if (results.size() == 0) {
+          return new PhotonPipelineResult();
+        } else {
+          return results.get(results.size() - 1);
+        }
+        
+    }
 }

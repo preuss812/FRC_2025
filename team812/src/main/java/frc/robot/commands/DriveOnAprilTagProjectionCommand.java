@@ -13,7 +13,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.CameraVisionSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.utils.Line;
@@ -94,7 +93,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
   @Override
   public void initialize() {
     SmartDashboard.putString("DP","Active");
-    int fiducialId = CameraVisionSubsystem.NO_TAG_FOUND;
+    int fiducialId = -1;
     autoDrive.reset();
     aprilTagPose = null;
     commandIsActive = false;
@@ -110,7 +109,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
       fiducialId = poseEstimatorSubsystem.getBestAprilTag(0.2); 
     }
 
-    if (fiducialId != CameraVisionSubsystem.NO_TAG_FOUND) {
+    if (fiducialId != -1) {
           // Get the tag pose from field layout - consider that the layout will be null if it failed to load
       aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(fiducialId);
       commandIsActive = true;
