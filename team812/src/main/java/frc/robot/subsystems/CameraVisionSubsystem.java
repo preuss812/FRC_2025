@@ -22,9 +22,10 @@ public class CameraVisionSubsystem extends SubsystemBase {
     //camera.setPipelineIndex(0);
   }
 
-  public boolean hasTargets ()
+  public boolean hasTargets()
   {
-    var result = camera.getLatestResult();
+    var results = camera.getAllUnreadResults();
+    var result = results.get(results.size() - 1);
     var idx = camera.getPipelineIndex();
     if (debug) SmartDashboard.putNumber("pipeline",idx);
   //camera.setDriverMode(false); // a test if this does what we expect
@@ -38,8 +39,9 @@ public class CameraVisionSubsystem extends SubsystemBase {
   }
 
   public PhotonTrackedTarget getBestTarget() {
-    var result = camera.getLatestResult();
-     boolean hasTargets = result.hasTargets(); // true or false
+    var results = camera.getAllUnreadResults();
+    var result = results.get(results.size() - 1);
+    boolean hasTargets = result.hasTargets(); // true or false
   
     // if camera sees something, then
     if (hasTargets){
@@ -52,9 +54,10 @@ public class CameraVisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run (50 /s)
-   var result = camera.getLatestResult();
-
-   boolean hasTargets = result.hasTargets(); // true or false
+    var results = camera.getAllUnreadResults();
+    var result = results.get(results.size() - 1);
+    
+    boolean hasTargets = result.hasTargets(); // true or false
 
    // if camera sees something, then // TODO is this part even needed?
       if (hasTargets){
@@ -83,7 +86,9 @@ public class CameraVisionSubsystem extends SubsystemBase {
    */
   public int getBestAprilTag(double maximumAmbiguity) {
     int fiducialID = NO_TAG_FOUND; // Sentinel value indicating no tag found
-    var pipelineResult = camera.getLatestResult();
+    var results = camera.getAllUnreadResults();
+    var pipelineResult = results.get(results.size() - 1);
+
     if (pipelineResult.hasTargets()) {
       var target = pipelineResult.getBestTarget();
       var bestFiducialId = target.getFiducialId();

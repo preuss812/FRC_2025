@@ -114,7 +114,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     Utilities.toSmartDashboard("PE CurrentPose", getCurrentPose());
 
     // Update pose estimator with the best visible target
-    var pipelineResult = photonCamera.getLatestResult();
+    var results = photonCamera.getAllUnreadResults();
+    var pipelineResult = results.get(results.size() - 1);
+
     var resultTimestamp = pipelineResult.getTimestampSeconds();
     if (resultTimestamp != previousPipelineTimestamp && pipelineResult.hasTargets()) {
       previousPipelineTimestamp = resultTimestamp;
@@ -233,7 +235,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   
   public int getBestAprilTag(double maximumAmbiguity) {
     int fiducialID = NO_TAG_FOUND; // Sentinel value indicating no tag found
-    var pipelineResult = photonCamera.getLatestResult();
+    var results = photonCamera.getAllUnreadResults();
+    var pipelineResult = results.get(results.size() - 1);
+
     if (pipelineResult.hasTargets()) {
       var target = pipelineResult.getBestTarget();
       var bestFiducialId = target.getFiducialId();
