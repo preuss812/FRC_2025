@@ -229,8 +229,8 @@ public class PreussSwerveControllerCommand extends Command {
     Pose2d desiredPose = desiredState.poseMeters;
 
     if (RobotContainer.isSimulation) {
-      RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose( new Pose2d(desiredPose.getTranslation(), m_desiredRotation.get()));
-      RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(new Pose2d(desiredPose.getTranslation(), m_desiredRotation.get()));
+      //RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose( new Pose2d(desiredPose.getTranslation(), m_desiredRotation.get()));
+      //RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(new Pose2d(desiredPose.getTranslation(), m_desiredRotation.get()));
     }
     var targetChassisSpeeds =
         m_controller.calculate(m_pose.get(), desiredState, m_desiredRotation.get());

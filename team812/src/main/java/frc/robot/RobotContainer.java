@@ -128,7 +128,7 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
-  public static final boolean isSimulation = true;
+  public static final boolean isSimulation = false;
   public static final boolean isDebug = true;
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE);
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
@@ -272,7 +272,7 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.debugAutoConfig, false)
+        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(18), m_robotDrive.debugAutoConfig, false)
       );
     
       

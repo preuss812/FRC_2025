@@ -146,8 +146,8 @@ public class GotoPoseCommand extends Command {
       // Use the unrotated speeds to control the robot.  It is possible that these speeds could exceed te max throttle but dont
       // clip them unless absolutely necessary to avoid artifacts in the paths.
       // The extra magnitude is more or less limited to sqrt(2)*maxThrottle
-      xSpeed = MathUtil.clamp(unrotatedSpeedsPose.getX(), -1.0, 1.0);
-      ySpeed = MathUtil.clamp(unrotatedSpeedsPose.getY(), -1.0, 1.0);
+      xSpeed = -MathUtil.clamp(unrotatedSpeedsPose.getX(), -1.0, 1.0);
+      ySpeed = -MathUtil.clamp(unrotatedSpeedsPose.getY(), -1.0, 1.0);
 
       // We are controlling rotation whether we use it for "onTarget" calculations or not.
       rotationSpeed = autoDrive.calculateClampedRotation(rotationError);
