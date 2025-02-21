@@ -437,13 +437,13 @@ public final class Constants {
         public static final double kRotationalDecreaseSlewRate = 4.0;
 
         // Driving Parameters for PRECISION DrivingMode.  This is a slower mode for more precise positioning.
-        public static final double kMaxSpeedMetersPerSecondPM = 0.8; //4.5; 1.0 in the lab // Limit how violently swerve works
-        public static final double kMaxAngularSpeedPM = 1 * Math.PI; // radians per second
+        public static final double kMaxSpeedMetersPerSecondPM = 1.6; //4.5; 1.0 in the lab // Limit how violently swerve works
+        public static final double kMaxAngularSpeedPM = 4 * Math.PI; // radians per second
     
-        public static final double kDirectionSlewRatePM = 0.6; // radians per second
+        public static final double kDirectionSlewRatePM = 1.2; // radians per second
         public static final double kMagnitudeIncreaseSlewRatePM = 0.45; // percent per second (1 = 100%)
         public static final double kMagnitudeDecreaseSlewRatePM = 3.6; // percent per second (1 = 100%)
-        public static final double kRotationalIncreaseSlewRatePM = 0.3;// 2.0; // percent per second (1 = 100%) // UNDO
+        public static final double kRotationalIncreaseSlewRatePM = 4.0; // percent per second (1 = 100%) // UNDO
         public static final double kRotationalDecreaseSlewRatePM = 4.0;
         
         // Chassis configuration

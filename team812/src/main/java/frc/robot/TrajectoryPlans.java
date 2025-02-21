@@ -433,7 +433,7 @@ public class TrajectoryPlans {
                 //new Pose2d(AT20.getX(),AT14.getY(), startingRotation),
                 //new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
                 new Pose2d(FieldConstants.zeroToReef,AT14.getY(), startingRotation),
-                new Pose2d(FieldConstants.zeroToReef*0.66,AT18.getY()+1.0, new Rotation2d(Math.PI*0.5)),
+                new Pose2d(FieldConstants.zeroToReef * 0.66 - 1,AT18.getY()+1.0, new Rotation2d(Math.PI*0.5)),
                 nearAT18
             },
             config,
@@ -493,6 +493,17 @@ public class TrajectoryPlans {
                 new Pose2d(AT22.getX(),AT15.getY(), startingRotation),
                 new Pose2d(AT17.getX(),AT15.getY(), startingRotation),
                 nearAT17
+            }
+            , config
+            , 22
+        );
+
+        // Build a path adding it to the autoChooser which will select the autonomous routine
+        addAutoMode("Right 45 Degrees"
+            , new Pose2d[] {
+                new Pose2d(FieldConstants.blueStartLine, AT14.getY(), startingRotation),
+                new Pose2d(FieldConstants.blueStartLine, FieldConstants.yCenter + 1, startingRotation),
+                nearAT21
             }
             , config
             , 22
@@ -612,7 +623,7 @@ public class TrajectoryPlans {
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
             new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-            //new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
+            new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
             //new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
             //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
