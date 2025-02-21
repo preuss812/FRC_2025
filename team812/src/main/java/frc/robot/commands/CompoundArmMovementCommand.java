@@ -27,7 +27,6 @@ public class CompoundArmMovementCommand extends ParallelCommandGroup {
     ElbowRotationSubsystem elbowRotationSubsystem
     , ShoulderRotationSubsystem shoulderRotationSubsystem
     , double elbowPosition, double shoulderPosition
-    , boolean simulation
     ) {
     
     this.m_elbowRotationSubsystem = elbowRotationSubsystem;
@@ -35,8 +34,8 @@ public class CompoundArmMovementCommand extends ParallelCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new ElbowRotationCommand(m_elbowRotationSubsystem, elbowPosition, simulation),
-      new ShoulderRotationCommand(m_shoulderRotationSubsystem, shoulderPosition, simulation)
+      new ElbowRotationCommand(m_elbowRotationSubsystem, elbowPosition),
+      new ShoulderRotationCommand(m_shoulderRotationSubsystem, shoulderPosition)
     );
   }
 }

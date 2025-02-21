@@ -89,6 +89,7 @@ public class PreussAutoDrive {
         xController.reset();
         yController.reset();
         rotationController.reset();
+        simulatedRobotPose = poseEstimatorSubsystem.getCurrentPose();
     }
 
     public void drive(double xSpeed, double ySpeed, double rotationSpeed, boolean fieldRelative, boolean rateLimit) {
@@ -96,7 +97,9 @@ public class PreussAutoDrive {
         if (simulation) {
             // For debug, update the forced robot location based on the x,y,theta applied.
             double scale=0.06; // Rate that the simulation applies the changes to the robot's position.
-            simulatedRobotPose = new Pose2d(simulatedRobotPose.getX()+xSpeed*scale
+            simulatedRobotPose = poseEstimatorSubsystem.getCurrentPose();
+            simulatedRobotPose = new Pose2d(
+              simulatedRobotPose.getX()+xSpeed*scale
             , simulatedRobotPose.getY()+ySpeed*scale
             , simulatedRobotPose.getRotation().plus(new Rotation2d(rotationSpeed*scale)));
 

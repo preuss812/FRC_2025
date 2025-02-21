@@ -82,6 +82,16 @@ public class Autonomous extends SequentialCommandGroup {
         Math.atan2(myReefY - y,myReefX - x) + VisionConstants.cameraHeading);
   }
 
+  public static double robotHeadingForCameraToReefCenter(boolean convertToRed, double x, double y) {
+    if (convertToRed) {
+      return MathUtil.angleModulus(
+        Math.atan2(FieldConstants.redReefCenter.getY() - y, FieldConstants.redReefCenter.getX() - x) + VisionConstants.cameraHeading);
+    } else {
+      return MathUtil.angleModulus(
+        Math.atan2(FieldConstants.blueReefCenter.getY() - y, FieldConstants.blueReefCenter.getX() - x) + VisionConstants.cameraHeading);
+    }
+  }
+
   /**
    * set up the reef center for autonomous driving based on the alliance color.
    */
@@ -136,7 +146,6 @@ public class Autonomous extends SequentialCommandGroup {
         , m_ShoulderRotationSubsystem
         , ElbowConstants.kElbowDrivingWithCoralPosition
         , ShoulderConstants.kShoulderDrivingWithCoralPosition
-        , false
         )
       );
 
@@ -173,8 +182,7 @@ public class Autonomous extends SequentialCommandGroup {
           m_robotDrive,
           m_PhotonCamera,
           DriveConstants.kFrontToCenterDistance,
-          m_robotDrive.debugAutoConfig, // TODO change to defaultAutoConfig for faster driving.
-          false // Not simulation
+          m_robotDrive.debugAutoConfig // TODO change to defaultAutoConfig for faster driving.
         )
       );
 
@@ -183,8 +191,7 @@ public class Autonomous extends SequentialCommandGroup {
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowScoreCoralPosition,
-          ShoulderConstants.kShoulderScoreCoralPosition,
-          false // This is not simulation
+          ShoulderConstants.kShoulderScoreCoralPosition
         )
       );
       addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
@@ -195,24 +202,21 @@ public class Autonomous extends SequentialCommandGroup {
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition,
-          false // This is not simulation
+          ShoulderConstants.kShoulderLowAlgaePosition
         ),
         new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition,
-          false // This is not simulation
+          ShoulderConstants.kShoulderLowAlgaePosition
         ),
         new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null), // This could be dangerous 
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition,
-          false // This is not simulation
+          ShoulderConstants.kShoulderLowAlgaePosition
         ),
         new SwerveToProcessorCommand(
             m_robotDrive

@@ -31,12 +31,14 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.PreussSwerveControllerCommand;
 import frc.robot.commands.RotateRobotCommand;
 import frc.robot.commands.VerifyExpectedAprilTagCommand;
 import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
+import frc.utils.DrivingConfig;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 
 /** 
@@ -59,19 +61,23 @@ public class TrajectoryPlans {
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
     public static ArrayList<Integer> expectedAprilTag = new ArrayList<Integer>();
 
-    // For now, default speeds are the debug/slow speeds.
-    public static final TrajectoryConfig m_debugTrajectoryConfig = new TrajectoryConfig(
-        AutoConstants.kMaxSpeedMetersPerSecond/2.5,
-        AutoConstants.kMaxAccelerationMetersPerSecondSquared/2.5)
+    // For now, default speeds are coming from Constants.AutoConstants which has the slow/precision speeds.
+    // the 0.9 is to allow headroom for the robot to make sure it does not run out of time during the FollowTrajectoryCommand.
+    public static final TrajectoryConfig m_defaultTrajectoryConfig = new TrajectoryConfig(
+        AutoConstants.kMaxSpeedMetersPerSecond*0.9,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared*0.9)
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
-    public static final TrajectoryConfig m_fullSpeedTrajectoryConfig = new TrajectoryConfig(
+
+    // Having 2 configs was causing confusion so now there is just one.
+    /*public static final TrajectoryConfig m_fullSpeedTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
         AutoConstants.kMaxAccelerationMetersPerSecondSquared)
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
         ;
-        public static final TrajectoryConfig m_defaultTrajectoryConfig = m_debugTrajectoryConfig;
+    public static final TrajectoryConfig m_defaultTrajectoryConfig = m_debugTrajectoryConfig;
+    */
 
     // Define a gridded map of the field to define a path from each square to the blue alliance processor.
     // Currently these paths are crude and need some refinement if they are to be used during a match.
@@ -333,6 +339,7 @@ public class TrajectoryPlans {
     public static void addAutoMode(
         String name,
         Pose2d[] waypoints,
+        Pose2d finalPose,
         TrajectoryConfig config,
         int aprilTagID) {
 
@@ -342,6 +349,7 @@ public class TrajectoryPlans {
             RobotContainer.m_robotDrive,
             RobotContainer.m_PoseEstimatorSubsystem,
             waypoints,
+            finalPose,
             config,
             false
         ));
@@ -349,6 +357,7 @@ public class TrajectoryPlans {
             RobotContainer.m_robotDrive,
             RobotContainer.m_PoseEstimatorSubsystem,
             waypoints,
+            finalPose,
             config,
             true
         ));
@@ -361,8 +370,12 @@ public class TrajectoryPlans {
      * @param y = a double that is the y field coordinate.
      * @return - a Pose2d object using the supplied x and y and a rotation that will rotate the robot to face the reef.
      */
-    public static Pose2d poseWithCameraFacingTheReef(double x, double y) {
-        return new Pose2d(x, y, new Rotation2d(FieldConstants.robotHeadingForCameraToBlueReefCenter(x,y)));
+    public static Pose2d poseWithCameraFacingTheReef(boolean convertToRed, double x, double y) {
+        if (convertToRed) {
+            return new Pose2d(x, y, new Rotation2d(FieldConstants.robotHeadingForCameraToRedReefCenter(x,y)));
+        } else {
+            return new Pose2d(x, y, new Rotation2d(FieldConstants.robotHeadingForCameraToBlueReefCenter(x,y)));
+        }
     }
     /**
      * Create predefined autonomous routines for use during the autonomous period.
@@ -379,7 +392,8 @@ public class TrajectoryPlans {
     public static void buildAutoTrajectories() {
         // The staring poses will be on the blue starting line facing back toward the blue drive station
         Rotation2d startingRotation = new Rotation2d(0.0);
-        double offsetFromAprilTag = Units.inchesToMeters(-5.0); // 0.5 meters from the april tag
+        double offsetFromAprilTag = Units.inchesToMeters(40); // 0.5 meters from the april tag
+        double offsetToTouchReef = Units.inchesToMeters(-5.0); // -5 inches meters from the april tag Note: this should be 0.0 so something is off somewhere.
         if (debug) checkAllTrajectories();
         // Get/create poses for each Reef April tag and barge april tag
         // for omre concise coding below.
@@ -398,6 +412,12 @@ public class TrajectoryPlans {
         Pose2d nearAT20 = DriveConstants.robotRearAtPose(AT20, offsetFromAprilTag);
         Pose2d nearAT21 = DriveConstants.robotRearAtPose(AT21, offsetFromAprilTag);
         Pose2d nearAT22 = DriveConstants.robotRearAtPose(AT22, offsetFromAprilTag);
+        Pose2d atAT17 = DriveConstants.robotRearAtPose(AT17, offsetToTouchReef);
+        Pose2d atAT18 = DriveConstants.robotRearAtPose(AT18, offsetToTouchReef);
+        Pose2d atAT19 = DriveConstants.robotRearAtPose(AT19, offsetToTouchReef);
+        Pose2d atAT20 = DriveConstants.robotRearAtPose(AT20, offsetToTouchReef);
+        Pose2d atAT21 = DriveConstants.robotRearAtPose(AT21, offsetToTouchReef);
+        Pose2d atAT22 = DriveConstants.robotRearAtPose(AT22, offsetToTouchReef);
         //TrajectoryConfig config = m_debugTrajectoryConfig;
         TrajectoryConfig config = m_defaultTrajectoryConfig;
 
@@ -436,6 +456,7 @@ public class TrajectoryPlans {
                 new Pose2d(FieldConstants.zeroToReef * 0.66 - 1,AT18.getY()+1.0, new Rotation2d(Math.PI*0.5)),
                 nearAT18
             },
+            atAT18,
             config,
             20);
 
@@ -446,6 +467,7 @@ public class TrajectoryPlans {
                 new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
                 nearAT19           
             }
+            ,atAT19
             ,config
             ,20
         );
@@ -458,6 +480,7 @@ public class TrajectoryPlans {
                 //poseWithCameraFacingTheReef((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY()),  Adds extra squiggles to the path
                 nearAT20
             }
+            ,atAT20
             , config
             , 20
         );
@@ -470,6 +493,7 @@ public class TrajectoryPlans {
                 new Pose2d((AT21.getX()+FieldConstants.blueStartLine)/2.0,FieldConstants.yCenter, startingRotation),
                 nearAT21
             }
+            ,atAT21
             , config
             , 21
             );
@@ -482,6 +506,7 @@ public class TrajectoryPlans {
                 new Pose2d((AT22.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
             nearAT22
             }
+            ,atAT22
             , config
             , 22
         );
@@ -494,6 +519,7 @@ public class TrajectoryPlans {
                 new Pose2d(AT17.getX(),AT15.getY(), startingRotation),
                 nearAT17
             }
+            ,atAT17
             , config
             , 22
         );
@@ -501,12 +527,13 @@ public class TrajectoryPlans {
         // Build a path adding it to the autoChooser which will select the autonomous routine
         addAutoMode("Right 45 Degrees"
             , new Pose2d[] {
-                new Pose2d(FieldConstants.blueStartLine, AT14.getY(), startingRotation),
-                new Pose2d(FieldConstants.blueStartLine, FieldConstants.yCenter + 1, startingRotation),
+                poseWithCameraFacingTheReef(false, FieldConstants.blueStartLine, AT14.getY()),
+                //poseWithCameraFacingTheReef(FieldConstants.blueStartLine-0.2, FieldConstants.yCenter + 1),
                 nearAT21
             }
+            ,atAT21
             , config
-            , 22
+            , 20
         );
 
         SmartDashboard.putData("AutoSelector", Robot.autoChooser);
@@ -584,7 +611,8 @@ public class TrajectoryPlans {
      * the processor. 
      * @param driveTrain                - The drive train
      * @param poseEstimatorSubsystem    - the pose estimator
-     * @param waypoints                 - an array of poses for the start, waypoints and end of the driving path.
+     * @param blueWaypoints             - an array of poses for the start, waypoints and end of the driving path.
+     * @param blueFinalPose             - the final destination for the robot.
      * @param config                    - drive train parameters to control robot speeds
      * @param convertToRed              - if true, the waypoints will be converted to red alliance waypoints.
      * @return
@@ -593,11 +621,13 @@ public class TrajectoryPlans {
         DriveSubsystemSRX driveTrain
         , PoseEstimatorSubsystem poseEstimatorSubsystem
         , Pose2d[] blueWaypoints
+        , Pose2d blueFinalPose
         , TrajectoryConfig config
         , boolean convertToRed) {
         Command  command = null;
         Pose2d[] waypoints;
         Pose2d[] redWaypoints;
+        Pose2d finalPose;
         
         boolean testing = true;
         // If we are the red alliance, we need to transform the waypoints to be red alliance waypoints.
@@ -607,8 +637,10 @@ public class TrajectoryPlans {
                 redWaypoints[i] = FieldConstants.BlueToRedPose(blueWaypoints[i]);
             }
             waypoints = redWaypoints;
+            finalPose = FieldConstants.BlueToRedPose(blueFinalPose);
         } else {
             waypoints = blueWaypoints;
+            finalPose = blueFinalPose;
         }
         Trajectory trajectory = createTrajectory(driveTrain, waypoints, config);
         if (!testing) {
@@ -618,17 +650,19 @@ public class TrajectoryPlans {
         } else {
             command = getReefFacingSwerveCommand(driveTrain, poseEstimatorSubsystem, trajectory);
         }
-
+        DrivingConfig drivingConfig = null;
         return new SequentialCommandGroup(
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
             new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-            new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
+            new GotoPoseCommand(RobotContainer.m_robotDrive, RobotContainer.m_PoseEstimatorSubsystem, poseWithCameraFacingTheReef(convertToRed, waypoints[0].getX(), waypoints[0].getY()), drivingConfig),
+            //new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
             //new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
             //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
             command
+            , new GotoPoseCommand(RobotContainer.m_robotDrive, RobotContainer.m_PoseEstimatorSubsystem, finalPose, drivingConfig)
             //,new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1]))
             //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.

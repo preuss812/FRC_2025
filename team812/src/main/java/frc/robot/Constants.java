@@ -261,6 +261,14 @@ public final class Constants {
                 ) + VisionConstants.cameraHeading
             );
         }
+        public static double robotHeadingForCameraToRedReefCenter(double x, double y) {
+            return MathUtil.angleModulus(
+                Math.atan2(
+                    redReefCenter.getY() - y
+                    , redReefCenter.getX() - x
+                ) + VisionConstants.cameraHeading
+            );
+        }
 
         // Field Coordinate transformations for alliances.
         public static int BlueAlliance = 0;
@@ -330,6 +338,12 @@ public final class Constants {
         * Physical location of the camera on the robot, relative to the center of the robot.
         * Distance in meters, angles in radians
         */
+
+        public static final int NO_TAG_FOUND = -1;
+        public static final int MIN_FIDUCIAL_ID = 1;
+        public static final int MAX_FIDUCIAL_ID = 22;
+        public static final double maximumAmbiguity = 0.2;
+
         public static final double cameraHeading = Units.degreesToRadians(180.0); // Camera is facing backwards.
         public static final double cameraHeight = Units.inchesToMeters(15.0);
         public static final double cameraXOffsetToRobotCenter = Units.inchesToMeters(-17.5);
@@ -589,8 +603,9 @@ public final class Constants {
       }
 
       public static final class AutoConstants {
-        public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+        public static final double kAutoSlowdown = 1.0; // 1.0 is full speed, 0.5 is half speed, etc.
+        public static final double kMaxSpeedMetersPerSecond = DriveConstants.kMaxSpeedMetersPerSecondPM*kAutoSlowdown;
+        public static final double kMaxAccelerationMetersPerSecondSquared = DriveConstants.kMagnitudeIncreaseSlewRatePM*kAutoSlowdown;
         public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
         public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
     

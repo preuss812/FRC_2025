@@ -31,7 +31,7 @@ public class BlackBoxSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
 	// This method will be called once per scheduler run
-	printBits();	
+	if (debug) printBits();	
   }
     // This function reads each button on the control box and sets 
     // a corresponding single bit in the integer variable flagBits

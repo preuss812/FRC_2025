@@ -20,6 +20,7 @@ import frc.utils.DrivingConfig;
 import frc.utils.PreussAutoDrive;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.RobotContainer;
 import frc.robot.Utilities;
 
 public class DriveOnAprilTagProjectionCommand extends Command {
@@ -65,7 +66,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     , PhotonCamera photonCamera
     , XboxController xbox
     , DrivingConfig config
-    , boolean simulation) {
+    ) {
     
     // Use addRequirements() here to declare subsystem dependencies.
     this.poseEstimatorSubsystem = poseEstimatorSubsystem;
@@ -73,7 +74,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     this.visionSubsystem = photonCamera;
     this.xbox = xbox;
     this.config = config;
-    this.simulation = simulation;
+    this.simulation = RobotContainer.isSimulation();
     autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, config, simulation);
     cameraToRobotAngle = VisionConstants.XCAMERA_TO_ROBOT.getRotation().getZ();
 
@@ -106,7 +107,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
       simulationCycleCount = simulationMinCount;
       autoDrive.setCurrentPose(simulationStartingPose);
     } else {
-      fiducialId = poseEstimatorSubsystem.getBestAprilTag(0.2); 
+      fiducialId = poseEstimatorSubsystem.lastAprilTagSeen(); 
     }
 
     if (fiducialId != -1) {

@@ -57,12 +57,12 @@ public class Robot extends TimedRobot {
     nttable = ntinst.getTable("0team812");
     CameraServer.startAutomaticCapture(0); // 2024 forward facing camera for driverstation
     m_robotContainer = new RobotContainer();
-    SmartDashboard.putData(CommandScheduler.getInstance()); // This puts running commands on the shuffleboard.
+    //SmartDashboard.putData(CommandScheduler.getInstance()); // This puts running commands on the shuffleboard.
     addPeriodic(() -> Utilities.setAlliance(), 1.0 );
 
     // Add a dropdown menu to select the autonomous plan.
 
-    SmartDashboard.putNumber("AutoStartDelay", 0.0);  // This puts up a place on the dashboard we can use to modify autonomous.
+    //SmartDashboard.putNumber("AutoStartDelay", 0.0);  // This puts up a place on the dashboard we can use to modify autonomous.
     
   }
 
@@ -75,14 +75,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    try {
-      int autoMode = autoChooser.getSelected();
+    //try {
+      //int autoMode = autoChooser.getSelected();
     
       // These next 2 are redundant and just for debug:
-      SmartDashboard.putNumber("AutoMode", autoMode);
-      SmartDashboard.putString("AutoModeText", TrajectoryPlans.autoNames.get(autoMode));
-    }
-    catch (Exception e) {}
+      //SmartDashboard.putNumber("AutoMode", autoMode);
+      //SmartDashboard.putString("AutoModeText", TrajectoryPlans.autoNames.get(autoMode));
+    //}
+    //catch (Exception e) {}
 
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
@@ -110,7 +110,13 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     Utilities.setAlliance();
     Autonomous.setReefCenter();
-    int autoOption = autoChooser.getSelected();
+    int autoOption;
+    try {
+      autoOption = autoChooser.getSelected();
+    }
+    catch(Exception d) {
+      autoOption = 1;
+    }
     if (autoOption >= 0 && autoOption < TrajectoryPlans.blueAutoPlans.size())
       autoPlan = autoOption;
       if (Utilities.isBlueAlliance()) {

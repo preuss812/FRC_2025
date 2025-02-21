@@ -117,7 +117,6 @@ public class RobotContainer {
   // ExampleCommand(m_exampleSubsystem);
   //private final DriveTrain m_DriveTrain = new DriveTrain();
   // The robot's subsystems
-  private static boolean debug = false;
   public final static DriveSubsystemSRX m_robotDrive = new DriveSubsystemSRX();
 
   public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
@@ -128,8 +127,10 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
-  public static final boolean isSimulation = false;
+  private static final boolean isSimulation = true;
   public static final boolean isDebug = true;
+  private static boolean debug = true && isDebug(); // To enable debugging in this module, change false to true.
+
   //public static PowerDistribution m_PowerDistribution = new PowerDistribution(0, ModuleType.kCTRE);
   //public static ColorDetectionSubsytem m_ColorDetectionSubsystem = new ColorDetectionSubsytem();
   //public static AnalogUltrasonicDistanceSubsystem m_UltrasonicDistanceSubsystem = new AnalogUltrasonicDistanceSubsystem();
@@ -221,11 +222,13 @@ public class RobotContainer {
       new RunCommand(() -> m_ElbowRotationSubsystem.rotate(-leftJoystick.getY()), m_ElbowRotationSubsystem)
     );
     
+    /*
     // The right joystick controls the rotation of the shoulder.
     m_ShoulderRotationSubsystem.setDefaultCommand(
       new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
-    
+    */
+
     /* Switched to TriggerButton
     // Default is to expel Algaes based on the percentage pulled of the left trigger.
     m_AlgaeIntakeSubsystem.setDefaultCommand(
@@ -272,7 +275,7 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(18), m_robotDrive.debugAutoConfig, false)
+        new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(18), m_robotDrive.debugAutoConfig)
       );
     
       
@@ -333,7 +336,7 @@ public class RobotContainer {
     ));
     
     /* Debugging below */
-    if (true || debug) {
+    if (debug) {
 
       SmartDashboard.putData("IC", new InstantCommand(() -> m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(1,4,new Rotation2d(0)))));
       SmartDashboard.putData("EL", new ElbowRotationCommand(m_ElbowRotationSubsystem, 5000));
@@ -354,16 +357,37 @@ public class RobotContainer {
        * for both red and blue alliances.
        */
       
-      if (true || debug) {
+      if (debug) {
+        boolean controlRotation = true;
+        boolean relative = true;
         SmartDashboard.putData("Dance", TrajectoryPlans.robotDanceCommand(m_robotDrive, m_PoseEstimatorSubsystem, null /*=default*/) );
         SmartDashboard.putData("S2P", new SwerveToProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem));
-        SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, 0.0, false));
-        SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), false));
-        SmartDashboard.putData("G2A",new GotoAprilTagCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, Units.inchesToMeters(30), m_robotDrive.defaultAutoConfig, true));
-        SmartDashboard.putData("DOP",new DriveOnAprilTagProjectionCommand(m_PoseEstimatorSubsystem, m_robotDrive, m_camera, m_driverController, m_robotDrive.defaultAutoConfig, true));
+        SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, Units.degreesToRadians(45.0), relative));
+        SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), controlRotation));
+        SmartDashboard.putData("G2A",new GotoAprilTagCommand(
+          m_PoseEstimatorSubsystem
+          , m_robotDrive
+          , m_camera
+          , Units.inchesToMeters(30)
+          , m_robotDrive.defaultAutoConfig
+        ));
+        SmartDashboard.putData("DOP",new DriveOnAprilTagProjectionCommand(
+          m_PoseEstimatorSubsystem
+          , m_robotDrive
+          , m_camera
+          , m_driverController
+          , m_robotDrive.defaultAutoConfig
+          ));
         SmartDashboard.putData("SHP", new InstantCommand(() -> m_ShoulderRotationSubsystem.setSensorPosition(45)));
         SmartDashboard.putData("ELP", new InstantCommand(() -> m_ElbowRotationSubsystem.setSensorPosition(45)));
-        SmartDashboard.putData("G2P", new GotoPoseCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(FieldConstants.blueStartLine, m_PoseEstimatorSubsystem.getAprilTagPose(14).getY(), new Rotation2d(0.0)), null));
+        SmartDashboard.putData("G2P", new GotoPoseCommand(
+          m_robotDrive
+          , m_PoseEstimatorSubsystem
+          , new Pose2d(
+            FieldConstants.blueStartLine
+            , m_PoseEstimatorSubsystem.getAprilTagPose(14).getY()
+            , new Rotation2d(0.0))
+            , null));
         SmartDashboard.putData("TTcmd", new SequentialCommandGroup(
             new SetCurrentPoseCommand(m_PoseEstimatorSubsystem)
           , new SwerveToProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem)
@@ -372,19 +396,19 @@ public class RobotContainer {
 
         // Start the game
         SmartDashboard.putData("AP0",
-          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(170), Units.degreesToRadians(60), true));
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(170), Units.degreesToRadians(60)));
         // Grab algae from lower level
         SmartDashboard.putData("AP1",
-          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(180), Units.degreesToRadians(95), true));
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(180), Units.degreesToRadians(95)));
         // Pick up algae from ground
         SmartDashboard.putData("AP2",
-          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(30), Units.degreesToRadians(10), true));
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(30), Units.degreesToRadians(10)));
         // Score algae in processor 
         SmartDashboard.putData("AP3",
-          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(90), Units.degreesToRadians(5), true));
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(90), Units.degreesToRadians(5)));
         // Climbing
         SmartDashboard.putData("AP4",
-          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(-45),Units.degreesToRadians(95.0), true));
+          new CompoundArmMovementCommand(m_ElbowRotationSubsystem, m_ShoulderRotationSubsystem, Units.degreesToRadians(-45),Units.degreesToRadians(95.0)));
 
           /*SmartDashboard.putData("AA4", new ConditionalCommand(
             TrajectoryPlans.blueAutoPlans.get(4),
@@ -496,4 +520,18 @@ public class RobotContainer {
       );
     }
    }
+
+   /**
+    * isSimulation - return true if this is a simulation or false if the robot is running.
+    */
+    public static boolean isSimulation() {
+      return isSimulation;
+    }
+
+    /**
+    * isDebug - return true if debugging output is enabled.
+    */
+    public static boolean isDebug() {
+      return isDebug;
+    }
 }

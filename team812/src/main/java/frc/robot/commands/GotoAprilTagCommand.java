@@ -26,7 +26,6 @@ public class GotoAprilTagCommand extends Command {
   /** Creates a new command to move the robot to the specified pose. */
   private final PoseEstimatorSubsystem poseEstimatorSubsystem;
   private final DriveSubsystemSRX robotDrive;
-  private final PhotonCamera photonCamera;
   private final DrivingConfig config;
   private final double targetDistance;
   private final PreussAutoDrive autoDrive;
@@ -36,7 +35,7 @@ public class GotoAprilTagCommand extends Command {
   private boolean onTarget;
   private double cameraToRobotAngle; // Radians the rotation to get from the camera to the front of the robot.
   private boolean debug = true; // turn on/off SmartDashBoard feedback
-  private boolean simulatingRobot = RobotContainer.isSimulation; // force robot starting position and april tag number for debugging purposes.
+  private boolean simulatingRobot = RobotContainer.isSimulation(); // force robot starting position and april tag number for debugging purposes.
   private int simulationNumber = 0;
   private Pose2d simulatedRobotPose;
   private int[] simulationAprilTagIDs = new int [] {
@@ -78,14 +77,13 @@ public class GotoAprilTagCommand extends Command {
     , PhotonCamera photonCamera
     , double targetDistance
     , DrivingConfig config
-    , boolean simulatingRobot) {
+    ) {
     
     // Use addRequirements() here to declare subsystem dependencies.
     this.poseEstimatorSubsystem = poseEstimatorSubsystem;
     this.robotDrive = robotDrive;
-    this.photonCamera = photonCamera;
     this.targetDistance = targetDistance;
-    this.simulatingRobot = simulatingRobot;
+    this.simulatingRobot = RobotContainer.isSimulation();
     onTarget = false;
     this.config = config == null ? robotDrive.defaultAutoConfig : config;
     this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, config, simulatingRobot);
