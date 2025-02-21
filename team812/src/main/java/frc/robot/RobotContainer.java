@@ -127,7 +127,7 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
-  private static final boolean isSimulation = true;
+  private static final boolean isSimulation = false;
   public static final boolean isDebug = true;
   private static boolean debug = true && isDebug(); // To enable debugging in this module, change false to true.
 
