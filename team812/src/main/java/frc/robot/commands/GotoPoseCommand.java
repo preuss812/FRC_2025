@@ -133,9 +133,6 @@ public class GotoPoseCommand extends Command {
       // will lead to paths that may initially veer away from the target.
       double xSpeedTargetPose = autoDrive.calculateX(targetPoseErrorVector.getX());
       double ySpeedTargetPose = autoDrive.calculateY(targetPoseErrorVector.getY());
-
-      SmartDashboard.putNumber("GAAX", xSpeedTargetPose);
-      SmartDashboard.putNumber("GAAY", ySpeedTargetPose);
       
       // Enforce maThrottle by scaling the magnitude of the error vector.
       // If we clamped instead we would see a slightly off initial angle when clipping happens.

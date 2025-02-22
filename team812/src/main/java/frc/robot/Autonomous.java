@@ -178,11 +178,10 @@ public class Autonomous extends SequentialCommandGroup {
       // the robot to the algae.  Note that GotoAprilTagCommand goes to whatever tag it sees.
       // Also note that if we are too close to the target, the camera may not see it.
       addCommands(new GotoAprilTagCommand(
-          m_PoseEstimatorSubsystem,
-          m_robotDrive,
-          m_PhotonCamera,
-          DriveConstants.kFrontToCenterDistance,
-          m_robotDrive.debugAutoConfig // TODO change to defaultAutoConfig for faster driving.
+        m_robotDrive,
+        m_PoseEstimatorSubsystem,
+        0.0,          // Wwe ant to be touching the reef.   This might need some tweaking.
+        m_robotDrive.debugAutoConfig // TODO change to defaultAutoConfig for faster driving.
         )
       );
 
