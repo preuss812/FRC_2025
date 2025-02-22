@@ -373,7 +373,6 @@ public class RobotContainer {
         SmartDashboard.putData("DOP",new DriveOnAprilTagProjectionCommand(
           m_PoseEstimatorSubsystem
           , m_robotDrive
-          , m_camera
           , m_driverController
           , m_robotDrive.defaultAutoConfig
           ));
