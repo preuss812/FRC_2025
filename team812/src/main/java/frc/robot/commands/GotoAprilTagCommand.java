@@ -86,7 +86,7 @@ public class GotoAprilTagCommand extends Command {
     this.simulatingRobot = RobotContainer.isSimulation();
     onTarget = false;
     this.config = config == null ? robotDrive.defaultAutoConfig : config;
-    this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, config, simulatingRobot);
+    this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, config);
     addRequirements(robotDrive, poseEstimatorSubsystem);
     cameraToRobotAngle = VisionConstants.XCAMERA_TO_ROBOT.getRotation().getZ();
   }

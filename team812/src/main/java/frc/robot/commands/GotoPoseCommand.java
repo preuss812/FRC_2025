@@ -51,7 +51,7 @@ public class GotoPoseCommand extends Command {
     this.targetPose = targetPose;
     this.config = config == null ? robotDrive.defaultAutoConfig : config;
 
-    this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, this.config, simulatingRobot);
+    this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, this.config);
     onTarget = false;
 
     addRequirements(robotDrive, poseEstimatorSubsystem);

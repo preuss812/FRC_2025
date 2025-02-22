@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 
@@ -21,21 +22,18 @@ public class PreussAutoDrive {
     private final DrivingConfig config;
     private final PoseEstimatorSubsystem poseEstimatorSubsystem;
     private final DriveSubsystemSRX robotDrive;
-    private final boolean simulation;
     private Pose2d simulatedRobotPose;
 
 
     public PreussAutoDrive(
         DriveSubsystemSRX robotDrive,
         PoseEstimatorSubsystem poseEstimatorSubsystem,
-        DrivingConfig config,
-        boolean simulation
+        DrivingConfig config
     ) {
         
         this.robotDrive = robotDrive;
         this.poseEstimatorSubsystem = poseEstimatorSubsystem;
         this.config = config;
-        this.simulation = simulation;
 
         xController = new PIDController(
           config.getLinearP(),
@@ -94,7 +92,7 @@ public class PreussAutoDrive {
 
     public void drive(double xSpeed, double ySpeed, double rotationSpeed, boolean fieldRelative, boolean rateLimit) {
         robotDrive.drive(xSpeed, ySpeed, rotationSpeed, fieldRelative, rateLimit);
-        if (false) {
+        if (RobotContainer.isSimulation()) {
             // For debug, update the forced robot location based on the x,y,theta applied.
             double scale=0.06; // Rate that the simulation applies the changes to the robot's position.
             simulatedRobotPose = poseEstimatorSubsystem.getCurrentPose();
@@ -112,13 +110,6 @@ public class PreussAutoDrive {
         poseEstimatorSubsystem.setCurrentPose(simulatedRobotPose);
     } 
     public Pose2d getCurrentPose() {
-        if (simulation) {
-            if (true || simulatedRobotPose == null) {
-                simulatedRobotPose = poseEstimatorSubsystem.getCurrentPose();
-            }
-            return simulatedRobotPose;
-        } else {
-            return poseEstimatorSubsystem.getCurrentPose();
-        }
+        return poseEstimatorSubsystem.getCurrentPose();
     }
 }

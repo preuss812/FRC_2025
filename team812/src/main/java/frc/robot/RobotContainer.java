@@ -127,7 +127,8 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
-  private static final boolean isSimulation = false;
+  private static  boolean isSimulation = false;
+  
   public static final boolean isDebug = true;
   private static boolean debug = true && isDebug(); // To enable debugging in this module, change false to true.
 
@@ -192,14 +193,13 @@ public class RobotContainer {
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
-  public RobotContainer() {
+  public RobotContainer() {    
 
-    //configureAutoBuilder();
-    //autoChooser = AutoBuilder.buildAutoChooser("autos");
-    //SmartDashboard.putData("Auto Mode", autoChooser);
+        // By default this is not a simulation.
+// For convenience, set the simulation mode to true if this is MacOS.
+    RobotContainer.isSimulation = (System.getProperty("os.name").equals("Mac OS X"));
     TrajectoryPlans.buildAutoTrajectories(); 
 
-    SmartDashboard.putNumber("y",99.0);
     // Configure the button bindings
     configureButtonBindings();
     
@@ -253,7 +253,6 @@ public class RobotContainer {
    * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-
 
     /**
      * Use this method to define your button->command mappings. Buttons can be

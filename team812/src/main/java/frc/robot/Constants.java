@@ -452,12 +452,12 @@ public final class Constants {
 
         // Driving Parameters for PRECISION DrivingMode.  This is a slower mode for more precise positioning.
         public static final double kMaxSpeedMetersPerSecondPM = 1.6; //4.5; 1.0 in the lab // Limit how violently swerve works
-        public static final double kMaxAngularSpeedPM = 4 * Math.PI; // radians per second
+        public static final double kMaxAngularSpeedPM = 1 * Math.PI; // radians per second
     
-        public static final double kDirectionSlewRatePM = 1.2; // radians per second
+        public static final double kDirectionSlewRatePM = 0.6; // radians per second
         public static final double kMagnitudeIncreaseSlewRatePM = 0.45; // percent per second (1 = 100%)
         public static final double kMagnitudeDecreaseSlewRatePM = 3.6; // percent per second (1 = 100%)
-        public static final double kRotationalIncreaseSlewRatePM = 4.0; // percent per second (1 = 100%) // UNDO
+        public static final double kRotationalIncreaseSlewRatePM = 0.3; // percent per second (1 = 100%) // UNDO
         public static final double kRotationalDecreaseSlewRatePM = 4.0;
         
         // Chassis configuration
@@ -604,10 +604,10 @@ public final class Constants {
 
       public static final class AutoConstants {
         public static final double kAutoSlowdown = 1.0; // 1.0 is full speed, 0.5 is half speed, etc.
-        public static final double kMaxSpeedMetersPerSecond = DriveConstants.kMaxSpeedMetersPerSecondPM*kAutoSlowdown;
-        public static final double kMaxAccelerationMetersPerSecondSquared = DriveConstants.kMagnitudeIncreaseSlewRatePM*kAutoSlowdown;
-        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+        public static final double kMaxSpeedMetersPerSecond = DriveConstants.kMaxSpeedMetersPerSecond*kAutoSlowdown;
+        public static final double kMaxAccelerationMetersPerSecondSquared = DriveConstants.kMagnitudeIncreaseSlewRate*kAutoSlowdown;
+        public static final double kMaxAngularSpeedRadiansPerSecond = DriveConstants.kMaxAngularSpeed;
+        public static final double kMaxAngularSpeedRadiansPerSecondSquared = DriveConstants.kRotationalIncreaseSlewRate;
     
         public static final double kPXController = 1;
         public static final double kPYController = 1;

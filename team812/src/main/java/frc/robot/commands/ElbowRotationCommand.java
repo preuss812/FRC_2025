@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElbowRotationSubsystem;
 import frc.robot.Constants.ElbowConstants;
+import frc.robot.RobotContainer;
 
 public class ElbowRotationCommand extends Command {
   /** Creates a new ArmCommand. */
@@ -18,21 +19,12 @@ public class ElbowRotationCommand extends Command {
   private double setPoint;
   private final boolean debug = true;
   private int m_simulatedTicks = 0;
-  private final boolean simulation;
+  private final boolean simulation = RobotContainer.isSimulation();
 
 
   public ElbowRotationCommand(ElbowRotationSubsystem subsystem, double position) {
     m_armSubsystem = subsystem;
     m_position = position;
-    System.out.println("ArmCommand class setPoint is " + m_position);
-    this.simulation = false;
-    addRequirements(subsystem);
-  }
-
-  public ElbowRotationCommand(ElbowRotationSubsystem subsystem, double position, boolean simulation) {
-    m_armSubsystem = subsystem;
-    m_position = Units.radiansToDegrees(position);
-    this.simulation = simulation;
     System.out.println("ArmCommand class setPoint is " + m_position);
     addRequirements(subsystem);
   }

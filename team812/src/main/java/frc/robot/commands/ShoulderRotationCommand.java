@@ -4,9 +4,9 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ShoulderConstants;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.ShoulderRotationSubsystem;
 
 public class ShoulderRotationCommand extends Command {
@@ -18,19 +18,11 @@ public class ShoulderRotationCommand extends Command {
   public ShoulderRotationCommand(ShoulderRotationSubsystem subsystem, double position) {
     m_ShoulderRotationSubsystem = subsystem;
     targetPosition = position;
-    this.simulation = false;
+    this.simulation = RobotContainer.isSimulation();
   // Use addRequirements() here to declare subsystem dependencies.
   addRequirements(subsystem);
   }
   
-  public ShoulderRotationCommand(ShoulderRotationSubsystem subsystem, double position, boolean simulation) {
-    m_ShoulderRotationSubsystem = subsystem;
-    targetPosition = Units.radiansToDegrees(position);
-    this.simulation = simulation;
-  // Use addRequirements() here to declare subsystem dependencies.
-  addRequirements(subsystem);
-  }
-
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {

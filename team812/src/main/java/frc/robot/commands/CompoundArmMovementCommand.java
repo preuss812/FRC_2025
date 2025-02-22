@@ -21,7 +21,6 @@ public class CompoundArmMovementCommand extends ParallelCommandGroup {
    * @param shoulderRotationSubsystem - subsystem for the shoulder
    * @param elbowPosition - the desired rotation for the elbow joint
    * @param shoulderPosition - the desired rotation for the shoulder joint
-   * @param simulation - true if this is a simulation, false if the robot is being driven.
    */
   public CompoundArmMovementCommand(
     ElbowRotationSubsystem elbowRotationSubsystem

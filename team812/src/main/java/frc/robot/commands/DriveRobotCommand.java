@@ -34,7 +34,6 @@ public class DriveRobotCommand extends Command {
   private Pose2d startingPose;
   private Pose2d targetPose;
   private boolean onTarget;
-  private boolean simulatingRobot = true;
   private boolean debug = true;
   
   /** Creates a new DriveDistanceCommand. */
@@ -43,7 +42,7 @@ public class DriveRobotCommand extends Command {
     this.relativeMove = relativeMove;
     this.controlRotation = controlRotation;
     this.config = new DrivingConfig(robotDrive.defaultAutoConfig);
-    this.autoDrive = new PreussAutoDrive(robotDrive, RobotContainer.m_PoseEstimatorSubsystem, this.config, simulatingRobot);
+    this.autoDrive = new PreussAutoDrive(robotDrive, RobotContainer.m_PoseEstimatorSubsystem, this.config);
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(robotDrive);
   }
@@ -54,12 +53,12 @@ public class DriveRobotCommand extends Command {
 
     autoDrive.reset();
 
-    // get the robot's current pose from the drivetrain
-    if (simulatingRobot) {
-      startingPose = RobotContainer.m_PoseEstimatorSubsystem.getCurrentPose();
-      autoDrive.setCurrentPose(startingPose);
-    } else {
+    // get the robot's current pose from the drivetrain  TODO figure out which is better.
+    boolean useRobotPose = false;
+    if (useRobotPose) {
       startingPose = robotDrive.getPose();
+    } else {
+      startingPose = RobotContainer.m_PoseEstimatorSubsystem.getCurrentPose();
     }
     // add the relativeMove to the startingPose // There is an alliance component to this.   
     // I'm assuming the caller has handled it in the relativeMove.
