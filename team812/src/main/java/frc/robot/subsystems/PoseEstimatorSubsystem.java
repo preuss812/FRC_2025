@@ -238,15 +238,19 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
           if (pipelineResult.hasTargets()) {
             //var target = pipelineResult.getBestTarget();
             var target = getBestTarget((pipelineResult.getTargets()));
-            var bestFiducialId = target.getFiducialId();
-            SmartDashboard.putNumber("PV ambiguity", target.getPoseAmbiguity());
+            if (target != null) {
+              var bestFiducialId = target.getFiducialId();
+              SmartDashboard.putNumber("PV ambiguity", target.getPoseAmbiguity());
 
-            if (target.getPoseAmbiguity() <= VisionConstants.maximumAmbiguity 
-            && bestFiducialId >= VisionConstants.MIN_FIDUCIAL_ID 
-            && bestFiducialId <= VisionConstants.MAX_FIDUCIAL_ID) {
-              result = pipelineResult;
-              m_lastAprilTagSeen = bestFiducialId;
-              lastPipeLineResult = pipelineResult;
+              if (target.getPoseAmbiguity() <= VisionConstants.maximumAmbiguity 
+              && bestFiducialId >= VisionConstants.MIN_FIDUCIAL_ID 
+              && bestFiducialId <= VisionConstants.MAX_FIDUCIAL_ID) {
+                result = pipelineResult;
+                m_lastAprilTagSeen = bestFiducialId;
+                lastPipeLineResult = pipelineResult;
+              } else {
+                m_lastAprilTagSeen = VisionConstants.NO_TAG_FOUND;
+              }
             } else {
               m_lastAprilTagSeen = VisionConstants.NO_TAG_FOUND;
             }

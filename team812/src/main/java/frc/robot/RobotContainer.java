@@ -380,6 +380,7 @@ public class RobotContainer {
           ));
         SmartDashboard.putData("SHP", new InstantCommand(() -> m_ShoulderRotationSubsystem.setSensorPosition(45)));
         SmartDashboard.putData("ELP", new InstantCommand(() -> m_ElbowRotationSubsystem.setSensorPosition(45)));
+        SmartDashboard.putData("TEST", new DriveRobotCommand(m_robotDrive, new Pose2d(-4, 0, new Rotation2d(0)), true));
         SmartDashboard.putData("G2P", new GotoPoseCommand(
           m_robotDrive
           , m_PoseEstimatorSubsystem
