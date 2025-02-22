@@ -317,38 +317,12 @@ public class RobotContainer {
     
     new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHighAlgaePosition)));
     new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHighAlgaePosition)));
-
-    new JoystickButton(leftJoystick,3).onTrue(new SequentialCommandGroup(
-      new InstantCommand(() -> m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 0.0, new Rotation2d(0.0)), true),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, 1.0, new Rotation2d(0.0)), true),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 0.0, new Rotation2d(0.0)), true),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
-    ));
-
-    new JoystickButton(leftJoystick,4).onTrue(new SequentialCommandGroup(
-      new InstantCommand(() -> m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 1.0, new Rotation2d(0.0)), true),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 1.0, new Rotation2d(0.0)), true),
-      new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
-    ));
     
     /* Debugging below */
     if (debug) {
 
       SmartDashboard.putData("IC", new InstantCommand(() -> m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(1,4,new Rotation2d(0)))));
       SmartDashboard.putData("EL", new ElbowRotationCommand(m_ElbowRotationSubsystem, 5000));
-      SmartDashboard.putData("SQ",
-        new SequentialCommandGroup(
-          new InstantCommand(() -> m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-          new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 0.0, new Rotation2d(0.0)), true),
-          new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, 1.0, new Rotation2d(0.0)), true),
-          new DriveRobotCommand(m_robotDrive, new Pose2d(-1.0, 0.0, new Rotation2d(0.0)), true),
-          new DriveRobotCommand(m_robotDrive, new Pose2d(0.0, -1.0, new Rotation2d(0.0)), true)
-        )
-      );
-
 
       /**
        * Create smart dash button that cycles through the various paths
@@ -357,12 +331,17 @@ public class RobotContainer {
        */
       
       if (debug) {
-        boolean controlRotation = true;
         boolean relative = true;
         SmartDashboard.putData("Dance", TrajectoryPlans.robotDanceCommand(m_robotDrive, m_PoseEstimatorSubsystem, null /*=default*/) );
         SmartDashboard.putData("S2P", new SwerveToProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem));
         SmartDashboard.putData("RRcmd", new RotateRobotCommand(m_robotDrive, Units.degreesToRadians(45.0), relative));
-        SmartDashboard.putData("DRcmd", new DriveRobotCommand(m_robotDrive, new Pose2d(1.0,0.0, new Rotation2d()), controlRotation));
+        SmartDashboard.putData("DRcmd", new DriveRobotCommand(
+            m_robotDrive
+          , m_PoseEstimatorSubsystem
+          , new Pose2d(1.0,0.0, new Rotation2d()) // Forward 1 meter
+          , false
+          , null /*=default*/
+        ));
         SmartDashboard.putData("G2A",new GotoAprilTagCommand(
           m_PoseEstimatorSubsystem
           , m_robotDrive
@@ -378,7 +357,12 @@ public class RobotContainer {
           ));
         SmartDashboard.putData("SHP", new InstantCommand(() -> m_ShoulderRotationSubsystem.setSensorPosition(45)));
         SmartDashboard.putData("ELP", new InstantCommand(() -> m_ElbowRotationSubsystem.setSensorPosition(45)));
-        SmartDashboard.putData("TEST", new DriveRobotCommand(m_robotDrive, new Pose2d(-4, 0, new Rotation2d(0)), true));
+        SmartDashboard.putData("TEST", new DriveRobotCommand(
+          m_robotDrive
+          , m_PoseEstimatorSubsystem
+          , new Pose2d(-4, 0, new Rotation2d(0)) // backward 4 meters.
+          , false
+          , null));
         SmartDashboard.putData("G2P", new GotoPoseCommand(
           m_robotDrive
           , m_PoseEstimatorSubsystem
@@ -386,6 +370,7 @@ public class RobotContainer {
             FieldConstants.blueStartLine
             , m_PoseEstimatorSubsystem.getAprilTagPose(14).getY()
             , new Rotation2d(0.0))
+            , false 
             , null));
         SmartDashboard.putData("TTcmd", new SequentialCommandGroup(
             new SetCurrentPoseCommand(m_PoseEstimatorSubsystem)

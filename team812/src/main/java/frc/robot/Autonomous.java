@@ -153,7 +153,7 @@ public class Autonomous extends SequentialCommandGroup {
       // We will do nothing!!!.  Hopefully this does not get used.
     } else if (autoMode == AutoConstants.kDriveOffTheLineAndStop) {
       // Drive 1 meter and stop.
-      this.addCommands( new DriveRobotCommand(m_robotDrive, new Pose2d(1.0, 0, new Rotation2d(0)), true));
+      this.addCommands( new DriveRobotCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(1.0, 0, new Rotation2d(0)), false, null));
     } else if (autoMode == AutoConstants.kRobotMakesThePlan) {
       // Look for an april tag and if we see one, use the corresponding path from the 6 predefined paths.
       // but for now, it's doing nothing TODO add something here.

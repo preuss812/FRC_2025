@@ -29,7 +29,7 @@ public class GotoProcessorCommand extends GotoPoseCommand {
     , PoseEstimatorSubsystem PoseEstimatorSubsystem
     , DrivingConfig config
     ) { 
-    super(DriveSubsystemSRXSubsystem, PoseEstimatorSubsystem, new Pose2d(), config); // Pose is a place holder.
+    super(DriveSubsystemSRXSubsystem, PoseEstimatorSubsystem, new Pose2d(), false, config); // Pose is a place holder.
   }
 
   // Called when the command is initially scheduled.

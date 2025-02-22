@@ -7,7 +7,6 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,7 +15,6 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.utils.DrivingConfig;
 import frc.utils.PreussAutoDrive;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.RobotContainer;
 import frc.robot.Utilities;
 
 public class GotoPoseCommand extends Command {
@@ -25,13 +23,13 @@ public class GotoPoseCommand extends Command {
   protected final DriveSubsystemSRX robotDrive;
   protected final PoseEstimatorSubsystem poseEstimatorSubsystem;
   protected Pose2d targetPose;
-  private final DrivingConfig config;
+  protected final boolean driveFacingFinalPose;
+  final DrivingConfig config;
   private final PreussAutoDrive autoDrive;
   ;
   private boolean onTarget;
   private boolean controlRotation = true; // This is a holdover from when controlRotation was not working well.
   private boolean debug = true; // turn on/off SmartDashBoard feedback
-  private boolean simulatingRobot = RobotContainer.isSimulation(); // force robot starting position and april tag number for debugging purposes.
   
   /**
    * Drive to the specified distance from the best april tag currently in view.
@@ -43,12 +41,15 @@ public class GotoPoseCommand extends Command {
       DriveSubsystemSRX robotDrive
     , PoseEstimatorSubsystem poseEstimatorSubsystem
     , Pose2d targetPose
-    , DrivingConfig config) {
+    , boolean driveFacingFinalPose
+    , DrivingConfig config
+     ) {
     
     // Use addRequirements() here to declare subsystem dependencies.
     this.robotDrive = robotDrive;
     this.poseEstimatorSubsystem = poseEstimatorSubsystem;
     this.targetPose = targetPose;
+    this.driveFacingFinalPose = driveFacingFinalPose;
     this.config = config == null ? robotDrive.defaultAutoConfig : config;
 
     this.autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, this.config);
@@ -65,7 +66,7 @@ public class GotoPoseCommand extends Command {
     
     // Reset the pid controllers
     autoDrive.reset();
-    if (debug) Utilities.toSmartDashboard("G2A T", targetPose);
+    if (debug) Utilities.toSmartDashboard("AutoDrive T", targetPose);
 
     onTarget = false; // Defer this calculation to this.isFinished()
   }
@@ -95,27 +96,27 @@ public class GotoPoseCommand extends Command {
     // Calculate the tangent of the translation error.
     double desiredRotation;
     double errorVectorMagnitude = Math.pow(Math.pow(translationErrorToTarget.getX(),2) + Math.pow(translationErrorToTarget.getY(),2),0.5);
-    desiredRotation = MathUtil.angleModulus(Utilities.getHeading(robotPose.getTranslation(), targetPose.getTranslation()))+VisionConstants.cameraHeading;
-    //double headingToTargetPose = MathUtil.angleModulus(Utilities.getHeading(targetPose.getTranslation(), robotPose.getTranslation()));
 
-    // If we are very close to the target, use the target pose.
-    // This is an attempt to overcome the problem of low rotation throttle from the pid when we are very close to the target.
-    if (errorVectorMagnitude  < 1.0 /* meters */) {
+    // If we are close to the target or not tracking an apriltag, rotate to the final pose.
+    if (errorVectorMagnitude  < 1.0 /* meters */ || !driveFacingFinalPose) {
       desiredRotation = targetPose.getRotation().getRadians();
+    } else {
+      desiredRotation = MathUtil.angleModulus(Utilities.getHeading(robotPose.getTranslation(), targetPose.getTranslation()))+VisionConstants.cameraHeading;
     }
+    
     rotationError = MathUtil.angleModulus(MathUtil.angleModulus(robotPose.getRotation().getRadians()) - desiredRotation);
 
     // Make sure the rotation error is between -PI and PI
-    if (debug) SmartDashboard.putNumber("G2A R", Units.radiansToDegrees(rotationError));
-    if (debug) SmartDashboard.putNumber("G2A X", translationErrorToTarget.getX());
-    if (debug) SmartDashboard.putNumber("G2A Y", translationErrorToTarget.getY());
+    if (debug) SmartDashboard.putNumber("AutoDrive R", Units.radiansToDegrees(rotationError));
+    if (debug) SmartDashboard.putNumber("AutoDrive X", translationErrorToTarget.getX());
+    if (debug) SmartDashboard.putNumber("AutoDrive Y", translationErrorToTarget.getY());
     
     // Test to see if we have arrived at the requested pose within the specified toleranes
     if (Math.abs(translationErrorToTarget.getX()) < config.getLinearTolerance()
     &&  Math.abs(translationErrorToTarget.getY()) < config.getLinearTolerance()
     &&  ((!controlRotation) || (Math.abs(rotationError) < config.getAngularTolerance()))) {
       // We are close enough.  Stop the robot and the command.
-      if (debug) SmartDashboard.putBoolean("G2A OnTarget", true);
+      if (debug) SmartDashboard.putBoolean("AutoDrive OnTarget", true);
       xSpeed = 0.0;
       ySpeed = 0.0;
       rotationSpeed = 0.0;
@@ -157,9 +158,9 @@ public class GotoPoseCommand extends Command {
       // We are controlling rotation whether we use it for "onTarget" calculations or not.
       rotationSpeed = autoDrive.calculateClampedRotation(rotationError);
     }
-    if (debug) SmartDashboard.putNumber("G2A xSpeed", xSpeed);
-    if (debug) SmartDashboard.putNumber("G2A ySpeed", ySpeed);
-    if (debug) SmartDashboard.putNumber("G2A rSpeed", rotationSpeed);
+    if (debug) SmartDashboard.putNumber("AutoDrive xSpeed", xSpeed);
+    if (debug) SmartDashboard.putNumber("AutoDrive ySpeed", ySpeed);
+    if (debug) SmartDashboard.putNumber("AutoDrive rSpeed", rotationSpeed);
     autoDrive.drive(xSpeed, ySpeed, rotationSpeed, true, true);
   }
 

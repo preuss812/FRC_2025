@@ -655,14 +655,20 @@ public class TrajectoryPlans {
             // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
             new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
             new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-            new GotoPoseCommand(RobotContainer.m_robotDrive, RobotContainer.m_PoseEstimatorSubsystem, poseWithCameraFacingTheReef(convertToRed, waypoints[0].getX(), waypoints[0].getY()), drivingConfig),
+            new GotoPoseCommand(
+                RobotContainer.m_robotDrive
+                , RobotContainer.m_PoseEstimatorSubsystem
+                , poseWithCameraFacingTheReef(convertToRed, waypoints[0].getX()
+                , waypoints[0].getY())
+                , false
+                , drivingConfig),
             //new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
             //new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
             //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
            // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
             new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
             command
-            , new GotoPoseCommand(RobotContainer.m_robotDrive, RobotContainer.m_PoseEstimatorSubsystem, finalPose, drivingConfig)
+            , new GotoPoseCommand(RobotContainer.m_robotDrive, RobotContainer.m_PoseEstimatorSubsystem, finalPose, true, drivingConfig)
             //,new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1]))
             //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
             // may need a driveToPose to perfectly position the robot.
