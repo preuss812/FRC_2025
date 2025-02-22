@@ -464,8 +464,10 @@ public class TrajectoryPlans {
         addAutoMode("My Barge to Far Side"
             ,new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-                new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
-                nearAT19           
+                new Pose2d(AT19.getX()-0.5, AT14.getY()-0.2, startingRotation.plus(new Rotation2d(Units.degreesToRadians(30)))),
+                //new Pose2d(AT19.getX()-0.6, AT14.getY()-0.2, AT19.getRotation()),
+                //new Pose2d(AT19.getX(),AT14.getY(), startingRotation),
+                //nearAT19           
             }
             ,atAT19
             ,config
@@ -476,9 +478,9 @@ public class TrajectoryPlans {
             "My Barge to Near Side"
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-                new Pose2d((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY(), startingRotation),
+                new Pose2d(AT21.getX()+0.5,AT14.getY(), startingRotation.plus(new Rotation2d(Units.degreesToRadians(0)))),
                 //poseWithCameraFacingTheReef((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY()),  Adds extra squiggles to the path
-                nearAT20
+                //nearAT20
             }
             ,atAT20
             , config
@@ -491,7 +493,7 @@ public class TrajectoryPlans {
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine ,FieldConstants.yCenter, startingRotation),
                 new Pose2d((AT21.getX()+FieldConstants.blueStartLine)/2.0,FieldConstants.yCenter, startingRotation),
-                nearAT21
+                //nearAT21
             }
             ,atAT21
             , config
@@ -503,7 +505,7 @@ public class TrajectoryPlans {
             "Their Barge to Near Side"  
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
-                new Pose2d((AT22.getX()+FieldConstants.blueStartLine)/2.0,AT15.getY(), startingRotation),
+                new Pose2d(AT21.getX()+0.5,AT15.getY(), startingRotation),
             nearAT22
             }
             ,atAT22
@@ -515,9 +517,7 @@ public class TrajectoryPlans {
         addAutoMode("Their Barge to Far Side"
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
-                new Pose2d(AT22.getX(),AT15.getY(), startingRotation),
-                new Pose2d(AT17.getX(),AT15.getY(), startingRotation),
-                nearAT17
+                new Pose2d(AT22.getX()-1.1,AT15.getY()+0.2, startingRotation.plus(new Rotation2d(Units.degreesToRadians(-30)))),               
             }
             ,atAT17
             , config
