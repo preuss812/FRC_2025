@@ -622,6 +622,7 @@ public final class Constants {
         public static final int kDriveOffTheLineAndStop = 1;
         public static final int kDoNothing = 2;
         public static final double kAlgaeIntakeTime = 1.0; // seconds
+        public static final double kAlgaeExpelTime = 3.0; // seconds
       }
     
       public static final class NeoMotorConstants {

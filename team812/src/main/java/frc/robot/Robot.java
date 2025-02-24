@@ -11,11 +11,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 //import frc.robot.Constants.OIConstants;
 //import frc.robot.subsystems.DriveSubsystemSRX;
@@ -35,8 +33,8 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   public static NetworkTable nttable;
   static int i = 0;
+  private static boolean debug = true;
   public static SendableChooser<Integer> autoChooser = new SendableChooser<>();
-  static int autoPlan = 0;
 
   /*
   private boolean drivingSwitchPosition = false; // Assume the switch is not set (SPEED mode).
@@ -57,7 +55,7 @@ public class Robot extends TimedRobot {
     nttable = ntinst.getTable("0team812");
     CameraServer.startAutomaticCapture(0); // 2024 forward facing camera for driverstation
     m_robotContainer = new RobotContainer();
-    //SmartDashboard.putData(CommandScheduler.getInstance()); // This puts running commands on the shuffleboard.
+    if (debug) SmartDashboard.putData(CommandScheduler.getInstance()); // This puts running commands on the shuffleboard.
     addPeriodic(() -> Utilities.setAlliance(), 1.0 );
 
     // Add a dropdown menu to select the autonomous plan.
@@ -108,27 +106,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    Utilities.setAlliance();
-    Autonomous.setReefCenter();
-    int autoOption;
-    try {
-      autoOption = autoChooser.getSelected();
-    }
-    catch(Exception d) {
-      autoOption = 1;
-    }
-    if (autoOption >= 0 && autoOption < TrajectoryPlans.blueAutoPlans.size())
-      autoPlan = autoOption;
-      if (Utilities.isBlueAlliance()) {
-        m_autonomousCommand = TrajectoryPlans.blueAutoPlans.get(autoPlan);
-      } else {
-        m_autonomousCommand = TrajectoryPlans.redAutoPlans.get(autoPlan);
-      }
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
-      
     }
   }
 

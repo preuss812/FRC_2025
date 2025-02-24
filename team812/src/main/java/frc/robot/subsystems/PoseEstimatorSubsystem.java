@@ -174,10 +174,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
    * @param newPose new pose
    */
   public void setCurrentPose(Pose2d newPose) {
-    poseEstimator.resetPosition(
+    if (newPose != null) {
+      poseEstimator.resetPosition(
       drivetrainSubsystem.getRotation(),
       drivetrainSubsystem.getModulePositions(),
       newPose);
+    }
   }
 
   /**

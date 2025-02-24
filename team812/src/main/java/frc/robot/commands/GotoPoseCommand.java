@@ -63,6 +63,7 @@ public class GotoPoseCommand extends Command {
   @Override
   public void initialize() {
     onTarget = true; // Not really but if we dont find a target, this will cause the command to end immediately.
+    if (targetPose == null) return;
     
     // Reset the pid controllers
     autoDrive.reset();

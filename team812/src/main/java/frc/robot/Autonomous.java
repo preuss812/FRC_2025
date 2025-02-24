@@ -14,21 +14,27 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 import frc.robot.commands.ShoulderHomeCommand;
+import frc.robot.commands.ShoulderRotationCommand;
 import frc.robot.commands.SwerveToProcessorCommand;
 import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.commands.WaitToSeeAprilTagCommand;
 import frc.robot.commands.ElbowRotationCommand;
+import frc.robot.commands.ExpelAlgaeCommand;
 import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.AutoDriveToReefCommand;
 import frc.robot.commands.AutonomousStartDelayCommand;
 import frc.robot.commands.CompoundArmMovementCommand;
 import frc.robot.commands.DriveRobotCommand;
@@ -66,10 +72,10 @@ public class Autonomous extends SequentialCommandGroup {
   private final ShoulderRotationSubsystem m_ShoulderRotationSubsystem;
   private final PingResponseUltrasonicSubsystem m_PingResponseUltrasonicSubsystem;
   private final PoseEstimatorSubsystem m_PoseEstimatorSubsystem;
-  private final PhotonCamera m_PhotonCamera;
   public static boolean reefCenterSet = false;
   public static double myReefX;
   public static double myReefY;
+  public static int m_autoMode = 1; // Default to move 1 meter and stop;
 
   /**
    * robotHeadingForCameraToReefCenter - helper function for controlling rotation during autonomous driving.
@@ -92,6 +98,22 @@ public class Autonomous extends SequentialCommandGroup {
     }
   }
 
+  public static void setAutoMode() {
+    try {
+      m_autoMode = Robot.autoChooser.getSelected();
+    }
+    catch(Exception d) {
+      m_autoMode = 1;
+    }
+    if (!(m_autoMode >= 0 && m_autoMode < TrajectoryPlans.autoNames.size()))
+      m_autoMode = 1;
+  }
+
+  // Helper function for instant command.
+  public static int getAutoMode() {
+    return m_autoMode;
+  }
+
   /**
    * set up the reef center for autonomous driving based on the alliance color.
    */
@@ -106,6 +128,7 @@ public class Autonomous extends SequentialCommandGroup {
       reefCenterSet = true;
     }
   }
+
   public Autonomous(RobotContainer robotContainer) {
     
     // get the required subsystems for constructing the plans below.
@@ -115,118 +138,110 @@ public class Autonomous extends SequentialCommandGroup {
     m_ShoulderRotationSubsystem = RobotContainer.m_ShoulderRotationSubsystem;
     m_PoseEstimatorSubsystem = RobotContainer.m_PoseEstimatorSubsystem;
     m_PingResponseUltrasonicSubsystem = RobotContainer.m_PingResponseUltrasonicSubsystem;
-    m_PhotonCamera = RobotContainer.m_camera;
 
-    int autoMode = Robot.autoChooser.getSelected();
-    if (autoMode < 0 || autoMode >= TrajectoryPlans.autoNames.size()) {
-      autoMode = 0; // Out of range values convert back to default mode, 0.
-    } 
-    SequentialCommandGroup fullCommandGroup = new SequentialCommandGroup();
+    // Set up the alliance first.  Other commands need to know which alliance to operate correctly.
+    Utilities.setAlliance();
+    setAutoMode();
+    setReefCenter();
 
-    // Add the basic robot initialization.
-    this.addCommands(
-      new InstantCommand(() -> setReefCenter()),  // Set upf aliiance reef center as myReef X/Y to simplicy rotation control.
-      new ParallelCommandGroup(
+    // Initialize the robot before moving.
+    addCommands(new ParallelCommandGroup(
       new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)), // TODO Should be SPEED, not PRECISION
-      new InstantCommand(() -> Utilities.allianceSetCurrentPose(
-        new Pose2d(
-          FieldConstants.blueStartLine, // This will be transformed to red if we are in the red alliance.
-          FieldConstants.yCenter,       // This will be transformed to red if we are in the red alliance
-          new Rotation2d(DriveConstants.kStartingOrientation)))),
-
-        // Home the arm (should already be homed but this sets the encoder coordinates)
-        new ElbowHomeCommand(RobotContainer.m_ElbowRotationSubsystem).withTimeout(ElbowConstants.kElbowHomeTimeout),
-        new ShoulderHomeCommand(RobotContainer.m_ShoulderRotationSubsystem).withTimeout(ShoulderConstants.kShoulderHomeTimeout)
-      )
-    );
-    this.addCommands(   
+      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)) // TODO Should be SPEED, not PRECISION
+      //new ElbowHomeCommand(m_ElbowRotationSubsystem),
+      //new ShoulderHomeCommand(m_ShoulderRotationSubsystem),
+      //new InstantCommand(() -> setReefCenter()),
+      //new InstantCommand(() -> setAutoMode())
+    ));
+   
+    addCommands(   
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
         , ElbowConstants.kElbowDrivingWithCoralPosition
         , ShoulderConstants.kShoulderDrivingWithCoralPosition
-        )
-      );
+      )
+    );
 
-    if (autoMode == AutoConstants.kDoNothing) {
-      // We will do nothing!!!.  Hopefully this does not get used.
-    } else if (autoMode == AutoConstants.kDriveOffTheLineAndStop) {
-      // Drive 1 meter and stop.
-      this.addCommands( new DriveRobotCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(1.0, 0, new Rotation2d(0)), false, null));
-    } else if (autoMode == AutoConstants.kRobotMakesThePlan) {
-      // Look for an april tag and if we see one, use the corresponding path from the 6 predefined paths.
-      // but for now, it's doing nothing TODO add something here.
-    } else { 
-      // One of the 6 predefined paths to 
-      
-      // First wait until we see an april tag.  This should return right away because if things are set up
-      // correctly, we will always have an april tag in view.
-      // This is here in case the placement on the field and the plan selected do not match.
-      this.addCommands(new WaitToSeeAprilTagCommand(m_PoseEstimatorSubsystem));
-      
-      // Check that we see the expected april tag for the plan we are trying to execute
-      // This command will wait for 15 seconds if we dont see the expected tag
-      // which will cause no more action during autonomous.
-      addCommands(new VerifyStartingPositionCommand(m_PoseEstimatorSubsystem, autoMode)) ;
-      
+    // Perform the initial driving to get from the start line to the reef.
+    addCommands(
+      new AutoDriveToReefCommand(m_robotDrive, m_PoseEstimatorSubsystem)
+    );
 
-      // Drive to near the selected april tag.
-      addCommands(TrajectoryPlans.blueAutoPlans.get(autoMode));
-
-      // Now that we are near the tag, drive right up to the reef using the tag on the reef to precisely align
-      // the robot to the algae.  Note that GotoAprilTagCommand goes to whatever tag it sees.
-      // Also note that if we are too close to the target, the camera may not see it.
-      addCommands(new GotoAprilTagCommand(
-        m_robotDrive,
-        m_PoseEstimatorSubsystem,
-        0.0,          // Wwe ant to be touching the reef.   This might need some tweaking.
-        m_robotDrive.debugAutoConfig // TODO change to defaultAutoConfig for faster driving.
-        )
-      );
-
-      addCommands(
+    // At the reef now so gently drive into the reef and raise the arm to score the coral
+    addCommands(
+      new ParallelRaceGroup(
+        // TODO: Need to drive gently into the reef.
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowScoreCoralPosition,
           ShoulderConstants.kShoulderScoreCoralPosition
-        )
-      );
-      addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
+        )  
+      )
+    );
+    addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
 
-      // grab the algae
-      addCommands(
-        new CompoundArmMovementCommand(
-          m_ElbowRotationSubsystem, 
-          m_ShoulderRotationSubsystem, 
-          ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition
-        ),
-        new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
-        new CompoundArmMovementCommand(
-          m_ElbowRotationSubsystem, 
-          m_ShoulderRotationSubsystem, 
-          ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition
-        ),
-        new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null), // This could be dangerous 
-        new CompoundArmMovementCommand(
-          m_ElbowRotationSubsystem, 
-          m_ShoulderRotationSubsystem, 
-          ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition
-        ),
-        new SwerveToProcessorCommand(
-            m_robotDrive
-          , m_PoseEstimatorSubsystem
-        )
-      );
+    addCommands(   
+      new CompoundArmMovementCommand(
+        m_ElbowRotationSubsystem
+        , m_ShoulderRotationSubsystem
+        , ElbowConstants.kElbowDrivingWithCoralPosition
+        , ShoulderConstants.kShoulderDrivingWithCoralPosition
+      )
+    );
 
-    }
-    addCommands(fullCommandGroup);
+    // reposition arm to grab low algae and grab the algae.
+    addCommands(
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToGrabAlgae")),
+      new CompoundArmMovementCommand(
+        m_ElbowRotationSubsystem, 
+        m_ShoulderRotationSubsystem, 
+        ElbowConstants.kElbowLowAlgaePosition,
+        ShoulderConstants.kShoulderLowAlgaePosition
+      ),
+      new WaitCommand(2.0),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "IntakeAlgae")),
+      new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
+      new WaitCommand(2.0),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToDrive")),
+      new CompoundArmMovementCommand(
+        m_ElbowRotationSubsystem, 
+        m_ShoulderRotationSubsystem, 
+        ElbowConstants.kElbowDrivingWithAlgaePosition,
+        ShoulderConstants.kShoulderDrivingWithAlgaePosition
+      )
+    );
 
+   /*
+    addCommands(
+      new WaitCommand(2.0),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "swerveToProcessor")),
+      new SwerveToProcessorCommand(
+        m_robotDrive
+        , m_PoseEstimatorSubsystem
+      ),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoProcessor")),
+      new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null), // TODO Goto vs SwerveTo
+      new WaitCommand(2.0)
 
+    );
+
+    // Wew are at the processor.  Score the Algae
+    addCommands(
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToScoreAlgae")),
+      new CompoundArmMovementCommand(
+        m_ElbowRotationSubsystem, 
+        m_ShoulderRotationSubsystem, 
+        ElbowConstants.kElbowScoreAlgaeInProcessorPosition,
+        ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition
+      ),
+      new WaitCommand(2.0),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ExpelAlgae")),
+      new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeExpelTime), // Release the algae
+      new WaitCommand(2.0),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "Done"))
+    );
+    */
   }
-
 }

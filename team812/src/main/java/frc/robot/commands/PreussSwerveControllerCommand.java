@@ -41,7 +41,7 @@ import java.util.function.Supplier;
  */
 public class PreussSwerveControllerCommand extends Command {
   private final Timer m_timer = new Timer();
-  private final Trajectory m_trajectory;
+  protected Trajectory m_trajectory;
   private final Supplier<Pose2d> m_pose;
   private final SwerveDriveKinematics m_kinematics;
   private final HolonomicDriveController m_controller;
@@ -203,7 +203,7 @@ public class PreussSwerveControllerCommand extends Command {
       Supplier<Rotation2d> desiredRotation,
       Consumer<SwerveModuleState[]> outputModuleStates,
       Subsystem... requirements) {
-    m_trajectory = requireNonNullParam(trajectory, "trajectory", "PreussSwerveControllerCommand");
+    m_trajectory = trajectory; //requireNonNullParam(trajectory, "trajectory", "PreussSwerveControllerCommand");
     m_pose = requireNonNullParam(pose, "pose", "PreussSwerveControllerCommand");
     m_kinematics = requireNonNullParam(kinematics, "kinematics", "PreussSwerveControllerCommand");
     m_controller = requireNonNullParam(controller, "controller", "PreussSwerveControllerCommand");
@@ -224,6 +224,7 @@ public class PreussSwerveControllerCommand extends Command {
 
   @Override
   public void execute() {
+    if (m_trajectory == null) return;
     double curTime = m_timer.get();
     var desiredState = m_trajectory.sample(curTime);
     Pose2d desiredPose = desiredState.poseMeters;
@@ -246,10 +247,15 @@ public class PreussSwerveControllerCommand extends Command {
 
   @Override
   public boolean isFinished() {
+    if (m_trajectory == null) return true;
     if (m_timer.hasElapsed(m_trajectory.getTotalTimeSeconds())) {
       return true;
     } else {
       return false;
     }
+  }
+
+  public void setTrajectory (Trajectory trajectory) {
+    m_trajectory = trajectory;
   }
 }

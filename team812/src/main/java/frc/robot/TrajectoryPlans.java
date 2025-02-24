@@ -7,10 +7,6 @@ package frc.robot;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.ctre.phoenix.Util;
-import com.revrobotics.servohub.ServoHubLowLevel.PeriodicStatus0;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -25,20 +21,16 @@ import frc.robot.Constants.AutoConstants;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.GotoPoseCommand;
 import frc.robot.commands.PreussSwerveControllerCommand;
-import frc.robot.commands.RotateRobotCommand;
-import frc.robot.commands.VerifyExpectedAprilTagCommand;
-import frc.robot.commands.VerifyStartingPositionCommand;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
-import frc.utils.DrivingConfig;
 import frc.robot.subsystems.DriveSubsystemSRX.DrivingMode;
 
 /** 
@@ -54,21 +46,30 @@ public class TrajectoryPlans {
     public static int numYSquares = 4;
     public static double dx = FieldConstants.xMax/numXSquares;
     public static double dy = FieldConstants.yMax/numYSquares;
-    public static ArrayList<SequentialCommandGroup> blueAutoPlans = new ArrayList<SequentialCommandGroup>();
-    public static ArrayList<SequentialCommandGroup> redAutoPlans = new ArrayList<SequentialCommandGroup>();
     public static ArrayList<Trajectory> autoPaths = new ArrayList<Trajectory>();
     public static ArrayList<String>     autoNames = new ArrayList<String>();
     public static ArrayList<Pose2d[]>   waypoints = new ArrayList<Pose2d[]>();
     public static ArrayList<Integer> expectedAprilTag = new ArrayList<Integer>();
-
+    public static ArrayList<Trajectory> blueTrajectories = new ArrayList<Trajectory>();
+    public static ArrayList<Trajectory> redTrajectories = new ArrayList<Trajectory>();
+    public static ArrayList<Pose2d>     blueFinalPose = new ArrayList<Pose2d>();
+    public static ArrayList<Pose2d>     redFinalPose = new ArrayList<Pose2d>();
+    public static ArrayList<Pose2d>     blueStartingPose = new ArrayList<Pose2d>();
+    public static ArrayList<Pose2d>     redStartingPose = new ArrayList<Pose2d>();
+    
     // For now, default speeds are coming from Constants.AutoConstants which has the slow/precision speeds.
     // the 0.9 is to allow headroom for the robot to make sure it does not run out of time during the FollowTrajectoryCommand.
-    public static final TrajectoryConfig m_defaultTrajectoryConfig = new TrajectoryConfig(
+    public static final TrajectoryConfig m_forwardTrajectoryConfig = new TrajectoryConfig(
+        AutoConstants.kMaxSpeedMetersPerSecond*0.9,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared*0.9)
+        .setKinematics(DriveConstants.kDriveKinematics);
+
+    public static final TrajectoryConfig m_reverseTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond*0.9,
         AutoConstants.kMaxAccelerationMetersPerSecondSquared*0.9)
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
-
+    
     // Having 2 configs was causing confusion so now there is just one.
     /*public static final TrajectoryConfig m_fullSpeedTrajectoryConfig = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
@@ -245,12 +246,11 @@ public class TrajectoryPlans {
 
     /**
      * create a Trajectory using the driveTrain and config using the list of waypoints.
-     * @param driveTrain - the robot's driveTrain subsystem.
      * @param waypoints - an array of Pose2d objects describing the starting location, waypoints and ending location for the driving.
      * @param config - a TrajectoryConfig describing the driving parameters (eg max speed, acceleration, etc).
      * @return - a Trajectory object with smoothed (spline) path for the driving path or null if no path could be calculated.
      */
-    private static Trajectory createTrajectory(DriveSubsystemSRX driveTrain, Pose2d[] waypoints, TrajectoryConfig config) {
+    public static Trajectory createTrajectory(Pose2d[] waypoints, TrajectoryConfig config) {
         Trajectory trajectory = null;
         Pose2d startingPose = waypoints[0];
         Pose2d endingPose = waypoints[waypoints.length - 1];
@@ -262,7 +262,7 @@ public class TrajectoryPlans {
                 // Try the version of generateTrajectory that takes a list of poses instead of a list of translations.
                 // The hope is that this generates better robot rotational control - dph 2025-01-28
                 List<Pose2d> waypointList = Arrays.asList(waypoints);
-                trajectory = TrajectoryGenerator.generateTrajectory( waypointList, config != null ? config : m_defaultTrajectoryConfig);
+                trajectory = TrajectoryGenerator.generateTrajectory( waypointList, config != null ? config : m_reverseTrajectoryConfig);
             } else {
                 // Generate a trajectory with a starting and ending pose and a list of translation waypoints.
                 List<Translation2d>  translationWaypoints = new ArrayList<Translation2d>();
@@ -275,7 +275,7 @@ public class TrajectoryPlans {
                     // Pass through these zero interior waypoints, this should probably be something to make sure we dont crash into other robots.
                     translationWaypoints,
                     endingPose,
-                    config != null ? config : m_defaultTrajectoryConfig
+                    config != null ? config : m_reverseTrajectoryConfig
                 ); // use default config is none was specified.
             }
             if (debug)
@@ -303,7 +303,7 @@ public class TrajectoryPlans {
         thetaController.enableContinuousInput(-Math.PI, Math.PI); // angles will be converted to be within the range +/- pi. (e.g. 361 degrees will be converted to 1 degree)
 
         // Calculate the smoothed path through the waypoints.
-        Trajectory trajectory = createTrajectory(driveTrain, waypoints, config);
+        Trajectory trajectory = createTrajectory(waypoints, config);
 
         // If we got a path, create the driving command.
         if (trajectory != null) {
@@ -345,22 +345,13 @@ public class TrajectoryPlans {
 
         autoNames.add(name);
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-        blueAutoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints,
-            finalPose,
-            config,
-            false
-        ));
-        redAutoPlans.add(debugAutoCommand(
-            RobotContainer.m_robotDrive,
-            RobotContainer.m_PoseEstimatorSubsystem,
-            waypoints,
-            finalPose,
-            config,
-            true
-        ));
+        blueStartingPose.add(waypoints[0]);
+        blueTrajectories.add(createTrajectory(waypoints, config));
+        blueFinalPose.add(finalPose);
+        
+        redStartingPose.add(FieldConstants.BlueToRedPose(waypoints[0]));
+        redTrajectories.add(createRedTrajectory(waypoints, config));
+        redFinalPose.add(FieldConstants.BlueToRedPose(finalPose));
         expectedAprilTag.add(aprilTagID);
     }
 
@@ -419,30 +410,42 @@ public class TrajectoryPlans {
         Pose2d atAT21 = DriveConstants.robotRearAtPose(AT21, offsetToTouchReef);
         Pose2d atAT22 = DriveConstants.robotRearAtPose(AT22, offsetToTouchReef);
         //TrajectoryConfig config = m_debugTrajectoryConfig;
-        TrajectoryConfig config = m_defaultTrajectoryConfig;
+        TrajectoryConfig config = m_reverseTrajectoryConfig;
 
         // Add the defualt plan which is not yet defined, for now do nothing.
         autoNames.add("Robot Makes the Plan");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
-        blueAutoPlans.add(new SequentialCommandGroup(Commands.none()) ); // TODO; Handle here or in getAutonomousCommand
-        redAutoPlans.add(new SequentialCommandGroup(Commands.none()) ); // TODO; Handle here or in getAutonomousCommand
+        blueTrajectories.add(null);
+        redTrajectories.add(null);
+        blueFinalPose.add(null);
+        redFinalPose.add(null);
+        blueStartingPose.add(null);
+        redStartingPose.add(null);
         expectedAprilTag.add(0);
 
-         // Add the defualt plan which is not yet defined, for now do nothing.
-         autoNames.add("Drive off Line and Stop");
-         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
-         waypoints.add(new Pose2d[]{}); // Empty array.
-         blueAutoPlans.add(new SequentialCommandGroup(Commands.none()) );  // TODO: add drive command
-         redAutoPlans.add(new SequentialCommandGroup(Commands.none()) );  // TODO: add drive command
-         expectedAprilTag.add(0);
+        // Add the defualt plan which is not yet defined, for now do nothing.
+        autoNames.add("Drive off Line and Stop");
+        Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
+        waypoints.add(new Pose2d[]{}); // Empty array.
+        blueTrajectories.add(null);
+        redTrajectories.add(null);
+        blueFinalPose.add(null);
+        redFinalPose.add(null);
+        blueStartingPose.add(null);
+        redStartingPose.add(null);
+        expectedAprilTag.add(0);
 
           // Add the defualt plan which is not yet defined, for now do nothing.
         autoNames.add("Do Nothing");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
-        blueAutoPlans.add(new SequentialCommandGroup(Commands.none()) );
-        redAutoPlans.add(new SequentialCommandGroup(Commands.none()) );
+        blueTrajectories.add(null);
+        redTrajectories.add(null);
+        blueFinalPose.add(null);
+        redFinalPose.add(null);
+        blueStartingPose.add(null);
+        redStartingPose.add(null);
         expectedAprilTag.add(0);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
@@ -581,9 +584,14 @@ public class TrajectoryPlans {
     public static Command getReefFacingSwerveCommand(
         DriveSubsystemSRX driveTrain
         ,PoseEstimatorSubsystem poseEstimatorSubsystem
-        ,Trajectory trajectory
      ) {
         Command command;
+        Trajectory trajectory;
+        if (Utilities.isBlueAlliance()) {
+            trajectory = blueTrajectories.get(Autonomous.getAutoMode());
+        } else {
+            trajectory = redTrajectories.get(Autonomous.getAutoMode());
+        }
         if (trajectory != null) {
             ProfiledPIDController thetaController = new ProfiledPIDController(AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
             thetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -605,75 +613,47 @@ public class TrajectoryPlans {
         return command;
     }
     
+
     /**
-     * Returns a sequential command group that displays and executes an autonomous routine.
-     * This should be enhanced to score the coral and possible grab an algae and score it in
-     * the processor. 
-     * @param driveTrain                - The drive train
-     * @param poseEstimatorSubsystem    - the pose estimator
-     * @param blueWaypoints             - an array of poses for the start, waypoints and end of the driving path.
-     * @param blueFinalPose             - the final destination for the robot.
-     * @param config                    - drive train parameters to control robot speeds
-     * @param convertToRed              - if true, the waypoints will be converted to red alliance waypoints.
-     * @return
+     * redTrajectory - create a trajectory for the red alliance from blue alliance waypoints
+     * @param - Pose2d[] the blue alliance waypoints
+     * @param - the trajectory config
+     * @return - the trajectory through the waypoints
      */
-    public static SequentialCommandGroup debugAutoCommand(
-        DriveSubsystemSRX driveTrain
-        , PoseEstimatorSubsystem poseEstimatorSubsystem
-        , Pose2d[] blueWaypoints
-        , Pose2d blueFinalPose
+    public static Trajectory createRedTrajectory(
+          Pose2d[] blueWaypoints
         , TrajectoryConfig config
-        , boolean convertToRed) {
-        Command  command = null;
-        Pose2d[] waypoints;
-        Pose2d[] redWaypoints;
-        Pose2d finalPose;
-        
-        boolean testing = true;
-        // If we are the red alliance, we need to transform the waypoints to be red alliance waypoints.
-        if (convertToRed) {
-            redWaypoints = new Pose2d[blueWaypoints.length];
-            for (int i = 0; i < blueWaypoints.length; i++) {
-                redWaypoints[i] = FieldConstants.BlueToRedPose(blueWaypoints[i]);
-            }
-            waypoints = redWaypoints;
-            finalPose = FieldConstants.BlueToRedPose(blueFinalPose);
-        } else {
-            waypoints = blueWaypoints;
-            finalPose = blueFinalPose;
+    ) {
+        Pose2d[] redWaypoints = new Pose2d[blueWaypoints.length];
+        for (int i = 0; i < blueWaypoints.length; i++) {
+            redWaypoints[i] = FieldConstants.BlueToRedPose(blueWaypoints[i]);
         }
-        Trajectory trajectory = createTrajectory(driveTrain, waypoints, config);
-        if (!testing) {
-            if (trajectory != null) {
-                command = getSwerveCommand(driveTrain, poseEstimatorSubsystem, trajectory);
-            }
-        } else {
-            command = getReefFacingSwerveCommand(driveTrain, poseEstimatorSubsystem, trajectory);
-        }
-        DrivingConfig drivingConfig = null;
-        return new SequentialCommandGroup(
-            // might need some robot initialization here (e.g. home arm, check to see an april tag to make sure the robot is where it is assumed to be)
-            new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
-            new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)),
-            new GotoPoseCommand(
-                RobotContainer.m_robotDrive
-                , RobotContainer.m_PoseEstimatorSubsystem
-                , poseWithCameraFacingTheReef(convertToRed, waypoints[0].getX()
-                , waypoints[0].getY())
-                , false
-                , drivingConfig),
-            //new RotateRobotCommand(RobotContainer.m_robotDrive, Units.degreesToRadians(30.0), true),
-            //new VerifyExpectedAprilTagCommand(RobotContainer.m_PoseEstimatorSubsystem, FieldConstants.BlueAlliance, 20),
-            //new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[0])),
-           // new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[0])), // for debug
-            new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.getObject("trajectory").setTrajectory(trajectory)), // for debug
-            command
-            , new GotoPoseCommand(RobotContainer.m_robotDrive, RobotContainer.m_PoseEstimatorSubsystem, finalPose, true, drivingConfig)
-            //,new InstantCommand( () -> RobotContainer.m_PoseEstimatorSubsystem.setCurrentPose(waypoints[waypoints.length-1]))
-            //new InstantCommand(() -> RobotContainer.m_PoseEstimatorSubsystem.field2d.setRobotPose(waypoints[waypoints.length-1])) // for debug
-            // may need a driveToPose to perfectly position the robot.
-            // will need some arm motion to socre the coral.
-            // could add additional actions to grab an algea and drive to the processor and score there.
+        Trajectory trajectory = createTrajectory(redWaypoints, config);
+        return trajectory;
+    }
+
+    /**
+     * setStartingPose() - initialize the robot position on the field based on the auto plan and alliance
+     * @param PoseEstimatorSubsystem - the pose estimator subsystem.
+     */
+    public static Command setStartingPoseCommand(PoseEstimatorSubsystem poseEstimatorSubsystem) {
+        return new ConditionalCommand(
+            new InstantCommand(() -> poseEstimatorSubsystem.setCurrentPose(blueStartingPose.get(Autonomous.getAutoMode()))),
+            new InstantCommand(() -> poseEstimatorSubsystem.setCurrentPose(redStartingPose.get(Autonomous.getAutoMode()))),
+            () -> Utilities.isBlueAlliance()
+        );
+    }
+
+/**
+     * setStartingPose() - initialize the robot position on the field based on the auto plan and alliance
+     * @param PoseEstimatorSubsystem - the pose estimator subsystem.
+     */
+    public static Command gotoFinalPoseCommand(DriveSubsystemSRX robotDrive, PoseEstimatorSubsystem poseEstimatorSubsystem) {
+        boolean driveFacingFinalPose = true;
+        return new ConditionalCommand(
+            new GotoPoseCommand(robotDrive, poseEstimatorSubsystem, blueFinalPose.get(Autonomous.getAutoMode()), driveFacingFinalPose, null),
+            new GotoPoseCommand(robotDrive, poseEstimatorSubsystem, redFinalPose.get(Autonomous.getAutoMode()), driveFacingFinalPose, null),
+            () -> Utilities.isBlueAlliance()
         );
     }
 
@@ -766,7 +746,7 @@ public class TrajectoryPlans {
             new Pose2d(FieldConstants.blueRowOfAlgae,FieldConstants.yCenter,new Rotation2d(0.0))
         };
 
-        Trajectory trajectory = createTrajectory(driveTrain, danceMoves, config);
+        Trajectory trajectory = createTrajectory(danceMoves, config);
         if (trajectory != null) {
             command = new PreussSwerveControllerCommand(
             trajectory,
@@ -794,5 +774,38 @@ public class TrajectoryPlans {
             // will need some arm motion to socre the coral.
             // could add additional actions to grab an algea and drive to the processor and score there.
         );
+    }
+
+    public static List<Pose2d> sanitizeWaypoints(List<Pose2d> waypoints) {
+        // set up the rotation for each waypoint to point the robot to the next waypoint.
+        List<Pose2d>  sanitizedWaypoints = new ArrayList<Pose2d>();
+
+        for (int i = 0; i < waypoints.size(); i++) {
+            Pose2d pose = waypoints.get(i);
+    
+            if (i == 0) {
+            if (waypoints.size() > 1) {
+                Pose2d thisPose = waypoints.get(i);
+                Pose2d nextPose = waypoints.get(i+1);
+                double directionToNext = Math.atan2(nextPose.getTranslation().getY() - thisPose.getTranslation().getY(), nextPose.getTranslation().getX() - thisPose.getTranslation().getX());  
+                sanitizedWaypoints.add(new Pose2d(waypoints.get(i).getTranslation(), new Rotation2d(directionToNext))); // Lying about the orientation to get smoother path.
+            } else {
+                sanitizedWaypoints.add(pose); // There is only one pose, should not happen but keep the orientation.
+            }
+            } else if (i == waypoints.size() -1) {
+            sanitizedWaypoints.add(pose); // For the ending pose, keep the requested ending orientation.
+            } else {
+            // Not the end, point to the next waypoint.
+            Pose2d lastPose = waypoints.get(i-1);
+            Pose2d thisPose = waypoints.get(i);
+            Pose2d nextPose = waypoints.get(i+1);
+            double directionFromLast = Math.atan2(thisPose.getTranslation().getY() - lastPose.getTranslation().getY(), thisPose.getTranslation().getX() - lastPose.getTranslation().getX());  
+            double directionToNext = Math.atan2(nextPose.getTranslation().getY() - thisPose.getTranslation().getY(), nextPose.getTranslation().getX() - thisPose.getTranslation().getX());  
+            double direction = (MathUtil.angleModulus(directionFromLast) + MathUtil.angleModulus(directionToNext))/2.0;
+            direction = MathUtil.angleModulus(directionToNext);
+            sanitizedWaypoints.add(new Pose2d(waypoints.get(i).getTranslation(), new Rotation2d(direction)));
+            }
+        }
+        return sanitizedWaypoints;
     }
 }
