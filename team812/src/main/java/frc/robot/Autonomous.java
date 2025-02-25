@@ -160,7 +160,7 @@ public class Autonomous extends SequentialCommandGroup {
         , m_ShoulderRotationSubsystem
         , ElbowConstants.kElbowDrivingWithCoralPosition
         , ShoulderConstants.kShoulderDrivingWithCoralPosition
-      )
+      ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
     );
 
     // Perform the initial driving to get from the start line to the reef.
@@ -177,7 +177,7 @@ public class Autonomous extends SequentialCommandGroup {
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowScoreCoralPosition,
           ShoulderConstants.kShoulderScoreCoralPosition
-        )  
+        ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
       )
     );
     addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
@@ -210,7 +210,7 @@ public class Autonomous extends SequentialCommandGroup {
         m_ShoulderRotationSubsystem, 
         ElbowConstants.kElbowDrivingWithAlgaePosition,
         ShoulderConstants.kShoulderDrivingWithAlgaePosition
-      )
+      ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
     );
 
    /*
@@ -235,8 +235,9 @@ public class Autonomous extends SequentialCommandGroup {
         m_ShoulderRotationSubsystem, 
         ElbowConstants.kElbowScoreAlgaeInProcessorPosition,
         ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition
-      ),
-      new WaitCommand(2.0),
+      ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+    );
+    addCommands()
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ExpelAlgae")),
       new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeExpelTime), // Release the algae
       new WaitCommand(2.0),

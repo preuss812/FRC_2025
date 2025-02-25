@@ -97,10 +97,19 @@ public final class Constants {
         public static final int kDriverControllerPort = 3;
         public static final double kDriveDeadband = 0.10;
     }
+
+    /**
+     * Define analog ports used on the RoboRio
+     */
     public static final class AnalogIOConstants {
+        /*
+        * no pneumatics this year:
         public static final int kPressureTransducer = 0;
         public static final int kPressureOffset = -20;
         public static final int kPressureRange = 200;
+        */
+        public static final int kShoulderEncoder = 0;
+        public static final int kElbowEncoder = 1;
     }
 
     public static final class PidConstants {
@@ -153,13 +162,14 @@ public final class Constants {
         
         public static final double kElbowMinPosition = -60.0;    // Smallest encoder value the software will rotate to.
         public static final double kElbowMaxPosition = 120.0; // Largest encoder value the software will rotote to.
-        public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of ticks in the active range of arm motion between limits.
+        public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of degrees in the active range of arm motion between limits.
 
         public static final double kElbowStartingPosition = 170.0;  // We should start at the max position with the arm rotated down to intake Algaes.
         public static final double kElbowGroundIntakePosition = 30.0;
         public static final double kElbowHookChainPosition = -45;
         public static final double kElbowScoringPosition = 90;  // Rotated upward to score a Algae.
 
+        public static final double kElbowDeadband = 0.1;            // ignore joystick inputs less than 10% throttle.
         public static final double kElbowPeakOutputForward =  0.80; // Limit output voltage to +/- 80% of the available voltage range.
         public static final double kElbowPeakOutputReverse = -0.80; // Limit output voltage to +/- 80% of the available voltage range.
         public static final double kElbowSensorUnitsPer100ms = kElbowRange*10.0;      // Untested: Max speed in MotionMagic mode.  Full range in 1 second.
@@ -169,9 +179,9 @@ public final class Constants {
         public static final double kElbowLowerTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeSpeed = 0.2;    // Percent
-        public static final double kElbowHomePosition = 0;    // ticks. TODO: Tune this value.
-        public static final double kElbowLowAlgaePosition = 180; // ticks. TODO: Tune this value.
-        public static final double kElbowHighAlgaePosition = 120; // ticks. TODO: Tune this value.
+        public static final double kElbowHomePosition = 0;    // degrees. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 180; // degrees. TODO: Tune this value.
+        public static final double kElbowHighAlgaePosition = 120; // degrees. TODO: Tune this value.
         public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;
         public static final double kElbowScoreCoralPosition = 170;
         public static final double kElbowDrivingWithAlgaePosition = 30; // More or less straight up
@@ -411,12 +421,12 @@ public final class Constants {
         public static final double kShoulderMinPosition = 0;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
         public static final double kShoulderMaxPosition = 100; // Largest encoder value the software will rotote to. TODO: Tune this value.
         public static final double kShoulderRotationThreshold = 2; // ticks. TODO: Tune this value.
-        public static final double kShoulderProcessorPosition = 5; // ticks. TODO: Tune this value.
+        public static final double kShoulderProcessorPosition = 5; // degrees. TODO: Tune this value.
         public static final double kShoulderHomeSpeed = 0.2; // Percent. TODO: Tune this value.
-        public static final double kShoulderHomePosition = 0; // ticks. TODO: Tune this value.
-        public static final double kShoulderLowAlgaePosition = 95; // ticks. TODO: Tune this value.
-        public static final double kShoulderHighAlgaePosition = 95; // ticks. TODO: Tune this value.
-        public static final double kShoulderClimbingPosition = 95; // ticks. TODO: Tune this value.
+        public static final double kShoulderHomePosition = 0; // degrees. TODO: Tune this value.
+        public static final double kShoulderLowAlgaePosition = 95; // degrees. TODO: Tune this value.
+        public static final double kShoulderHighAlgaePosition = 95; // degrees. TODO: Tune this value.
+        public static final double kShoulderClimbingPosition = 95; // degrees. TODO: Tune this value.
         public static final double kShoulderDrivingWithCoralPosition = kShoulderStartingPosition;
         public static final double kShoulderDrivingWithAlgaePosition = 60;
         public static final double kShoulderScoreCoralPosition = 95;
