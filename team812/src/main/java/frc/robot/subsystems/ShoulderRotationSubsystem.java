@@ -5,11 +5,13 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.PidConstants;
 import frc.robot.Constants.ShoulderConstants;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -22,11 +24,12 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
   private static boolean m_rotateStopped = true;
   private static boolean m_capturedLimitPosition = false;
   private static AnalogEncoder m_encoder = new AnalogEncoder(new AnalogInput(0));
+  private static PIDController m_pidController = new PIDController(PidConstants.kShoulder_kP, PidConstants.kShoulder_kI, PidConstants.kShoulder_kD);
   // In case we need AnalogPotentiometer instead of AnalogEncoder:  TalonSRX Software Reference Manual 7.5.2
   //private static AnalogPotentiometer m_potentiometer = new AnalogPotentiometer(ShoulderConstants.kShoulderEncoderInputChannel);
 
   /** Creates a new ArmSubsystem. */
-  public ShoulderRotationSubsystem() {
+  public ShoulderRotationSubsystem() { 
   }
 
   private final int incrementSize = 50; // Move to Constants.java?  // 5*50 = 250 per second = 10 degrees per second when joystick maxed out. TODO tune this
@@ -150,14 +153,17 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
         setHomed();
       }
     }
-    SmartDashboard.putNumber("Shoulder Pos",   getPosition());
+    double currentPosition=m_encoder.get();
+    double error=targetPosition-currentPosition; 
+    double percentOutput=MathUtil.clamp(m_pidController.calculate(error), -1, 1);
+    m_shoulder.set(ControlMode.PercentOutput, percentOutput);
+    SmartDashboard.putNumber("Shoulder Pos",   currentPosition);
     SmartDashboard.putNumber("Shoulder target", targetPosition);
     SmartDashboard.putBoolean("Shoulder Homed", isHomed());
     SmartDashboard.putBoolean("Shoulder fwdsw", isFwdLimitSwitchClosed());
     SmartDashboard.putBoolean("Shoulder revsw", isRevLimitSwitchClosed());
-    int analogPos = m_shoulder.getSensorCollection().getAnalogIn();
-    SmartDashboard.putNumber("Shoulder analogPos:", analogPos);
-    SmartDashboard.putNumber("AnalogPot", m_encoder.get());
+  
+  
     // function apparently deprecated and may not work for analog
     //FeedbackDeviceStatus encoderStatus = m_shoulder.isSensorPresent(FeedbackDevice.Analog);
 
