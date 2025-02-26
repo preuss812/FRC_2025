@@ -480,8 +480,8 @@ public class TrajectoryPlans {
         addAutoMode(
             "My Barge to Near Side"
             , new Pose2d[] {
-                new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
-                new Pose2d(AT21.getX()+0.5,AT14.getY(), startingRotation.plus(new Rotation2d(Units.degreesToRadians(0)))),
+                new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation)
+                //new Pose2d(AT21.getX()+0.5,AT14.getY(), startingRotation.plus(new Rotation2d(Units.degreesToRadians(0)))),
                 //poseWithCameraFacingTheReef((AT20.getX()+FieldConstants.blueStartLine)/2.0,AT14.getY()),  Adds extra squiggles to the path
                 //nearAT20
             }
