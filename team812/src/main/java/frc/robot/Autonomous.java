@@ -160,7 +160,7 @@ public class Autonomous extends SequentialCommandGroup {
         , m_ShoulderRotationSubsystem
         , ElbowConstants.kElbowDrivingWithCoralPosition
         , ShoulderConstants.kShoulderDrivingWithCoralPosition
-      ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+      ).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
     );
 
     // Perform the initial driving to get from the start line to the reef.
@@ -177,18 +177,19 @@ public class Autonomous extends SequentialCommandGroup {
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowScoreCoralPosition,
           ShoulderConstants.kShoulderScoreCoralPosition
-        ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+        ).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
       )
     );
     addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
 
     addCommands(   
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToDriving")),
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
         , ElbowConstants.kElbowDrivingWithCoralPosition
         , ShoulderConstants.kShoulderDrivingWithCoralPosition
-      )
+      ).withTimeout(1.0)
     );
 
     // reposition arm to grab low algae and grab the algae.
@@ -199,7 +200,7 @@ public class Autonomous extends SequentialCommandGroup {
         m_ShoulderRotationSubsystem, 
         ElbowConstants.kElbowLowAlgaePosition,
         ShoulderConstants.kShoulderLowAlgaePosition
-      ),
+      ).withTimeout(1.0),
       new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "IntakeAlgae")),
       new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
@@ -213,20 +214,20 @@ public class Autonomous extends SequentialCommandGroup {
       ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
     );
 
-   /*
+   
     addCommands(
-      new WaitCommand(2.0),
+      //new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "swerveToProcessor")),
       new SwerveToProcessorCommand(
         m_robotDrive
         , m_PoseEstimatorSubsystem
       ),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoProcessor")),
-      new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null), // TODO Goto vs SwerveTo
-      new WaitCommand(2.0)
+      new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null)// TODO Goto vs SwerveTo
+      //, new WaitCommand(2.0)
 
     );
-
+/*
     // Wew are at the processor.  Score the Algae
     addCommands(
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToScoreAlgae")),

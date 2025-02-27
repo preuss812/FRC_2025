@@ -274,7 +274,7 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kA.value)
       .whileTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoAprilTagCommand(m_robotDrive, m_PoseEstimatorSubsystem, Units.inchesToMeters(18), null)
+        new GotoAprilTagCommand(m_robotDrive, m_PoseEstimatorSubsystem, Units.inchesToMeters(-2), null)
       );
     
       
