@@ -5,10 +5,15 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Autonomous;
+import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.TrajectoryPlans;
+import frc.robot.Utilities;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 
@@ -21,6 +26,7 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
  * based on Field Management alliance (red or blue) and the autonomous plan selected.
  */
 public class AutoDriveToReefCommand extends SequentialCommandGroup {
+  
   /** Creates a new AutoDriveToReefCommand. */
   public AutoDriveToReefCommand(
     DriveSubsystemSRX robotDrive
@@ -28,21 +34,43 @@ public class AutoDriveToReefCommand extends SequentialCommandGroup {
   ) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
+    
+    // find the april tag id if things are initialized.
+    int apriltagId =  VisionConstants.NO_TAG_FOUND;
+    if (Autonomous.m_autoMode >= 0 && Autonomous.m_autoMode < TrajectoryPlans.expectedAprilTag.size()) {
+      if (TrajectoryPlans.expectedAprilTag.get(Autonomous.m_autoMode) != null) {
+        apriltagId = TrajectoryPlans.expectedAprilTag.get(Autonomous.m_autoMode);
+        if (apriltagId < VisionConstants.MIN_FIDUCIAL_ID || apriltagId > VisionConstants.MAX_FIDUCIAL_ID) {
+          apriltagId =  VisionConstants.NO_TAG_FOUND;
+        } else {
+          // If we are the red alliance, we need to get the red alliance's complementary tag id.
+          if (Utilities.isRedAlliance()) {
+            apriltagId = FieldConstants.complementaryAprilTag[apriltagId];
+          }
+        }
+      }
+
+    }
     addCommands(
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "setStartingPose")),
       TrajectoryPlans.setStartingPoseCommand(poseEstimatorSubsystem),
       new WaitCommand(2.0),
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "PointTowardReef")),
-      new PointCameraTowardReefCommand(robotDrive, poseEstimatorSubsystem),
+      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "PointTowardReef"))
+    );
+    if (apriltagId == VisionConstants.NO_TAG_FOUND) {
+      addCommands(new PointCameraTowardReefCommand(robotDrive, poseEstimatorSubsystem));
+    } else {
+      addCommands(new PointCameraTowardApriltagCommand(robotDrive, poseEstimatorSubsystem, apriltagId));
+    }
+    addCommands(
       new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "SwerveToReef")),
       TrajectoryPlans.getReefFacingSwerveCommand(robotDrive, poseEstimatorSubsystem),
-      new InstantCommand(() ->robotDrive.drive(0, 0, 0, true, true)),
+      new InstantCommand(() ->robotDrive.drive(0, 0, 0, true, false)),
       new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoReefPose")),
       TrajectoryPlans.gotoFinalPoseCommand(robotDrive, poseEstimatorSubsystem),
       new WaitCommand(2.0)
-
     );
   }
 }

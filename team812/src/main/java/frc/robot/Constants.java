@@ -268,7 +268,7 @@ public final class Constants {
                 Math.atan2(
                     blueReefCenter.getY() - y
                     , blueReefCenter.getX() - x
-                ) + VisionConstants.cameraHeading
+                ) + VisionConstants.rearCameraHeading
             );
         }
         public static double robotHeadingForCameraToRedReefCenter(double x, double y) {
@@ -276,7 +276,7 @@ public final class Constants {
                 Math.atan2(
                     redReefCenter.getY() - y
                     , redReefCenter.getX() - x
-                ) + VisionConstants.cameraHeading
+                ) + VisionConstants.rearCameraHeading
             );
         }
 
@@ -353,36 +353,36 @@ public final class Constants {
         public static final int MIN_FIDUCIAL_ID = 1;
         public static final int MAX_FIDUCIAL_ID = 22;
         public static final double maximumAmbiguity = 0.2;
+        
 
-        public static final double cameraHeading = Units.degreesToRadians(180.0); // Camera is facing backwards.
-        public static final double cameraHeight = Units.inchesToMeters(15.0);
-        public static final double cameraXOffsetToRobotCenter = Units.inchesToMeters(-17.5);
-        public static final double cameraYOffsetToRobotCenter = Units.inchesToMeters(0.0);
-        
-        public static final Transform3d XCAMERA_TO_ROBOT =
-        // TODO Check values and signs of values.
-        new Transform3d(
-            new Translation3d(
-                cameraXOffsetToRobotCenter,
-                cameraYOffsetToRobotCenter,
-                cameraHeight
-            ),
-            new Rotation3d(0.0,0.0, cameraHeading)
+        public static double frontCameraXOffsetToRobot = Units.inchesToMeters(17.5);
+        public static double frontCameraYOffsetToRobot = Units.inchesToMeters(0.0);
+        public static double frontCameraHeightToGround = Units.inchesToMeters(15.0);
+        public static double frontCameraRoll  = Units.degreesToRadians(0.0);
+        public static double frontCameraPitch = Units.degreesToRadians(0.0); 
+        public static double frontCameraYaw   = Units.degreesToRadians(0.0); // Rear facing camera.
+        public static final double frontCameraHeading = Units.degreesToRadians(0.0); // Rear facing camera
+        public static final Transform3d FRONT_CAMERA_TO_ROBOT = new Transform3d(
+            new Translation3d(frontCameraXOffsetToRobot,frontCameraYOffsetToRobot,frontCameraHeightToGround),
+            new Rotation3d(frontCameraRoll, frontCameraPitch, frontCameraYaw)
         );
-        public static double cameraXOffsetToRobot = Units.inchesToMeters(-12.5);
-        public static double cameraYOffsetToRobot = Units.inchesToMeters(0.0);
-        public static double cameraHeightToGround = Units.inchesToMeters(15.0);
-        public static double cameraRoll  = Units.degreesToRadians(0.0);
-        public static double cameraPitch = Units.degreesToRadians(0.0); 
-        public static double cameraYaw   = Units.degreesToRadians(180.0); // Rear facing camera.
-        public static final Transform3d CAMERA_TO_ROBOT = new Transform3d(
-            new Translation3d(cameraXOffsetToRobot,cameraYOffsetToRobot,cameraHeightToGround),
-            new Rotation3d(cameraRoll, cameraPitch, cameraYaw)
+        public static final Transform3d ROBOT_TO_FRONT_CAMERA = FRONT_CAMERA_TO_ROBOT.inverse();
+
+
+        public static double rearCameraXOffsetToRobot = Units.inchesToMeters(-17.5);
+        public static double rearCameraYOffsetToRobot = Units.inchesToMeters(0.0);
+        public static double rearCameraHeightToGround = Units.inchesToMeters(15.0);
+        public static double rearCameraRoll  = Units.degreesToRadians(0.0);
+        public static double rearCameraPitch = Units.degreesToRadians(0.0); 
+        public static double rearCameraYaw   = Units.degreesToRadians(180.0); // Rear facing camera.
+        public static final double rearCameraHeading = Units.degreesToRadians(180.0); // Rear facing camera
+        public static final Transform3d REAR_CAMERA_TO_ROBOT = new Transform3d(
+            new Translation3d(rearCameraXOffsetToRobot,rearCameraYOffsetToRobot,rearCameraHeightToGround),
+            new Rotation3d(rearCameraRoll, rearCameraPitch, rearCameraYaw)
         );
-        public static Pose2d nearBlueProcessor = new Pose2d(Units.inchesToMeters(235.73), Units.inchesToMeters(1.5), new Rotation2d(Units.degreesToRadians(270)));
-        public static Pose2d nearRedProcessor = new Pose2d(Units.inchesToMeters(455.15), Units.inchesToMeters(217.15-1.5), new Rotation2d(Units.degreesToRadians(90)));
-        
-        public static final Transform3d ROBOT_TO_CAMERA = CAMERA_TO_ROBOT.inverse();
+        public static final Transform3d ROBOT_TO_REAR_CAMERA = REAR_CAMERA_TO_ROBOT.inverse();
+
+
         public enum AprilTag {
             UNKNOWN(0),
             RED_PROCESSOR(3),

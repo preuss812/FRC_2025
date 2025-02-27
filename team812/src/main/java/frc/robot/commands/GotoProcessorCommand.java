@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.RobotContainer;
 import frc.robot.Utilities;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
@@ -36,16 +37,19 @@ public class GotoProcessorCommand extends GotoPoseCommand {
   public void initialize() {
 
     super.initialize();
+    double offsetFromAprilTag = 0.0; // This should result in the robot front touching the wall where the april tag is.
 
     if (Utilities.isBlueAlliance()) {
       Pose2d tag = poseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.BLUE_PROCESSOR.id());
       // This should position the robot back to the AMP touching the wall.
-      targetPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation().plus(new Rotation2d(Math.PI)));
+        targetPose = DriveConstants.robotFrontAtPose(tag, offsetFromAprilTag);
+        //targetPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation().plus(new Rotation2d(Math.PI)));
 
     } else if (Utilities.isRedAlliance()) {
       Pose2d tag = poseEstimatorSubsystem.getAprilTagPose(VisionConstants.AprilTag.RED_PROCESSOR.id());
       // This should position the robot back to the AMP touching the wall.
-      targetPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation().plus(new Rotation2d(Math.PI)));
+      targetPose = DriveConstants.robotFrontAtPose(tag, offsetFromAprilTag);
+      //targetPose = new Pose2d(tag.getX(), tag.getY() - DriveConstants.kBackToCenterDistance, tag.getRotation().plus(new Rotation2d(Math.PI)));
     }
     else {
       targetPose = poseEstimatorSubsystem.getCurrentPose(); // Hack:: if we dont know the alliance. Dont move. 

@@ -9,6 +9,7 @@ import java.util.List;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -73,14 +74,14 @@ public class SwerveToProcessorSetupCommand extends Command {
       waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.BlueProcessorPlan, startingPose);
       aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.BLUE_PROCESSOR.id());
       robotRotationToFaceProcessor = aprilTagPose.getRotation().plus(new Rotation2d(Math.PI));
-      nearTargetPose = DriveConstants.robotFrontAtPose(aprilTagPose, 0.0);
+      nearTargetPose = DriveConstants.robotFrontAtPose(aprilTagPose, Units.inchesToMeters(12.0));
       waypoints.add(nearTargetPose);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
     } else if (destination == AprilTag.RED_PROCESSOR) {
       waypoints = TrajectoryPlans.planTrajectory(TrajectoryPlans.RedProcessorPlan, startingPose);
       aprilTagPose = poseEstimatorSubsystem.getAprilTagPose(AprilTag.RED_PROCESSOR.id());
       robotRotationToFaceProcessor = aprilTagPose.getRotation().plus(new Rotation2d(Math.PI));
-      nearTargetPose = DriveConstants.robotFrontAtPose(aprilTagPose, 0.0);
+      nearTargetPose = DriveConstants.robotFrontAtPose(aprilTagPose, Units.inchesToMeters(12.0));
       waypoints.add(nearTargetPose);
       //targetPose = Utilities.backToPose(aprilTagPose, 0.5);
     } else {

@@ -62,7 +62,7 @@ public class DriveOnAprilTagProjectionCommand extends Command {
     this.xbox = xbox;
     this.simulation = RobotContainer.isSimulation();
     autoDrive = new PreussAutoDrive(robotDrive, poseEstimatorSubsystem, config);
-    cameraToRobotAngle = VisionConstants.XCAMERA_TO_ROBOT.getRotation().getZ();
+    cameraToRobotAngle = VisionConstants.REAR_CAMERA_TO_ROBOT.getRotation().getZ();
 
     addRequirements(robotDrive, poseEstimatorSubsystem);
   }

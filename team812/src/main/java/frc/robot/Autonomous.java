@@ -85,16 +85,22 @@ public class Autonomous extends SequentialCommandGroup {
    */
   public static double robotHeadingForCameraToReefCenter(double x, double y) {
     return MathUtil.angleModulus(
-        Math.atan2(myReefY - y,myReefX - x) + VisionConstants.cameraHeading);
+        Math.atan2(myReefY - y,myReefX - x) + VisionConstants.rearCameraHeading);
+  }
+
+  public static double robotHeadingForCameraToPose(Pose2d currentPose, Pose2d targetPose) {
+    return MathUtil.angleModulus(
+      Math.atan2(targetPose.getY() - currentPose.getY(), targetPose.getX() - currentPose.getX()) + VisionConstants.rearCameraHeading
+    );
   }
 
   public static double robotHeadingForCameraToReefCenter(boolean convertToRed, double x, double y) {
     if (convertToRed) {
       return MathUtil.angleModulus(
-        Math.atan2(FieldConstants.redReefCenter.getY() - y, FieldConstants.redReefCenter.getX() - x) + VisionConstants.cameraHeading);
+        Math.atan2(FieldConstants.redReefCenter.getY() - y, FieldConstants.redReefCenter.getX() - x) + VisionConstants.rearCameraHeading);
     } else {
       return MathUtil.angleModulus(
-        Math.atan2(FieldConstants.blueReefCenter.getY() - y, FieldConstants.blueReefCenter.getX() - x) + VisionConstants.cameraHeading);
+        Math.atan2(FieldConstants.blueReefCenter.getY() - y, FieldConstants.blueReefCenter.getX() - x) + VisionConstants.rearCameraHeading);
     }
   }
 

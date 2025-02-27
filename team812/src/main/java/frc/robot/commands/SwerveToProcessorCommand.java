@@ -4,12 +4,15 @@
 
 package frc.robot.commands;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.TrajectoryPlans;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 
@@ -24,10 +27,13 @@ public class SwerveToProcessorCommand extends SequentialCommandGroup {
   ) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-      var thetaController = new ProfiledPIDController(
-      AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-      thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
+    var thetaController = new ProfiledPIDController(
+    AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    boolean faceReef = true;
+    Supplier<Rotation2d> rotationSupplier =  (faceReef) 
+      ? () -> TrajectoryPlans.reefFacingRotationSupplier(poseEstimatorSubsystem)
+      : () -> SwerveToProcessorSetupCommand.robotRotationToFaceProcessor();
     PreussSwerveControllerCommand debugSwerveControllerCommand = new PreussSwerveControllerCommand(
       null,
       poseEstimatorSubsystem::getCurrentPose, // Functional interface to feed supplier
@@ -37,7 +43,7 @@ public class SwerveToProcessorCommand extends SequentialCommandGroup {
       new PIDController(AutoConstants.kPXController, 0, 0),
       new PIDController(AutoConstants.kPYController, 0, 0),
       thetaController,
-      () -> SwerveToProcessorSetupCommand.robotRotationToFaceProcessor(),
+      rotationSupplier,
       robotDrive::setModuleStates,
       robotDrive);
 

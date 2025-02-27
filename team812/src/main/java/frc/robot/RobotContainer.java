@@ -44,6 +44,7 @@ import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShoulderConstants;
 import frc.robot.Constants.UltrasonicConstants;
+import frc.robot.Constants.VisionConstants;
 //import frc.robot.Constants.VisionConstants.AprilTag;
 //import frc.robot.subsystems.AnalogUltrasonicDistanceSubsystem;
 import frc.robot.subsystems.ElbowRotationSubsystem;
@@ -96,6 +97,7 @@ import frc.robot.commands.TakeInAlgaeOLSCommand;
 //import frc.robot.commands.PushTowardsWall;
 import frc.robot.commands.PushTowardsWallUltrasonic;
 import frc.utils.TriggerButton;
+import frc.utils.PoseEstimatorCamera;
 
 
 
@@ -120,10 +122,12 @@ public class RobotContainer {
   public final static DriveSubsystemSRX m_robotDrive = new DriveSubsystemSRX();
 
   public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
-  public static PhotonCamera m_camera = new PhotonCamera("pv-812");
+  public static PoseEstimatorCamera m_rearCamera = new PoseEstimatorCamera("pv-812", VisionConstants.ROBOT_TO_REAR_CAMERA);
+  public static PoseEstimatorCamera m_frontCamera = new PoseEstimatorCamera("Microsoft_LifeCam_HD-3000", VisionConstants.ROBOT_TO_FRONT_CAMERA);
 
   //public static EncoderSubsystem m_EncoderSubsystem = new EncoderSubsystem();
-  public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( m_camera, m_robotDrive);
+  public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_rearCamera, m_frontCamera};
+  public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( cameras, m_robotDrive);
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);

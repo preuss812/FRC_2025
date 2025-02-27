@@ -102,7 +102,7 @@ public class GotoPoseCommand extends Command {
     if (errorVectorMagnitude  < 1.0 /* meters */ || !driveFacingFinalPose) {
       desiredRotation = targetPose.getRotation().getRadians();
     } else {
-      desiredRotation = MathUtil.angleModulus(Utilities.getHeading(robotPose.getTranslation(), targetPose.getTranslation()))+VisionConstants.cameraHeading;
+      desiredRotation = MathUtil.angleModulus(Utilities.getHeading(robotPose.getTranslation(), targetPose.getTranslation()))+VisionConstants.rearCameraHeading;
     }
     
     rotationError = MathUtil.angleModulus(MathUtil.angleModulus(robotPose.getRotation().getRadians()) - desiredRotation);
