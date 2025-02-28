@@ -184,19 +184,6 @@
               "_showGlyph": false
             }
           },
-          "3,0": {
-            "size": [
-              4,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/AutoCommand",
-              "_title": "/SmartDashboard/AutoCommand",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
           "5,1": {
             "size": [
               1,

@@ -63,14 +63,15 @@ public class AutoDriveToReefCommand extends SequentialCommandGroup {
       addCommands(new PointCameraTowardApriltagCommand(robotDrive, poseEstimatorSubsystem, apriltagId));
     }
     addCommands(
-      new WaitCommand(2.0),
+      new StandStillCommand(robotDrive).withTimeout(2.0),
+      //new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "SwerveToReef")),
       TrajectoryPlans.getReefFacingSwerveCommand(robotDrive, poseEstimatorSubsystem),
-      new InstantCommand(() ->robotDrive.drive(0, 0, 0, true, false)),
-      new WaitCommand(2.0),
+      new StandStillCommand(robotDrive).withTimeout(2.0),
+      //new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoReefPose")),
       TrajectoryPlans.gotoFinalPoseCommand(robotDrive, poseEstimatorSubsystem),
-      new WaitCommand(2.0)
+      new StandStillCommand(robotDrive).withTimeout(2.0)
     );
   }
 }
