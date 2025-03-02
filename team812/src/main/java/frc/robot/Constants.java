@@ -48,8 +48,8 @@ public final class Constants {
 
         public static final int kElbowMotor1 = 43;
         public static final int kElbowMotor2 = 44;
-        public static final int kAlgaeIntakeMotor = 42;
-        public static final int kShoulderMotor = 40;
+        public static final int kAlgaeIntakeMotor = 40;
+        public static final int kShoulderMotor = 41;
 
         public static final int kPDP = 0; // was 50 until 3/12/2024
         public static final int kPCM = 51;
@@ -115,7 +115,7 @@ public final class Constants {
     public static final class PidConstants {
         public static final double kProportionalDriveStraight = 0.05;
      
-        public static final double kElbow_kP = 2.7;
+        public static final double kElbow_kP = 0.1;
         public static final double kElbow_kI = 0.005;
         public static final double kElbow_IntegralZone=15;
         public static final double kElbow_kD = 0.0;
@@ -160,11 +160,11 @@ public final class Constants {
         public static final double kElbowDegreesPerTick = 360.0/ElbowConstants.kElbowEncoderCountPerRevolution;
         public static final double kElbowTicksPerDegree = ElbowConstants.kElbowEncoderCountPerRevolution/360.0;
         
-        public static final double kElbowMinPosition = -60.0;    // Smallest encoder value the software will rotate to.
-        public static final double kElbowMaxPosition = 120.0; // Largest encoder value the software will rotote to.
+        public static final double kElbowMinPosition = -180.0;    // Smallest encoder value the software will rotate to.
+        public static final double kElbowMaxPosition = 180.0; // Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of degrees in the active range of arm motion between limits.
 
-        public static final double kElbowStartingPosition = 170.0;  // We should start at the max position with the arm rotated down to intake Algaes.
+        public static final double kElbowStartingPosition = 0.0;  // We should start at the max position with the arm rotated down to intake Algaes.
         public static final double kElbowGroundIntakePosition = 30.0;
         public static final double kElbowHookChainPosition = -45;
         public static final double kElbowScoringPosition = 90;  // Rotated upward to score a Algae.
@@ -180,10 +180,10 @@ public final class Constants {
         public static final double kElbowHomeTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeSpeed = 0.2;    // Percent
         public static final double kElbowHomePosition = 0;    // degrees. TODO: Tune this value.
-        public static final double kElbowLowAlgaePosition = 180; // degrees. TODO: Tune this value.
-        public static final double kElbowHighAlgaePosition = 120; // degrees. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 90; // degrees. TODO: Tune this value.
+        public static final double kElbowHighAlgaePosition = 60; // degrees. TODO: Tune this value.
         public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;
-        public static final double kElbowScoreCoralPosition = 170;
+        public static final double kElbowScoreCoralPosition = 90;
         public static final double kElbowDrivingWithAlgaePosition = 30; // More or less straight up
         public static final double kElbowScoreAlgaeInProcessorPosition = -45;
 
@@ -678,7 +678,8 @@ public final class Constants {
         .setP(PidConstants.kShoulder_kI)
         .setP(PidConstants.kShoulder_kD)
         .setP(PidConstants.kShoulder_kF)
-        .setP(PidConstants.kShoulder_IntegralZone);
+        .setP(PidConstants.kShoulder_IntegralZone)
+        .setInverted(true);
         
     public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1)
         .setP(PidConstants.kElbow_kP)

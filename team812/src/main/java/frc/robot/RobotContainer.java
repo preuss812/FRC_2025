@@ -123,10 +123,10 @@ public class RobotContainer {
 
   public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
   public static PoseEstimatorCamera m_rearCamera = new PoseEstimatorCamera("pv-812", VisionConstants.ROBOT_TO_REAR_CAMERA);
-  public static PoseEstimatorCamera m_frontCamera = new PoseEstimatorCamera("Microsoft_LifeCam_HD-3000", VisionConstants.ROBOT_TO_FRONT_CAMERA);
+  //public static PoseEstimatorCamera m_frontCamera = new PoseEstimatorCamera("Microsoft_LifeCam_HD-3000", VisionConstants.ROBOT_TO_FRONT_CAMERA);
 
   //public static EncoderSubsystem m_EncoderSubsystem = new EncoderSubsystem();
-  public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_rearCamera, m_frontCamera};
+public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_rearCamera/*m_frontCamera*/};
   public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( cameras, m_robotDrive);
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
@@ -231,8 +231,21 @@ public class RobotContainer {
     m_ShoulderRotationSubsystem.setDefaultCommand(
       new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
-    
 
+    SmartDashboard.putData("SH+", new RunCommand(()->m_ShoulderRotationSubsystem.runMotor(1.0)));
+    SmartDashboard.putData("SH-", new RunCommand(()->m_ShoulderRotationSubsystem.runMotor(-1.0)));
+    SmartDashboard.putData("SH0",new InstantCommand(()->m_ShoulderRotationSubsystem.runMotor(0.0)));
+
+    SmartDashboard.putData("EL+", new RunCommand(()->m_ElbowRotationSubsystem.runMotor(0.2), m_ElbowRotationSubsystem));
+    SmartDashboard.putData("EL-", new RunCommand(()->m_ElbowRotationSubsystem.runMotor(-0.2), m_ElbowRotationSubsystem));
+    SmartDashboard.putData("EL0",new InstantCommand(()->m_ElbowRotationSubsystem.runMotor(0.0), m_ElbowRotationSubsystem));
+    
+    SmartDashboard.putData("ELm45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-45.0)));
+    SmartDashboard.putData("ELp45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(45.0)));
+    
+    SmartDashboard.putData("ELm90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-180.0)));
+    SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(180.0)));
+    
     /* Switched to TriggerButton
     // Default is to expel Algaes based on the percentage pulled of the left trigger.
     m_AlgaeIntakeSubsystem.setDefaultCommand(

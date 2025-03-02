@@ -15,12 +15,14 @@ import frc.robot.Constants;
 import frc.robot.Constants.AnalogIOConstants;
 import frc.robot.Constants.ElbowConstants;
 import frc.robot.Constants.PidConstants;
+import frc.robot.Utilities;
 import frc.utils.PreussMotor;
 
 public class ElbowRotationSubsystem extends SubsystemBase {
   public final PreussMotor m_elbowLeft = new PreussMotor(Constants.elbowMotor1);
-  public final PreussMotor m_elbowRight = new PreussMotor(Constants.elbowMotor2);
-  private static AnalogEncoder m_encoder = new AnalogEncoder(new AnalogInput(AnalogIOConstants.kElbowEncoder));
+  //public final PreussMotor m_elbowRight = new PreussMotor(Constants.elbowMotor2);
+  private static AnalogInput m_AnalogInput = new AnalogInput(AnalogIOConstants.kElbowEncoder);
+  private static AnalogEncoder m_encoder = new AnalogEncoder(m_AnalogInput, 3.3, 0.0);
   private static PIDController m_pidController = new PIDController(PidConstants.kElbow_kP, PidConstants.kElbow_kI, PidConstants.kElbow_kD);
   private static double targetPosition;  
   private static double currentPosition;
@@ -33,9 +35,10 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   /** Creates a new ArmSubsystem. */
   public ElbowRotationSubsystem() {
     // Have the right motor do what the left motor does so they work together
-    m_elbowRight.follow(m_elbowLeft);
+    //m_elbowRight.follow(m_elbowLeft);
     stop(); // Make sure the motor is not moving
-    currentPosition = m_encoder.get(); // Get the arm's current position and make that the target position.
+    readCurrentPosition();
+    currentPosition = getCurrentPosition(); // Get the arm's current position and make that the target position.
     targetPosition = currentPosition;  // initially hold the starting arm position.
   }
 
@@ -156,6 +159,10 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     setTargetPosition(Constants.ElbowConstants.kElbowHomePosition);
   }
 
+  public void readCurrentPosition() {
+    currentPosition=Utilities.scaleDouble(m_encoder.get(), -90.0, 90.0, 0.443, 2.1);
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -164,16 +171,19 @@ public class ElbowRotationSubsystem extends SubsystemBase {
         setHomed();
       }
     }
-    currentPosition=m_encoder.get();
+    readCurrentPosition();
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ElbowConstants.kElbowPeakOutputReverse, ElbowConstants.kElbowPeakOutputForward);
     m_elbowLeft.set(ControlMode.PercentOutput, percentOutput);
     if (debug) {
       SmartDashboard.putNumber("Elbow Pos",    getCurrentPosition());
       SmartDashboard.putNumber("Elbow target", getTargetPosition());
+      SmartDashboard.putNumber("Elbow error", getPositionError());
       SmartDashboard.putBoolean("Elbow Homed", isHomed());
       SmartDashboard.putBoolean("Elbow fwdsw", isFwdLimitSwitchClosed());
       SmartDashboard.putBoolean("Elbow revsw", isRevLimitSwitchClosed());
+      SmartDashboard.putNumber("Elbow output", percentOutput);
+      SmartDashboard.putNumber("Elbow input", m_AnalogInput.getAverageVoltage());
     }
   }
 }

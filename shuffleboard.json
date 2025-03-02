@@ -198,6 +198,19 @@
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
+          },
+          "3,0": {
+            "size": [
+              4,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/AutoCommand",
+              "_title": "/SmartDashboard/AutoCommand",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
           }
         }
       }
@@ -213,6 +226,21 @@
         "vgap": 16.0,
         "titleType": 0,
         "tiles": {
+          "3,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Elbow Homed",
+              "_title": "/SmartDashboard/Elbow Homed",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
           "3,1": {
             "size": [
               1,
@@ -220,8 +248,8 @@
             ],
             "content": {
               "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/DT x input",
-              "_title": "/SmartDashboard/DT x input",
+              "_source0": "network_table:///SmartDashboard/Elbow Pos",
+              "_title": "/SmartDashboard/Elbow Pos",
               "_glyph": 148,
               "_showGlyph": false
             }
@@ -232,49 +260,229 @@
               1
             ],
             "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Elbow fwdsw",
+              "_title": "/SmartDashboard/Elbow fwdsw",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "3,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Elbow revsw",
+              "_title": "/SmartDashboard/Elbow revsw",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "4,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Shoulder Homed",
+              "_title": "/SmartDashboard/Shoulder Homed",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "4,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
               "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/DT y input",
-              "_title": "/SmartDashboard/DT y input",
+              "_source0": "network_table:///SmartDashboard/Shoulder Pos",
+              "_title": "/SmartDashboard/Shoulder Pos",
               "_glyph": 148,
               "_showGlyph": false
             }
           },
-          "6,0": {
+          "4,2": {
             "size": [
-              4,
-              2
+              1,
+              1
             ],
             "content": {
-              "_type": "Graph",
-              "_source0": "network_table:///SmartDashboard/DTxSpeedDelivered",
-              "_title": "/SmartDashboard/DTxSpeedDelivered",
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Shoulder fwdsw",
+              "_title": "/SmartDashboard/Shoulder fwdsw",
               "_glyph": 148,
               "_showGlyph": false,
-              "Graph/Visible time": 30.0,
-              "Graph/X-axis auto scrolling": true,
-              "Y-axis/Automatic bounds": true,
-              "Y-axis/Upper bound": 1.0,
-              "Y-axis/Lower bound": -1.0,
-              "Y-axis/Unit": "ul"
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "4,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Shoulder revsw",
+              "_title": "/SmartDashboard/Shoulder revsw",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "4,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Shoulder target",
+              "_title": "/SmartDashboard/Shoulder target",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "5,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/SH0",
+              "_title": "/SmartDashboard/SH0",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "5,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/SH+",
+              "_title": "/SmartDashboard/SH+",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "5,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/SH-",
+              "_title": "/SmartDashboard/SH-",
+              "_glyph": 148,
+              "_showGlyph": false
             }
           },
           "6,2": {
             "size": [
-              4,
-              2
+              1,
+              1
             ],
             "content": {
-              "_type": "Graph",
-              "_source0": "network_table:///SmartDashboard/DTySpeedDelivered",
-              "_title": "/SmartDashboard/DTySpeedDelivered",
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/EL0",
+              "_title": "/SmartDashboard/EL0",
               "_glyph": 148,
-              "_showGlyph": false,
-              "Graph/Visible time": 30.0,
-              "Graph/X-axis auto scrolling": true,
-              "Y-axis/Automatic bounds": true,
-              "Y-axis/Upper bound": 1.0,
-              "Y-axis/Lower bound": -1.0,
-              "Y-axis/Unit": "ul"
+              "_showGlyph": false
+            }
+          },
+          "6,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/EL-",
+              "_title": "/SmartDashboard/EL-",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "6,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/EL+",
+              "_title": "/SmartDashboard/EL+",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "7,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/ELp45",
+              "_title": "/SmartDashboard/ELp45",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "7,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/ELm45",
+              "_title": "/SmartDashboard/ELm45",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "3,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elbow target",
+              "_title": "/SmartDashboard/Elbow target",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "5,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elbow output",
+              "_title": "/SmartDashboard/Elbow output",
+              "_glyph": 148,
+              "_showGlyph": false
             }
           }
         }

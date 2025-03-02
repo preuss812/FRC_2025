@@ -41,15 +41,18 @@ public class Utilities {
     private static boolean m_isAutonomous = true;
 
     public static double scaleDouble(final double input, final double to_min, final double to_max) {
-            final double from_min = -1.0;
-            final double from_max = 1.0;
+        return scaleDouble(input, to_min, to_max, -1.0, 1.0);
+    }
+
+    public static double scaleDouble(final double input, final double to_min, final double to_max,
+                                     final double from_min, final double from_max) {
         double x;
         double scaled_x = 0.0;
         if( to_max > to_min  && from_max > from_min )
         {
             x =  input;
             scaled_x = ((x - from_min) * (to_max - to_min)) / 
-                        (to_max - to_min) +
+                        (from_max - from_min) +
                         to_min;
         }
         return scaled_x;    
