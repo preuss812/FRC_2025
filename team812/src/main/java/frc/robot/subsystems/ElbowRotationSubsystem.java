@@ -26,6 +26,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   private static PIDController m_pidController = new PIDController(PidConstants.kElbow_kP, PidConstants.kElbow_kI, PidConstants.kElbow_kD);
   private static double targetPosition;  
   private static double currentPosition;
+  private static double analogPosition; 
   private static boolean m_capturedLimitPosition = true; // This year absolute encoder so we do not need to home the arm.
   private boolean m_rotateStopped = true;
   private static boolean debug = true; // TODO: Set to false once the elbow is debugged.
@@ -160,7 +161,8 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   }
 
   public void readCurrentPosition() {
-    currentPosition=Utilities.scaleDouble(m_encoder.get(), -90.0, 90.0, 0.443, 2.1);
+    analogPosition = m_encoder.get();
+    currentPosition=Utilities.scaleDouble(analogPosition, -90.0, 90.0, 0.443, 2.1); // TODO: rescale these numbers
   }
 
   @Override
@@ -184,6 +186,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
       SmartDashboard.putBoolean("Elbow revsw", isRevLimitSwitchClosed());
       SmartDashboard.putNumber("Elbow output", percentOutput);
       SmartDashboard.putNumber("Elbow input", m_AnalogInput.getAverageVoltage());
+      SmartDashboard.putNumber("Elbow encoder", analogPosition);
     }
   }
 }
