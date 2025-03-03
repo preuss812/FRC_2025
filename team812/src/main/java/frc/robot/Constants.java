@@ -116,16 +116,17 @@ public final class Constants {
         public static final double kProportionalDriveStraight = 0.05;
      
         public static final double kElbow_kP = 0.1;
-        public static final double kElbow_kI = 0.005;
+        public static final double kElbow_kI = 0.0005;
         public static final double kElbow_IntegralZone=15;
         public static final double kElbow_kD = 0.0;
         public static final double kElbow_kF = 0.0;
         public static final double kElbow_rampRate = 0.5;
-        public static final double kShoulder_kP = 2.7;
-        public static final double kShoulder_kI = 0.005;
+        public static final double kShoulder_kP = 0.1;
+        public static final double kShoulder_kI = 0.0005;
         public static final double kShoulder_IntegralZone=15;
         public static final double kShoulder_kD = 0.0;
         public static final double kShoulder_kF = 0.0;
+        /*
         public static final double kArmExtension_kP = 0.3; //3.0;
         public static final double kArmExtension_kI = 0.0;
         public static final double kArmExtension_kD = 0.0;
@@ -133,15 +134,18 @@ public final class Constants {
         public static final double kArmExtension_rampRate = 0.5;
         public static final double kPorportionalBalanceForward = 0.05;
         public static final double kProportionalBalanceBackward = 0.05;
+        */
         public static final double kAlgaeIntake_kP = 2.7; // TODO are these needed and tuned?
         public static final double kAlgaeIntake_kI = 0.0;
         public static final double kAlgaeIntake_kD = 0.0;
         public static final double kAlgaeIntake_kF = 0.0;
         
+        /*
         public static final double kShooter_kP = 2.7; // TODO are these needed and tuned?
         public static final double kShooter_kI = 0.0;
         public static final double kShooter_kD = 0.0;
-        public static final double kShooter_kF = 0.0; 
+        public static final double kShooter_kF = 0.0;
+        */
     }
 
     public static final class ElbowConstants {
@@ -159,9 +163,10 @@ public final class Constants {
         public static final double kElbowEncoderCountPerRevolution = 360; 
         public static final double kElbowDegreesPerTick = 360.0/ElbowConstants.kElbowEncoderCountPerRevolution;
         public static final double kElbowTicksPerDegree = ElbowConstants.kElbowEncoderCountPerRevolution/360.0;
-        
-        public static final double kElbowMinPosition = -180.0;    // Smallest encoder value the software will rotate to.
-        public static final double kElbowMaxPosition = 180.0; // Largest encoder value the software will rotote to.
+        public static final double kElbowMinEncoderVoltage = 0.443; // (volts) TODO : Tune this value.
+        public static final double kElbowMaxEncoderVoltage = 2.071; // (volts) TODO : Tune this value.
+        public static final double kElbowMinPosition = -90.0; // (degrees) Smallest encoder value the software will rotate to.
+        public static final double kElbowMaxPosition =  90.0; // (degrees) Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of degrees in the active range of arm motion between limits.
 
         public static final double kElbowStartingPosition = 0.0;  // We should start at the max position with the arm rotated down to intake Algaes.
@@ -418,8 +423,10 @@ public final class Constants {
         public static final double kShoulderPeakOutputReverse = -0.8; // TODO: Tune this value.
         public static final double kShoulderHomeTimeout = 3.0; // Seconds to wait for the arm to rotate to the home position.
         public static final double kShoulderTimeout = 3.0; // Seconds to wait for the arm to rotate to the shooting position.
-        public static final double kShoulderMinPosition = 0;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
-        public static final double kShoulderMaxPosition = 100; // Largest encoder value the software will rotote to. TODO: Tune this value.
+        public static final double kShoulderMinEncoderVoltage = 0.0; // TODO : Tune this value.
+        public static final double kShoulderMaxEncoderVoltage = 3.3;  // TODO : Tune this value.
+        public static final double kShoulderMinPosition = -180;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
+        public static final double kShoulderMaxPosition = 180; // Largest encoder value the software will rotote to. TODO: Tune this value.
         public static final double kShoulderRotationThreshold = 2; // ticks. TODO: Tune this value.
         public static final double kShoulderProcessorPosition = 5; // degrees. TODO: Tune this value.
         public static final double kShoulderHomeSpeed = 0.2; // Percent. TODO: Tune this value.

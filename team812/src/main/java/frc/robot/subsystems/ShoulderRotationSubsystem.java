@@ -6,13 +6,16 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.AnalogEncoder;
+//import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.AnalogIOConstants;
 import frc.robot.Constants.PidConstants;
 import frc.robot.Constants.ShoulderConstants;
+import frc.robot.Utilities;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
@@ -20,18 +23,21 @@ import frc.utils.PreussMotor;
 
 public class ShoulderRotationSubsystem extends SubsystemBase {
   public final PreussMotor m_shoulder = new PreussMotor(Constants.shoulderMotor);
+  // Note: None of these variable need to be "static"
+  private static double analogPosition;
   private static double targetPosition;
   private static double currentPosition;
   private static boolean m_rotateStopped = true;
   private static boolean m_capturedLimitPosition = true; // Due to absolute encoder, we are always homed.
-  private static AnalogEncoder m_encoder = new AnalogEncoder(new AnalogInput(0));
+  private static AnalogInput m_analogInput = new AnalogInput(AnalogIOConstants.kShoulderEncoder);
+  //private static AnalogEncoder m_encoder = new AnalogEncoder(m_analogInput);
   private static PIDController m_pidController = new PIDController(PidConstants.kShoulder_kP, PidConstants.kShoulder_kI, PidConstants.kShoulder_kD);
   private static boolean debug = true; // TODO: Set to false once the shoulder is debugged.
 
   /** Creates a new ArmSubsystem. */
   public ShoulderRotationSubsystem() { 
     stop(); // Make sure the motor is not moving
-    currentPosition = m_encoder.get(); // Get the arm's current position and make that the target position.
+    readCurrentPosition();
     targetPosition = currentPosition;  // initially hold the starting arm position.
   }
 
@@ -102,8 +108,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
    * @return - the current angle of rotation in degrees
    */
   public double getCurrentPosition() {
-    //double currentPosition = m_encoder.get(); //  Relying on periodic to keep currentPosition fresh.
-    return currentPosition;
+    return currentPosition; // Relying on periodic to keep currentPosition fresh.
   }
 
   /**
@@ -174,6 +179,17 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     setTargetPosition(Constants.ShoulderConstants.kShoulderHomePosition);
   }
 
+  public void readCurrentPosition() {
+    analogPosition = m_analogInput.getAverageVoltage(); // Intentionally NOT using encoder. dph - 2025-03-03
+    currentPosition=Utilities.scaleDouble(
+      analogPosition
+      , ShoulderConstants.kShoulderMinPosition
+      , ShoulderConstants.kShoulderMaxPosition
+      , ShoulderConstants.kShoulderMinEncoderVoltage
+      , ShoulderConstants.kShoulderMaxEncoderVoltage
+    ); 
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -182,12 +198,15 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
         setHomed();
       }
     }
-    currentPosition = m_encoder.get();
+    
+    readCurrentPosition();
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ShoulderConstants.kShoulderPeakOutputReverse, ShoulderConstants.kShoulderPeakOutputForward);
     m_shoulder.set(ControlMode.PercentOutput, percentOutput);
     if (debug) {
-      SmartDashboard.putNumber("Shoulder Pos",   currentPosition);
+      SmartDashboard.putNumber("Shoulder Pos",    currentPosition);
+      SmartDashboard.putNumber("Shoulder input",  analogPosition);
+      SmartDashboard.putNumber("Shoulder output", percentOutput);
       SmartDashboard.putNumber("Shoulder target", targetPosition);
       SmartDashboard.putBoolean("Shoulder Homed", isHomed());
       SmartDashboard.putBoolean("Shoulder fwdsw", isFwdLimitSwitchClosed());

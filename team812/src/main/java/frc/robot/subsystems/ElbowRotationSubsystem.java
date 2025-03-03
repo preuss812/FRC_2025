@@ -7,7 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.AnalogEncoder;
+//import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,7 +22,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   public final PreussMotor m_elbowLeft = new PreussMotor(Constants.elbowMotor1);
   //public final PreussMotor m_elbowRight = new PreussMotor(Constants.elbowMotor2);
   private static AnalogInput m_AnalogInput = new AnalogInput(AnalogIOConstants.kElbowEncoder);
-  private static AnalogEncoder m_encoder = new AnalogEncoder(m_AnalogInput, 3.3, 0.0);
+  //private static AnalogEncoder m_encoder = new AnalogEncoder(m_AnalogInput, 3.3, 0.0);
   private static PIDController m_pidController = new PIDController(PidConstants.kElbow_kP, PidConstants.kElbow_kI, PidConstants.kElbow_kD);
   private static double targetPosition;  
   private static double currentPosition;
@@ -65,13 +65,13 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     }
   };
 
-  // Probably deadwwood.
+  // Probably deadwood.
   @Deprecated
   public void rotateUp50() {
     setTargetPosition(targetPosition+50.0);
   }
 
-  // Probably deadwwood.
+  // Probably deadwood.
   @Deprecated
   public void rotateDown50() {
     setTargetPosition(targetPosition-50.0);
@@ -161,8 +161,14 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   }
 
   public void readCurrentPosition() {
-    analogPosition = m_encoder.get();
-    currentPosition=Utilities.scaleDouble(analogPosition, -90.0, 90.0, 0.443, 2.1); // TODO: rescale these numbers
+    analogPosition = m_AnalogInput.getAverageVoltage();
+    currentPosition=Utilities.scaleDouble(
+       analogPosition
+      , ElbowConstants.kElbowMinPosition
+      , ElbowConstants.kElbowMaxPosition
+      , ElbowConstants.kElbowMinEncoderVoltage
+      , ElbowConstants.kElbowMaxEncoderVoltage
+    ); 
   }
 
   @Override
@@ -180,12 +186,12 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     if (debug) {
       SmartDashboard.putNumber("Elbow Pos",    getCurrentPosition());
       SmartDashboard.putNumber("Elbow target", getTargetPosition());
-      SmartDashboard.putNumber("Elbow error", getPositionError());
+      SmartDashboard.putNumber("Elbow error",  getPositionError());
       SmartDashboard.putBoolean("Elbow Homed", isHomed());
       SmartDashboard.putBoolean("Elbow fwdsw", isFwdLimitSwitchClosed());
       SmartDashboard.putBoolean("Elbow revsw", isRevLimitSwitchClosed());
       SmartDashboard.putNumber("Elbow output", percentOutput);
-      SmartDashboard.putNumber("Elbow input", m_AnalogInput.getAverageVoltage());
+      //SmartDashboard.putNumber("Elbow input",  m_AnalogInput.getAverageVoltage());
       SmartDashboard.putNumber("Elbow encoder", analogPosition);
     }
   }
