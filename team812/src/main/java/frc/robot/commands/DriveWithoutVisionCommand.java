@@ -58,11 +58,11 @@ public class DriveWithoutVisionCommand extends Command {
         , new Rotation2d(MathUtil.angleModulus(initialPose.getRotation().getRadians()+relativeMove.getRotation().getRadians())));
 
     } else {
-      Pose2d redPose = FieldConstants.BlueToRedPose(relativeMove);
       targetPose = new Pose2d(
-        initialPose.getX() + redPose.getX()
-        , initialPose.getX() + redPose.getY()
-        , new Rotation2d(MathUtil.angleModulus(initialPose.getRotation().getRadians()+redPose.getRotation().getRadians())));
+        initialPose.getX() - relativeMove.getX(),
+        initialPose.getY() - relativeMove.getY(),
+        initialPose.getRotation().rotateBy(relativeMove.getRotation())
+      );
     }
   }
 
@@ -146,7 +146,7 @@ public class DriveWithoutVisionCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    robotDrive.drive(0, 0, 0, true, true);
+    autoDrive.drive(0, 0, 0, true, false);
   }
 
   // Returns true when the command should end.
