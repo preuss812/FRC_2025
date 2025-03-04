@@ -243,8 +243,8 @@ public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_
     SmartDashboard.putData("ELm45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-45.0)));
     SmartDashboard.putData("ELp45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(45.0)));
     
-    SmartDashboard.putData("ELm90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-180.0)));
-    SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(180.0)));
+    SmartDashboard.putData("ELm90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-90.0)));
+    SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(90.0)));
     
     /* Switched to TriggerButton
     // Default is to expel Algaes based on the percentage pulled of the left trigger.

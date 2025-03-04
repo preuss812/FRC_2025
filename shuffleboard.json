@@ -484,6 +484,45 @@
               "_glyph": 148,
               "_showGlyph": false
             }
+          },
+          "8,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/ELm90",
+              "_title": "/SmartDashboard/ELm90",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "8,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/ELp90",
+              "_title": "/SmartDashboard/ELp90",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "7,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elbow input",
+              "_title": "/SmartDashboard/Elbow input",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
           }
         }
       }
