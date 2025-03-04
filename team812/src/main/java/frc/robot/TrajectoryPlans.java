@@ -56,7 +56,17 @@ public class TrajectoryPlans {
     public static ArrayList<Pose2d>     redFinalPose = new ArrayList<Pose2d>();
     public static ArrayList<Pose2d>     blueStartingPose = new ArrayList<Pose2d>();
     public static ArrayList<Pose2d>     redStartingPose = new ArrayList<Pose2d>();
-    
+    public static int AUTO_MODE_ROBOT_DECIDES;
+    public static int AUTO_MODE_MOVE_OFF_LINE_AND_STOP;
+    public static int AUTO_MODE_DO_NOTHING;
+    public static int AUTO_MODE_MY_BARGE_TO_OPPOSITE;
+    public static int AUTO_MODE_MY_BARGE_TO_FAR_SIDE;
+    public static int AUTO_MODE_MY_BARGE_TO_NEAR_SIDE;
+    public static int AUTO_MODE_CENTER_STRAIGHT;
+    public static int AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE;
+    public static int AUTO_MODE_THEIR_BARGE_TO_FAR_SIDE;
+    public static int AUTO_MODE_MY_BARGE_TO_CENTER;
+
     // For now, default speeds are coming from Constants.AutoConstants which has the slow/precision speeds.
     // the 0.9 is to allow headroom for the robot to make sure it does not run out of time during the FollowTrajectoryCommand.
     public static final TrajectoryConfig m_forwardTrajectoryConfig = new TrajectoryConfig(
@@ -413,6 +423,7 @@ public class TrajectoryPlans {
         TrajectoryConfig config = m_reverseTrajectoryConfig;
 
         // Add the defualt plan which is not yet defined, for now do nothing.
+        AUTO_MODE_ROBOT_DECIDES = autoNames.size();
         autoNames.add("Robot Makes the Plan");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
@@ -425,6 +436,7 @@ public class TrajectoryPlans {
         expectedAprilTag.add(0);
 
         // Add the defualt plan which is not yet defined, for now do nothing.
+        AUTO_MODE_MOVE_OFF_LINE_AND_STOP = autoNames.size();
         autoNames.add("Drive off Line and Stop");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
@@ -436,7 +448,8 @@ public class TrajectoryPlans {
         redStartingPose.add(null);
         expectedAprilTag.add(0);
 
-          // Add the defualt plan which is not yet defined, for now do nothing.
+        // Add the defualt plan which is not yet defined, for now do nothing.
+        AUTO_MODE_DO_NOTHING = autoNames.size();
         autoNames.add("Do Nothing");
         Robot.autoChooser.addOption(autoNames.get(autoNames.size()-1), autoNames.size()-1);
         waypoints.add(new Pose2d[]{}); // Empty array.
@@ -449,6 +462,7 @@ public class TrajectoryPlans {
         expectedAprilTag.add(0);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
+        AUTO_MODE_MY_BARGE_TO_OPPOSITE = autoNames.size();
         addAutoMode(
             "My Barge to Opposite"
             ,new Pose2d[] {
@@ -464,6 +478,7 @@ public class TrajectoryPlans {
             20);
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
+        AUTO_MODE_MY_BARGE_TO_FAR_SIDE = autoNames.size();
         addAutoMode("My Barge to Far Side"
             ,new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT14.getY(), startingRotation),
@@ -477,6 +492,7 @@ public class TrajectoryPlans {
             ,20
         );
 
+        AUTO_MODE_MY_BARGE_TO_NEAR_SIDE = autoNames.size();
         addAutoMode(
             "My Barge to Near Side"
             , new Pose2d[] {
@@ -491,6 +507,7 @@ public class TrajectoryPlans {
         );
         
         // Build a path adding it to the autoChooser which will select the autonomous routine
+        AUTO_MODE_CENTER_STRAIGHT = autoNames.size();
         addAutoMode(
             "Center Straight"
             , new Pose2d[] {
@@ -504,6 +521,7 @@ public class TrajectoryPlans {
             );
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
+        AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE = autoNames.size();
         addAutoMode(
             "Their Barge to Near Side"  
             , new Pose2d[] {
@@ -517,6 +535,7 @@ public class TrajectoryPlans {
         );
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
+        AUTO_MODE_THEIR_BARGE_TO_FAR_SIDE = autoNames.size();
         addAutoMode("Their Barge to Far Side"
             , new Pose2d[] {
                 new Pose2d(FieldConstants.blueStartLine,AT15.getY(), startingRotation),
@@ -528,6 +547,7 @@ public class TrajectoryPlans {
         );
 
         // Build a path adding it to the autoChooser which will select the autonomous routine
+        AUTO_MODE_MY_BARGE_TO_CENTER = autoNames.size();
         addAutoMode("Right 45 Degrees"
             , new Pose2d[] {
                 poseWithCameraFacingTheReef(false, FieldConstants.blueStartLine, AT14.getY()),

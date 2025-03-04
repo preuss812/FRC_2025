@@ -38,6 +38,7 @@ import frc.robot.commands.AutoDriveToReefCommand;
 import frc.robot.commands.AutonomousStartDelayCommand;
 import frc.robot.commands.CompoundArmMovementCommand;
 import frc.robot.commands.DriveRobotCommand;
+import frc.robot.commands.DriveWithoutVisionCommand;
 import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.FindAprilTagCommand;
 import frc.robot.commands.GotoAprilTagCommand;
@@ -153,13 +154,25 @@ public class Autonomous extends SequentialCommandGroup {
     // Initialize the robot before moving.
     addCommands(new ParallelCommandGroup(
       new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)) // TODO Should be SPEED, not PRECISION
+      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.SPEED)) // TODO Should be SPEED, not PRECISION
       //new ElbowHomeCommand(m_ElbowRotationSubsystem),
       //new ShoulderHomeCommand(m_ShoulderRotationSubsystem),
       //new InstantCommand(() -> setReefCenter()),
       //new InstantCommand(() -> setAutoMode())
     ));
    
+    // For these first 2 modes, just drive 1 meter and wait.
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_ROBOT_DECIDES || getAutoMode() == TrajectoryPlans.AUTO_MODE_MOVE_OFF_LINE_AND_STOP) {
+      addCommands(new DriveWithoutVisionCommand(m_robotDrive, m_PoseEstimatorSubsystem, null, new Pose2d(-1.0, 0, new Rotation2d(0.0))));
+      return;
+    }
+
+    // For the do-nothing mode, do not move or take any further action.  
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_DO_NOTHING) {
+      return;
+    }
+
+    // All other modes involve going to the reef and possibly more.
     addCommands(   
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
@@ -198,58 +211,75 @@ public class Autonomous extends SequentialCommandGroup {
       ).withTimeout(1.0)
     );
 
-    // reposition arm to grab low algae and grab the algae.
-    addCommands(
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToGrabAlgae")),
-      new CompoundArmMovementCommand(
-        m_ElbowRotationSubsystem, 
-        m_ShoulderRotationSubsystem, 
-        ElbowConstants.kElbowLowAlgaePosition,
-        ShoulderConstants.kShoulderLowAlgaePosition
-      ).withTimeout(1.0),
-      new WaitCommand(2.0),
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "IntakeAlgae")),
-      new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
-      new WaitCommand(2.0),
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToDrive")),
-      new CompoundArmMovementCommand(
-        m_ElbowRotationSubsystem, 
-        m_ShoulderRotationSubsystem, 
-        ElbowConstants.kElbowDrivingWithAlgaePosition,
-        ShoulderConstants.kShoulderDrivingWithAlgaePosition
-      ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
-    );
 
-   
-    addCommands(
-      //new WaitCommand(2.0),
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "swerveToProcessor")),
-      new SwerveToProcessorCommand(
-        m_robotDrive
-        , m_PoseEstimatorSubsystem
-      ),
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoProcessor")),
-      new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null)// TODO Goto vs SwerveTo
-      //, new WaitCommand(2.0)
+    // If the algae is low, try to grab it.
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_NEAR_SIDE
+    || getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE
+    || getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE
+    ) {
+      // reposition arm to grab low algae and grab the algae.
+      addCommands(
+        new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToGrabAlgae")),
+        new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowLowAlgaePosition,
+          ShoulderConstants.kShoulderLowAlgaePosition
+        ).withTimeout(1.0),
+        new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "IntakeAlgae")),
+        new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
+        new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToDrive")),
+        new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowDrivingWithAlgaePosition,
+          ShoulderConstants.kShoulderDrivingWithAlgaePosition
+        ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+      );
 
-    );
-/*
-    // Wew are at the processor.  Score the Algae
-    addCommands(
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToScoreAlgae")),
-      new CompoundArmMovementCommand(
-        m_ElbowRotationSubsystem, 
-        m_ShoulderRotationSubsystem, 
-        ElbowConstants.kElbowScoreAlgaeInProcessorPosition,
-        ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition
-      ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
-    );
-    addCommands()
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ExpelAlgae")),
-      new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeExpelTime), // Release the algae
-      new WaitCommand(2.0),
-      new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "Done"))
-    );
-    */
+      if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE)
+      {
+        addCommands(
+          new DriveRobotCommand(
+            m_robotDrive
+            , m_PoseEstimatorSubsystem
+            , new Pose2d(-1.0, -0.5, new Rotation2d(0.0))
+            , true
+            , m_robotDrive.defaultAutoConfig
+          )
+        );
+      }
+      // If we are near the processor, drive to it and try to score tha algae
+      if (getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE
+      || getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE
+      ) {
+        addCommands(
+          new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "swerveToProcessor")),
+          new SwerveToProcessorCommand(
+            m_robotDrive
+            , m_PoseEstimatorSubsystem
+          ),
+          new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoProcessor")),
+          new GotoProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem, null)// TODO Goto vs SwerveTo
+
+        );
+
+        // Wew are at the processor.  Score the Algae
+        addCommands(
+          new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToScoreAlgae")),
+          new CompoundArmMovementCommand(
+            m_ElbowRotationSubsystem, 
+            m_ShoulderRotationSubsystem, 
+            ElbowConstants.kElbowScoreAlgaeInProcessorPosition,
+            ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition
+          ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+        );
+        addCommands(
+          new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ExpelAlgae")),
+          new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeExpelTime), // Release the algae
+          new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "Done"))
+        );
+      }
+    }
   }
 }

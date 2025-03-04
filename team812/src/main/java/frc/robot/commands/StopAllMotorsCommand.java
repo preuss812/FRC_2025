@@ -17,7 +17,6 @@ public class StopAllMotorsCommand extends Command {
   public StopAllMotorsCommand() {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(
-      RobotContainer.m_ElbowRotationSubsystem,
       RobotContainer.m_AlgaeIntakeSubsystem,
       RobotContainer.m_ElbowRotationSubsystem,
       RobotContainer.m_ShoulderRotationSubsystem,
@@ -31,7 +30,7 @@ public class StopAllMotorsCommand extends Command {
     RobotContainer.m_AlgaeIntakeSubsystem.stop();
     RobotContainer.m_ElbowRotationSubsystem.stop();
     RobotContainer.m_ShoulderRotationSubsystem.stop();
-    RobotContainer.m_robotDrive.drive(0,0,0,true,true);
+    RobotContainer.m_robotDrive.drive(0,0,0,true,false);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

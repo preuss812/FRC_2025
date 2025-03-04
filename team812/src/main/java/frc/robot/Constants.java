@@ -337,9 +337,9 @@ public final class Constants {
     }
     
     public static final class AlgaeIntakeConstants {
-        public static final double kPickUpAlgaeSpeed = 1.0; // TODO needs tuning.
-        public static final double kExpelAlgaeSpeed = -1.0; // TODO needs tuning.
-        public static final int kLimitSwitchChannel = 2;
+        public static final double kPickUpAlgaeSpeed = 0.2; // TODO needs tuning.
+        public static final double kExpelAlgaeSpeed = -0.2; // TODO needs tuning.
+        //public static final int kLimitSwitchChannel = 2;
     }
 
     public static final class BrakeConstants {

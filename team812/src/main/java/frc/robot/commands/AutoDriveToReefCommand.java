@@ -54,7 +54,7 @@ public class AutoDriveToReefCommand extends SequentialCommandGroup {
     addCommands(
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "setStartingPose")),
       TrajectoryPlans.setStartingPoseCommand(poseEstimatorSubsystem),
-      new WaitCommand(2.0),
+      //new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "PointTowardReef"))
     );
     if (apriltagId == VisionConstants.NO_TAG_FOUND) {
@@ -63,15 +63,15 @@ public class AutoDriveToReefCommand extends SequentialCommandGroup {
       addCommands(new PointCameraTowardApriltagCommand(robotDrive, poseEstimatorSubsystem, apriltagId));
     }
     addCommands(
-      new StandStillCommand(robotDrive).withTimeout(2.0),
+      //new StandStillCommand(robotDrive).withTimeout(0.1),
       //new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "SwerveToReef")),
       TrajectoryPlans.getReefFacingSwerveCommand(robotDrive, poseEstimatorSubsystem),
-      new StandStillCommand(robotDrive).withTimeout(2.0),
+      new StandStillCommand(robotDrive).withTimeout(0.1),
       //new WaitCommand(2.0),
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoReefPose")),
       TrajectoryPlans.gotoFinalPoseCommand(robotDrive, poseEstimatorSubsystem),
-      new StandStillCommand(robotDrive).withTimeout(2.0)
+      new StandStillCommand(robotDrive).withTimeout(0.1)
     );
   }
 }

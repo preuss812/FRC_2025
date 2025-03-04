@@ -70,6 +70,7 @@ import frc.robot.commands.ElbowHomeCommand;
 import frc.robot.commands.ExpelAlgaeCommand;
 //import frc.robot.commands.BadGotoAprilTagCommand;
 import frc.robot.commands.OpticalLimitSwitch;
+import frc.robot.commands.PushTowardsReefCommand;
 //import frc.robot.commands.FindAprilTagCommand;
 //import com.revrobotics.CANSparkMax;
 //import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -90,7 +91,7 @@ import frc.robot.commands.ShoulderRotationCommand;
 //import frc.robot.commands.SwerveToSourceCommand;
 import frc.robot.commands.SwerveToProcessorCommand;
 import frc.robot.commands.SwerveToProcessorCommand;
-import frc.robot.commands.TakeInAlgaeOLSCommand;
+//import frc.robot.commands.TakeInAlgaeOLSCommand;
 //import frc.robot.commands.GotoSourceCommand;
 //import frc.robot.commands.DetectColorCommand;
 //import frc.robot.TrajectoryPlans;
@@ -121,12 +122,12 @@ public class RobotContainer {
   // The robot's subsystems
   public final static DriveSubsystemSRX m_robotDrive = new DriveSubsystemSRX();
 
-  public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
+  //public static BlackBoxSubsystem m_BlackBox = new BlackBoxSubsystem();
   public static PoseEstimatorCamera m_rearCamera = new PoseEstimatorCamera("pv-812", VisionConstants.ROBOT_TO_REAR_CAMERA);
   //public static PoseEstimatorCamera m_frontCamera = new PoseEstimatorCamera("Microsoft_LifeCam_HD-3000", VisionConstants.ROBOT_TO_FRONT_CAMERA);
 
   //public static EncoderSubsystem m_EncoderSubsystem = new EncoderSubsystem();
-public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_rearCamera/*m_frontCamera*/};
+  public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_rearCamera/*,m_frontCamera*/};
   public static PoseEstimatorSubsystem m_PoseEstimatorSubsystem = new PoseEstimatorSubsystem( cameras, m_robotDrive);
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
@@ -145,7 +146,7 @@ public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_
       UltrasonicConstants.kEchoChannel,
       UltrasonicConstants.kOffsetToBumper
     );
-  public static final OpticalLimitSwitch m_OpticalLimitSwitch = new OpticalLimitSwitch(AlgaeIntakeConstants.kLimitSwitchChannel);
+  //public static final OpticalLimitSwitch m_OpticalLimitSwitch = new OpticalLimitSwitch(AlgaeIntakeConstants.kLimitSwitchChannel);
 
   //public static DigitalIOSubsystem m_DigitalIOSubsystem = new DigitalIOSubsystem();
 
@@ -337,7 +338,7 @@ public static final PoseEstimatorCamera[] cameras = new PoseEstimatorCamera[]{m_
     
     /* Debugging below */
     if (debug) {
-
+      SmartDashboard.putData("P2R", new PushTowardsReefCommand(m_robotDrive, m_PoseEstimatorSubsystem));
       SmartDashboard.putData("IC", new InstantCommand(() -> m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(1,4,new Rotation2d(0)))));
       SmartDashboard.putData("EL", new ElbowRotationCommand(m_ElbowRotationSubsystem, 5000));
 
