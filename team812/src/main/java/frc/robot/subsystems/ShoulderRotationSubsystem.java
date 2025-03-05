@@ -202,6 +202,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     readCurrentPosition();
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ShoulderConstants.kShoulderPeakOutputReverse, ShoulderConstants.kShoulderPeakOutputForward);
+    percentOutput = 0.0;
     m_shoulder.set(ControlMode.PercentOutput, percentOutput);
     if (debug) {
       SmartDashboard.putNumber("Shoulder Pos",    currentPosition);

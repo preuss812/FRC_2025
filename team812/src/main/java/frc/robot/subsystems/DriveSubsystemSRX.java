@@ -94,7 +94,7 @@ public class DriveSubsystemSRX extends SubsystemBase {
     defaultAutoConfig = new DrivingConfig()
     .setMaxThrottle(0.8)
     .setMaxRotation(0.8)
-    .setLinearP(2.0)
+    .setLinearP(0.25)
     .setLinearIZone(Units.inchesToMeters(4.0))
     .setLinearTolerance(Units.inchesToMeters(2.0))
     .setAngularP(0.5)

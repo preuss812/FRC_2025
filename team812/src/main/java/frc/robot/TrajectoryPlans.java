@@ -394,7 +394,7 @@ public class TrajectoryPlans {
         // The staring poses will be on the blue starting line facing back toward the blue drive station
         Rotation2d startingRotation = new Rotation2d(0.0);
         double offsetFromAprilTag = Units.inchesToMeters(40); // 0.5 meters from the april tag
-        double offsetToTouchReef = Units.inchesToMeters(-5.0); // -5 inches meters from the april tag Note: this should be 0.0 so something is off somewhere.
+        double offsetToTouchReef = Units.inchesToMeters(0.0); // -5 inches meters from the april tag Note: this should be 0.0 so something is off somewhere.
         if (debug) checkAllTrajectories();
         // Get/create poses for each Reef April tag and barge april tag
         // for omre concise coding below.

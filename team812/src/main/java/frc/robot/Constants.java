@@ -458,14 +458,14 @@ public final class Constants {
     public static final class DriveConstants {
         // Driving Parameters - Algae that these are not the maximum capable speeds of
         // the robot, rather the allowed maximum speeds
-        public static final double kMaxSpeedMetersPerSecond = 4.5; //4.5; 1.0 in the lab // Limit how violently swerve works
+        public static final double kMaxSpeedMetersPerSecond = 3.0; //4.5; 1.0 in the lab // Limit how violently swerve works
         public static final double kMaxAngularSpeed = 4 * Math.PI; // radians per second
     
         public static final double kDirectionSlewRate = 1.2; // radians per second
-        public static final double kMagnitudeIncreaseSlewRate = 0.8; // percent per second (1 = 100%)
-        public static final double kMagnitudeDecreaseSlewRate = 3.6; // percent per second (1 = 100%)
+        public static final double kMagnitudeIncreaseSlewRate = 0.6; // percent per second (1 = 100%)
+        public static final double kMagnitudeDecreaseSlewRate = 1.8; // percent per second (1 = 100%)
         public static final double kRotationalIncreaseSlewRate = 0.4;// 2.0; // percent per second (1 = 100%) // UNDO
-        public static final double kRotationalDecreaseSlewRate = 4.0;
+        public static final double kRotationalDecreaseSlewRate = 2.0;
 
         // Driving Parameters for PRECISION DrivingMode.  This is a slower mode for more precise positioning.
         public static final double kMaxSpeedMetersPerSecondPM = 1.6; //4.5; 1.0 in the lab // Limit how violently swerve works

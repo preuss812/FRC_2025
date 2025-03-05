@@ -154,7 +154,7 @@ public class Autonomous extends SequentialCommandGroup {
     // Initialize the robot before moving.
     addCommands(new ParallelCommandGroup(
       new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.SPEED)) // TODO Should be SPEED, not PRECISION
+      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)) // TODO Should be SPEED, not PRECISION
       //new ElbowHomeCommand(m_ElbowRotationSubsystem),
       //new ShoulderHomeCommand(m_ShoulderRotationSubsystem),
       //new InstantCommand(() -> setReefCenter()),
