@@ -213,9 +213,9 @@ public class Autonomous extends SequentialCommandGroup {
 
 
     // If the algae is low, try to grab it.
-    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_NEAR_SIDE
-    || getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE
-    || getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_FAR_SIDE
+    || getAutoMode() == TrajectoryPlans.AUTO_MODE_CENTER_STRAIGHT
+    || getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_FAR_SIDE
     ) {
       // reposition arm to grab low algae and grab the algae.
       addCommands(
@@ -237,22 +237,20 @@ public class Autonomous extends SequentialCommandGroup {
         ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
       );
 
-      if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE)
+      if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_FAR_SIDE)
       {
         addCommands(
           new DriveRobotCommand(
             m_robotDrive
             , m_PoseEstimatorSubsystem
-            , new Pose2d(-1.0, -0.5, new Rotation2d(0.0))
+            , new Pose2d(-1.0, 0.5, new Rotation2d(0.0))
             , true
             , m_robotDrive.defaultAutoConfig
           )
         );
       }
       // If we are near the processor, drive to it and try to score tha algae
-      if (getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE
-      || getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE
-      ) {
+      if (getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_FAR_SIDE) {
         addCommands(
           new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "swerveToProcessor")),
           new SwerveToProcessorCommand(
