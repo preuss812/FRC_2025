@@ -115,8 +115,8 @@ public final class Constants {
     public static final class PidConstants {
         public static final double kProportionalDriveStraight = 0.05;
      
-        public static final double kElbow_kP = 0.1;
-        public static final double kElbow_kI = 0.0005;
+        public static final double kElbow_kP = 0.01;
+        public static final double kElbow_kI = 0.00005;
         public static final double kElbow_IntegralZone=15;
         public static final double kElbow_kD = 0.0;
         public static final double kElbow_kF = 0.0;
