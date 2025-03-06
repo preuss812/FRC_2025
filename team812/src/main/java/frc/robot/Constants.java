@@ -163,10 +163,10 @@ public final class Constants {
         public static final double kElbowEncoderCountPerRevolution = 360; 
         public static final double kElbowDegreesPerTick = 360.0/ElbowConstants.kElbowEncoderCountPerRevolution;
         public static final double kElbowTicksPerDegree = ElbowConstants.kElbowEncoderCountPerRevolution/360.0;
-        public static final double kElbowMinEncoderVoltage = 0.443; // (volts) TODO : Tune this value.
-        public static final double kElbowMaxEncoderVoltage = 2.071; // (volts) TODO : Tune this value.
-        public static final double kElbowMinPosition = -90.0; // (degrees) Smallest encoder value the software will rotate to.
-        public static final double kElbowMaxPosition =  90.0; // (degrees) Largest encoder value the software will rotote to.
+        public static final double kElbowMinEncoderVoltage = 0.0; // 0.443; // (volts) TODO : Tune this value.
+        public static final double kElbowMaxEncoderVoltage = 3.3; // 2.071; // (volts) TODO : Tune this value.
+        public static final double kElbowMinPosition = -180.0; // (degrees) Smallest encoder value the software will rotate to.
+        public static final double kElbowMaxPosition =  180.0; // (degrees) Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of degrees in the active range of arm motion between limits.
 
         public static final double kElbowStartingPosition = 0.0;  // We should start at the max position with the arm rotated down to intake Algaes.

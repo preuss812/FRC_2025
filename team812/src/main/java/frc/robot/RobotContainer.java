@@ -246,7 +246,9 @@ public class RobotContainer {
     
     SmartDashboard.putData("ELm90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-90.0)));
     SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(90.0)));
-    
+    SmartDashboard.putData("ELi5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(5.0)));
+    SmartDashboard.putData("ELd5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(-5.0)));
+
     /* Switched to TriggerButton
     // Default is to expel Algaes based on the percentage pulled of the left trigger.
     m_AlgaeIntakeSubsystem.setDefaultCommand(

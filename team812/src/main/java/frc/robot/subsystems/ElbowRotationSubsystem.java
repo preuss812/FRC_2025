@@ -7,7 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-//import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -95,6 +95,14 @@ public class ElbowRotationSubsystem extends SubsystemBase {
       targetPosition = position;
     }
     return getCurrentPosition();
+  }
+
+  /**
+   * incrementTargetPosition - add to the current target position
+   * @param - increment (degrees) the amount to add to the target position.
+   */
+  public void incrementTargetPosition(double increment) {
+    setTargetPosition(targetPosition + increment);
   }
 
   public double getCurrentPosition() {
