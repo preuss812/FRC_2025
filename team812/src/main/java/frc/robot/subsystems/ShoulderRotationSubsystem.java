@@ -209,6 +209,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("Shoulder input",  analogPosition);
       SmartDashboard.putNumber("Shoulder output", percentOutput);
       SmartDashboard.putNumber("Shoulder target", targetPosition);
+      SmartDashboard.putNumber("Shoulder analog", analogPosition);
       SmartDashboard.putBoolean("Shoulder Homed", isHomed());
       SmartDashboard.putBoolean("Shoulder fwdsw", isFwdLimitSwitchClosed());
       SmartDashboard.putBoolean("Shoulder revsw", isRevLimitSwitchClosed());

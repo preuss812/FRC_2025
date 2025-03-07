@@ -216,7 +216,7 @@
       }
     },
     {
-      "title": "Tab 3",
+      "title": "Arm Debug",
       "autoPopulate": false,
       "autoPopulatePrefix": "",
       "widgetPane": {
@@ -520,6 +520,32 @@
               "_type": "Text View",
               "_source0": "network_table:///SmartDashboard/Elbow input",
               "_title": "/SmartDashboard/Elbow input",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "9,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/ELi5",
+              "_title": "/SmartDashboard/ELi5",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "9,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/ELd5",
+              "_title": "/SmartDashboard/ELd5",
               "_glyph": 148,
               "_showGlyph": false
             }
