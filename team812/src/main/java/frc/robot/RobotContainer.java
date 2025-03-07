@@ -326,20 +326,38 @@ public class RobotContainer {
 
 
     // Debugging commands for the elbow and shoulder.
-    new JoystickButton(leftJoystick, 7).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.testSetHomed()));
-    new JoystickButton(rightJoystick, 7).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.testSetHomed()));
+    //new JoystickButton(leftJoystick, 7).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.testSetHomed()));
+    //new JoystickButton(rightJoystick, 7).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.testSetHomed()));
    
-    new JoystickButton(leftJoystick, 8).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHomePosition)));
-    new JoystickButton(rightJoystick, 8).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHomePosition)));
+    //new JoystickButton(leftJoystick, 8).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHomePosition)));
+    //new JoystickButton(rightJoystick, 8).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHomePosition)));
     
-    new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowLowAlgaePosition)));
-    new JoystickButton(rightJoystick, 10).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderLowAlgaePosition)));
+    //new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowLowAlgaePosition)));
+    //new JoystickButton(rightJoystick, 10).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderLowAlgaePosition)));
     
-    new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHighAlgaePosition)));
-    new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHighAlgaePosition)));
+    //new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowHighAlgaePosition)));
+    //new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHighAlgaePosition)));
     
+
+
     /* Debugging below */
     if (debug) {
+
+      new JoystickButton(leftJoystick, 7).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(0.0)));
+      new JoystickButton(leftJoystick, 8).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(30.0)));
+      new JoystickButton(leftJoystick, 9).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(60.0)));
+      new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(90.0)));
+      new JoystickButton(leftJoystick, 11).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(120.0)));
+      new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(150.0)));
+
+      new JoystickButton(rightJoystick, 7).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(0.0)));
+      new JoystickButton(rightJoystick, 8).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(20.0)));
+      new JoystickButton(rightJoystick, 9).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(40.0)));
+      new JoystickButton(rightJoystick, 10).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(60.0)));
+      new JoystickButton(rightJoystick, 11).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(80.0)));
+      new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(100.0)));
+
+
       SmartDashboard.putData("P2R", new PushTowardsReefCommand(m_robotDrive, m_PoseEstimatorSubsystem));
       SmartDashboard.putData("IC", new InstantCommand(() -> m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(1,4,new Rotation2d(0)))));
       SmartDashboard.putData("EL", new ElbowRotationCommand(m_ElbowRotationSubsystem, 5000));

@@ -165,6 +165,7 @@ public final class Constants {
         public static final double kElbowTicksPerDegree = ElbowConstants.kElbowEncoderCountPerRevolution/360.0;
         public static final double kElbowMinEncoderVoltage = 0.0; // 0.443; // (volts) TODO : Tune this value.
         public static final double kElbowMaxEncoderVoltage = 3.3; // 2.071; // (volts) TODO : Tune this value.
+        public static final double kElbowEncoderVoltageOffset = 0.5;
         public static final double kElbowMinPosition = -180.0; // (degrees) Smallest encoder value the software will rotate to.
         public static final double kElbowMaxPosition =  180.0; // (degrees) Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of degrees in the active range of arm motion between limits.

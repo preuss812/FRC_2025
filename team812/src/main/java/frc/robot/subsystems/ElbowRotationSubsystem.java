@@ -170,8 +170,12 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
   public void readCurrentPosition() {
     analogPosition = m_AnalogInput.getAverageVoltage();
+    double wrappedPosition = analogPosition + ElbowConstants.kElbowEncoderVoltageOffset ; // Wrap around the encoder
+    if (wrappedPosition >ElbowConstants.kElbowMaxEncoderVoltage) {
+      wrappedPosition = wrappedPosition - ElbowConstants.kElbowMaxEncoderVoltage;
+    }
     currentPosition=Utilities.scaleDouble(
-       analogPosition
+       wrappedPosition
       , ElbowConstants.kElbowMinPosition
       , ElbowConstants.kElbowMaxPosition
       , ElbowConstants.kElbowMinEncoderVoltage
