@@ -115,9 +115,9 @@ public final class Constants {
     public static final class PidConstants {
         public static final double kProportionalDriveStraight = 0.05;
      
-        public static final double kElbow_kP = 0.01;
-        public static final double kElbow_kI = 0.00005;
-        public static final double kElbow_IntegralZone=15;
+        public static final double kElbow_kP = 0.08;
+        public static final double kElbow_kI = 0.002;
+        public static final double kElbow_IntegralZone=10;
         public static final double kElbow_kD = 0.0;
         public static final double kElbow_kF = 0.0;
         public static final double kElbow_rampRate = 0.5;
@@ -170,8 +170,8 @@ public final class Constants {
         public static final double kElbowMaxPosition =  360.0; // (degrees) Largest encoder value the software will rotote to.
         public static final double kElbowRange = kElbowMaxPosition - kElbowMinPosition; // The number of degrees in the active range of arm motion between limits.
 
-        public static final double kElbowStartingPosition = 240;  // We should start at the max position with the arm rotated down to intake Algaes.
-        public static final double kElbowGroundIntakePosition = 30.0;
+        public static final double kElbowStartingPosition = 10;  // We should start at the max position with the arm rotated down to intake Algaes.
+        public static final double kElbowGroundIntakePosition = 240.0;
         public static final double kElbowHookChainPosition = -45;
         public static final double kElbowScoringPosition = 90;  // Rotated upward to score a Algae.
 
@@ -186,14 +186,15 @@ public final class Constants {
         public static final double kElbowHomeTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeSpeed = 0.2;    // Percent
         public static final double kElbowHomePosition = 0;    // degrees. TODO: Tune this value.
-        public static final double kElbowLowAlgaePosition = 230; // degrees. TODO: Tune this value.
-        public static final double kElbowHighAlgaePosition = 220; // degrees. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 95; // degrees. TODO: Tune this value.
+        public static final double kElbowHighAlgaePosition = 125; // degrees. TODO: Tune this value.
         public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;
         public static final double kElbowScoreCoralPosition = 10;
-        public static final double kElbowDrivingWithAlgaePosition = 110; // More or less straight up
-        public static final double kElbowScoreAlgaeInProcessorPosition = 30;
-        public static final double kElbowIntakeAlgaeFromGroundPosition = 20;
-        public static final double kElbowHookCagePosition = 20;
+        public static final double kElbowDrivingWithAlgaePosition = 90; // More or less straight up
+        public static final double kElbowScoreAlgaeInProcessorPosition = 250;
+        public static final double kElbowIntakeAlgaeFromGroundPosition = 250;
+        public static final double kElbowHookCagePosition = 250;
+        public static final double kElbowLeaveHighReef = kElbowHighAlgaePosition + 60;
 
     }
     
@@ -440,7 +441,7 @@ public final class Constants {
         public static final double kShoulderDrivingWithCoralPosition = kShoulderStartingPosition;
         public static final double kShoulderDrivingWithAlgaePosition = 45;
         public static final double kShoulderScoreCoralPosition = 95;
-        public static final double kShoulderScoreAlgaeInProcessorPosition = 15;
+        public static final double kShoulderScoreAlgaeInProcessorPosition = 25;
         public static final double kShoulderIntakeAlgaeFromGroundPosition = 10; // degrees
         public static final double kShoulderHookCagePosition = 90; // degrees
     }
