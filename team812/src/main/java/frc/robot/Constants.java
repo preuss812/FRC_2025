@@ -338,7 +338,7 @@ public final class Constants {
     }
     
     public static final class AlgaeIntakeConstants {
-        public static final double kPickUpAlgaeSpeed = 0.2; // TODO needs tuning.
+        public static final double kPickUpAlgaeSpeed = 0.7; // TODO needs tuning.
         public static final double kExpelAlgaeSpeed = -0.2; // TODO needs tuning.
         //public static final int kLimitSwitchChannel = 2;
     }
@@ -425,7 +425,7 @@ public final class Constants {
         public static final double kShoulderHomeTimeout = 3.0; // Seconds to wait for the arm to rotate to the home position.
         public static final double kShoulderTimeout = 3.0; // Seconds to wait for the arm to rotate to the shooting position.
         public static final double kShoulderMinEncoderVoltage = 0.0; // TODO : Tune this value.
-        public static final double kShoulderMaxEncoderVoltage = 3.3;  // TODO : Tune this value.
+        public static final double kShoulderMaxEncoderVoltage = 5.0;  // TODO : Tune this value.
         public static final double kShoulderMinPosition = -180;    // Smallest encoder value the software will rotate to. TODO: Tune this value.
         public static final double kShoulderMaxPosition = 180; // Largest encoder value the software will rotote to. TODO: Tune this value.
         public static final double kShoulderRotationThreshold = 2; // ticks. TODO: Tune this value.
@@ -679,7 +679,8 @@ public final class Constants {
         .setP(PidConstants.kAlgaeIntake_kP)
         .setI(PidConstants.kAlgaeIntake_kI)
         .setD(PidConstants.kAlgaeIntake_kD)
-        .setF(PidConstants.kAlgaeIntake_kF);
+        .setF(PidConstants.kAlgaeIntake_kF)
+        .setInverted((true));
 
     public static final PreussMotorConfig shoulderMotor = new PreussMotorConfig(CANConstants.kShoulderMotor)
     .setP(PidConstants.kShoulder_kP)
@@ -687,7 +688,8 @@ public final class Constants {
         .setP(PidConstants.kShoulder_kD)
         .setP(PidConstants.kShoulder_kF)
         .setP(PidConstants.kShoulder_IntegralZone)
-        .setInverted(true);
+        .setInverted(true)
+        ;
         
     public static final PreussMotorConfig elbowMotor1 = new PreussMotorConfig(CANConstants.kElbowMotor1)
         .setP(PidConstants.kElbow_kP)

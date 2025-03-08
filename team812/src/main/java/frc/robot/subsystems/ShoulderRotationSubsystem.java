@@ -104,6 +104,14 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
   }
 
   /**
+   * incrementTargetPosition - add to the current target position
+   * @param - increment (degrees) the amount to add to the target position.
+   */
+  public void incrementTargetPosition(double increment) {
+    setTargetPosition(targetPosition + increment);
+  }
+
+  /**
    * getCurrentPosition - get the current angle of rotation for the shoulder joint.
    * @return - the current angle of rotation in degrees
    */
@@ -180,14 +188,14 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
   }
 
   public void readCurrentPosition() {
-    analogPosition = m_analogInput.getAverageVoltage(); // Intentionally NOT using encoder. dph - 2025-03-03
+    analogPosition = ShoulderConstants.kShoulderMaxEncoderVoltage - m_analogInput.getAverageVoltage(); // Intentionally NOT using encoder. dph - 2025-03-03
     currentPosition=Utilities.scaleDouble(
       analogPosition
       , ShoulderConstants.kShoulderMinPosition
       , ShoulderConstants.kShoulderMaxPosition
       , ShoulderConstants.kShoulderMinEncoderVoltage
       , ShoulderConstants.kShoulderMaxEncoderVoltage
-    ); 
+    ) + 53.0; 
   }
 
   @Override
@@ -202,7 +210,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     readCurrentPosition();
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ShoulderConstants.kShoulderPeakOutputReverse, ShoulderConstants.kShoulderPeakOutputForward);
-    percentOutput = 0.0;
+    //percentOutput = 0.0;
     m_shoulder.set(ControlMode.PercentOutput, percentOutput);
     if (debug) {
       SmartDashboard.putNumber("Shoulder Pos",    currentPosition);

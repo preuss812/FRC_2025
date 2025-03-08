@@ -299,19 +299,6 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "4,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/Shoulder Pos",
-              "_title": "/SmartDashboard/Shoulder Pos",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
           "4,2": {
             "size": [
               1,
@@ -546,6 +533,58 @@
               "_type": "Command",
               "_source0": "network_table:///SmartDashboard/ELd5",
               "_title": "/SmartDashboard/ELd5",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "7,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Shoulder Pos",
+              "_title": "/SmartDashboard/Shoulder Pos",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "8,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Shoulder Pos",
+              "_title": "/SmartDashboard/Shoulder Pos",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "6,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Shoulder analog",
+              "_title": "/SmartDashboard/Shoulder analog",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "8,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Command",
+              "_source0": "network_table:///SmartDashboard/SHi5",
+              "_title": "/SmartDashboard/SHi5",
               "_glyph": 148,
               "_showGlyph": false
             }

@@ -248,6 +248,7 @@ public class RobotContainer {
     SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(90.0)));
     SmartDashboard.putData("ELi5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(5.0)));
     SmartDashboard.putData("ELd5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(-5.0)));
+    SmartDashboard.putData("SHi5",new InstantCommand(()->m_ShoulderRotationSubsystem.incrementTargetPosition(5.0)));
 
     /* Switched to TriggerButton
     // Default is to expel Algaes based on the percentage pulled of the left trigger.
@@ -343,12 +344,12 @@ public class RobotContainer {
     /* Debugging below */
     if (debug) {
 
-      new JoystickButton(leftJoystick, 7).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(0.0)));
-      new JoystickButton(leftJoystick, 8).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(30.0)));
-      new JoystickButton(leftJoystick, 9).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(60.0)));
-      new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(90.0)));
-      new JoystickButton(leftJoystick, 11).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(120.0)));
-      new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(150.0)));
+      new JoystickButton(leftJoystick, 7).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(-150.0)));
+      new JoystickButton(leftJoystick, 8).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(-120.0)));
+      new JoystickButton(leftJoystick, 9).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(-75.0)));
+      new JoystickButton(leftJoystick, 10).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(-30.0)));
+      new JoystickButton(leftJoystick, 11).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(15.0)));
+      new JoystickButton(leftJoystick, 12).onTrue(new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(60.0)));
 
       new JoystickButton(rightJoystick, 7).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(0.0)));
       new JoystickButton(rightJoystick, 8).onTrue(new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(20.0)));
