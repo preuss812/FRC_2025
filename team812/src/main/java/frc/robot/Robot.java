@@ -34,6 +34,7 @@ public class Robot extends TimedRobot {
   public static NetworkTable nttable;
   static int i = 0;
   private static boolean debug = true;
+  private static boolean usingCameraServer = false; // Set to true to enable the usb camera plugged into the roboRIO.
   public static SendableChooser<Integer> autoChooser = new SendableChooser<>();
 
   /*
@@ -53,7 +54,11 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     nttable = ntinst.getTable("0team812");
-    CameraServer.startAutomaticCapture(0); // 2024 forward facing camera for driverstation
+
+    if (usingCameraServer) {
+      CameraServer.startAutomaticCapture(0); // 2024 forward facing camera for driverstation
+    }
+
     m_robotContainer = new RobotContainer();
     if (debug) SmartDashboard.putData(CommandScheduler.getInstance()); // This puts running commands on the shuffleboard.
     addPeriodic(() -> Utilities.setAlliance(), 1.0 );

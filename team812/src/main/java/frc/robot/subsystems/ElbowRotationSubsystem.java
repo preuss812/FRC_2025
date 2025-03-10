@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -89,10 +88,11 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
   // Set the arm target position after checking that it is safe to do so.
   public double setTargetPosition(double position) {
-    // position will be zero in tucked position
-    if (isHomed() && position >= ElbowConstants.kElbowMinPosition && position <= ElbowConstants.kElbowMaxPosition) {
-      //m_elbowLeft.set(ControlMode.Position, position);
-      targetPosition = position;
+    // If the elbowis not homed, do not allow the target position to be set.
+    if (isHomed()) {
+      // Prevent dangerous positions from being requested.
+      double clampedPosition = MathUtil.clamp(position, ElbowConstants.kElbowMinLegalPosition, ElbowConstants.kElbowMaxLegalPosition);
+      targetPosition = clampedPosition;
     }
     return getCurrentPosition();
   }
@@ -198,8 +198,8 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     if (debug) {
       SmartDashboard.putNumber("Elbow Pos",    getCurrentPosition());
       SmartDashboard.putNumber("Elbow target", getTargetPosition());
-      SmartDashboard.putNumber("Elbow error",  getPositionError());
-      SmartDashboard.putBoolean("Elbow Homed", isHomed());
+      //SmartDashboard.putNumber("Elbow error",  getPositionError());
+      //SmartDashboard.putBoolean("Elbow Homed", isHomed());
       SmartDashboard.putBoolean("Elbow fwdsw", isFwdLimitSwitchClosed());
       SmartDashboard.putBoolean("Elbow revsw", isRevLimitSwitchClosed());
       SmartDashboard.putNumber("Elbow output", percentOutput);

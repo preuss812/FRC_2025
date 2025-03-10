@@ -309,4 +309,24 @@ public class Utilities {
 
         return result;
       }
+
+    public static double least(double a, Double ... nums) {
+        double result = a;
+        for (Double num : nums) {
+            if (num < result) {
+                result = num;
+            }
+        }
+        return result;
+    }
+    
+    public static double greatest(double a, Double ... nums) {
+        double result = a;
+        for (Double num : nums) {
+            if (num > result) {
+                result = num;
+            }
+        }
+        return result;
+    }
 }

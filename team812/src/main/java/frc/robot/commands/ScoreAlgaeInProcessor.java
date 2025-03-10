@@ -26,10 +26,10 @@ public class ScoreAlgaeInProcessor extends SequentialCommandGroup {
     
     addCommands(
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmUP")),
-      new ElbowRotationCommand(elbowRotationSubsystem, ElbowConstants.kElbowScoringPosition).withTimeout(ElbowConstants.kElbowRaiseTimeout),
+      new ElbowRotationCommand(elbowRotationSubsystem, ElbowConstants.kElbowScoreAlgaeInProcessorPosition).withTimeout(ElbowConstants.kElbowRaiseTimeout),
       //new InstantCommand(()->Utilities.resetPoseAtProcessor()),
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "Shoot")),
-      new ShoulderRotationCommand(shoulderRotationSubsystem, ShoulderConstants.kShoulderProcessorPosition).withTimeout(ShoulderConstants.kShoulderTimeout),
+      new ShoulderRotationCommand(shoulderRotationSubsystem, ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition).withTimeout(ShoulderConstants.kShoulderTimeout),
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ArmDown")),
       new ElbowRotationCommand(elbowRotationSubsystem, ElbowConstants.kElbowMaxPosition).withTimeout(ElbowConstants.kElbowLowerTimeout),
       new InstantCommand(() -> SmartDashboard.putString("ActiveCommand", "ScoreAlgaeDone"))

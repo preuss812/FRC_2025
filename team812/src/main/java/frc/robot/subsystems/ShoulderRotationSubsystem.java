@@ -59,7 +59,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     } else {
       m_rotateStopped = false;
       double newPosition = targetPosition + throttle * incrementSize;
-      newPosition = MathUtil.clamp(newPosition, ShoulderConstants.kShoulderMinPosition, ShoulderConstants.kShoulderMaxPosition);
+      newPosition = MathUtil.clamp(newPosition, ShoulderConstants.kShoulderMinLegalPosition, ShoulderConstants.kShoulderMaxLegalPosition);
       setTargetPosition(newPosition);
     }
     m_shoulder.configSelectedFeedbackSensor(FeedbackDevice.Analog, ShoulderConstants.kPidIdx, ShoulderConstants.kTimeoutMs);
@@ -95,10 +95,11 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
    * @return - the current angle of the arm.
    */
   public double setTargetPosition(double position) {
-    // position will be zero in tucked position
-    if (isHomed() && position >= ShoulderConstants.kShoulderMinPosition && position <= ShoulderConstants.kShoulderMaxPosition) {
-      m_shoulder.set(ControlMode.Position, position);
-      targetPosition = position;
+    // If the shoulder is not homed, do not allow the target position to be set.
+    if (isHomed()) {
+      double clampedPosition = MathUtil.clamp(position, ShoulderConstants.kShoulderMinLegalPosition, ShoulderConstants.kShoulderMaxLegalPosition);
+      targetPosition = clampedPosition;
+      //m_shoulder.set(ControlMode.Position, targetPosition); // Was used when the encoder wsa wired to the talon.
     }
     return getCurrentPosition();
   }
@@ -214,11 +215,11 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     m_shoulder.set(ControlMode.PercentOutput, percentOutput);
     if (debug) {
       SmartDashboard.putNumber("Shoulder Pos",    currentPosition);
-      SmartDashboard.putNumber("Shoulder input",  analogPosition);
+      //SmartDashboard.putNumber("Shoulder input",  analogPosition);
       SmartDashboard.putNumber("Shoulder output", percentOutput);
       SmartDashboard.putNumber("Shoulder target", targetPosition);
       SmartDashboard.putNumber("Shoulder analog", analogPosition);
-      SmartDashboard.putBoolean("Shoulder Homed", isHomed());
+      //SmartDashboard.putBoolean("Shoulder Homed", isHomed());
       SmartDashboard.putBoolean("Shoulder fwdsw", isFwdLimitSwitchClosed());
       SmartDashboard.putBoolean("Shoulder revsw", isRevLimitSwitchClosed());
     }
