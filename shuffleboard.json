@@ -381,84 +381,6 @@
               "_showGlyph": false
             }
           },
-          "6,2": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/EL0",
-              "_title": "/SmartDashboard/EL0",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "6,3": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/EL-",
-              "_title": "/SmartDashboard/EL-",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "6,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/EL+",
-              "_title": "/SmartDashboard/EL+",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "7,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/ELp45",
-              "_title": "/SmartDashboard/ELp45",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "7,2": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/ELm45",
-              "_title": "/SmartDashboard/ELm45",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "3,4": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/Elbow target",
-              "_title": "/SmartDashboard/Elbow target",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
           "5,4": {
             "size": [
               1,
@@ -468,71 +390,6 @@
               "_type": "Text View",
               "_source0": "network_table:///SmartDashboard/Elbow output",
               "_title": "/SmartDashboard/Elbow output",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "8,2": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/ELm90",
-              "_title": "/SmartDashboard/ELm90",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "8,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/ELp90",
-              "_title": "/SmartDashboard/ELp90",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "7,3": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/Elbow input",
-              "_title": "/SmartDashboard/Elbow input",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "9,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/ELi5",
-              "_title": "/SmartDashboard/ELi5",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "9,2": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/ELd5",
-              "_title": "/SmartDashboard/ELd5",
               "_glyph": 148,
               "_showGlyph": false
             }
@@ -585,6 +442,32 @@
               "_type": "Command",
               "_source0": "network_table:///SmartDashboard/SHi5",
               "_title": "/SmartDashboard/SHi5",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "3,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elbow target",
+              "_title": "/SmartDashboard/Elbow target",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "9,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elbow encoder",
+              "_title": "/SmartDashboard/Elbow encoder",
               "_glyph": 148,
               "_showGlyph": false
             }

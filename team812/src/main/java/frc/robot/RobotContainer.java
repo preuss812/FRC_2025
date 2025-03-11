@@ -422,15 +422,25 @@ public class RobotContainer {
     );
 
     // Left Joystick button  puts the elbow and shoulder in the scoring position with the elbow rotated 90 degrees from optimal for testing only
-    new JoystickButton(leftJoystick, 4).onTrue(
-      new CompoundArmMovementCommand(
+    new JoystickButton(leftJoystick, 5).whileTrue(
+      /*new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
-        , ElbowConstants.kElbowLeaveHighReefPosition
-        , ShoulderConstants.kShoulderLeaveHighReefPosition
-      )
+        , ElbowConstants.kElbowHomePosition // straight up
+        , 0.0
+      )*/
+      new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(true))
     );
-    
+    new JoystickButton(leftJoystick, 6).whileTrue(
+      /*new CompoundArmMovementCommand(
+        m_ElbowRotationSubsystem
+        , m_ShoulderRotationSubsystem
+        , ElbowConstants.kElbowHomePosition // straight up
+        , 0.0
+      )*/
+      new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(false))
+    );
+
     /* Debugging below */
     if (debug) {
       SmartDashboard.putData("T1", new CompoundArmMovementCommand(

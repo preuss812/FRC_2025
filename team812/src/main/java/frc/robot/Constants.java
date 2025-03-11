@@ -115,7 +115,7 @@ public final class Constants {
         public static final double kProportionalDriveStraight = 0.05;
      
         public static final double kElbow_kP = 0.08;
-        public static final double kElbow_kI = 0.0002;
+        public static final double kElbow_kI = 0.0000;
         public static final double kElbow_IntegralZone=10;
         public static final double kElbow_kD = 0.0;
         public static final double kElbow_kF = 0.0;
@@ -180,17 +180,17 @@ public final class Constants {
         public static final double kElbowHomeTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeSpeed = 0.2;    // Percent
 
-        public static final double kElbowStartingPosition = 120;  // (degrees) Starting with the arm folded inside the robot perimeter. TODO tune this value.
+        public static final double kElbowStartingPosition = 45;  // (degrees) Starting with the arm folded inside the robot perimeter. TODO tune this value.
         public static final double kElbowHomePosition = kElbowStartingPosition;    // This is not used due to absolute encoder.
         //public static final double kElbowGroundIntakePosition = 240.0;
-        public static final double kElbowLowAlgaePosition = 95; // degrees. TODO: Tune this value.
-        public static final double kElbowHighAlgaePosition = 125; // degrees. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 140; // degrees. TODO: Tune this value.
+        public static final double kElbowHighAlgaePosition = 180; // degrees. TODO: Tune this value.
         public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;  // (degrees) TODO: Tune this value.
         public static final double kElbowScoreCoralPosition = 95; // (degrees) TODO: Tune this value.
-        public static final double kElbowDrivingWithAlgaePosition = 90; // (degrees) TODO: Tune this value.
-        public static final double kElbowScoreAlgaeInProcessorPosition = 250;
-        public static final double kElbowIntakeAlgaeFromGroundPosition = 250;
-        public static final double kElbowHookCagePosition = 250; // Ideally whis might rotate farther.
+        public static final double kElbowDrivingWithAlgaePosition = 230; // (degrees) TODO: Tune this value.
+        public static final double kElbowScoreAlgaeInProcessorPosition = 280;
+        public static final double kElbowIntakeAlgaeFromGroundPosition = 280;
+        public static final double kElbowHookCagePosition = 280; // Ideally whis might rotate farther.
         public static final double kElbowLeaveHighReefPosition = kElbowHighAlgaePosition + 60;
         
         public static final double kElbowMinLegalPosition = Utilities.least(
@@ -443,8 +443,8 @@ public final class Constants {
         public static final double kShoulderEncoderCountPerRevolution = 360; 
         public static final double kShoulderDegreesPerTick = 360.0/ShoulderConstants.kShoulderEncoderCountPerRevolution;
         public static final double kShoulderTicksPerDegree = ShoulderConstants.kShoulderEncoderCountPerRevolution/360.0;
-        public static final double kShoulderPeakOutputForward =  0.8; // (percent) TODO: Tune this value.
-        public static final double kShoulderPeakOutputReverse = -0.8; // (percent) TODO: Tune this value.
+        public static final double kShoulderPeakOutputForward =  0.6; // (percent) TODO: Tune this value.
+        public static final double kShoulderPeakOutputReverse = -0.6; // (percent) TODO: Tune this value.
         public static final double kShoulderHomeTimeout = 3.0;        // (seconds) Wait for the shoulder to rotate to the home position.
         public static final double kShoulderTimeout = 3.0;            // (seconds) Wait for the shoulder to rotate to any position.  TODO: Tune this value.
         public static final double kShoulderMinEncoderVoltage = 0.0;  // (volts)
@@ -461,10 +461,10 @@ public final class Constants {
         public static final double kShoulderHighAlgaePosition = 95; // (degrees) TODO: Tune this value.
         public static final double kShoulderClimbingPosition = 15; // (degrees) TODO: Tune this value.
         public static final double kShoulderDrivingWithCoralPosition = kShoulderStartingPosition;
-        public static final double kShoulderDrivingWithAlgaePosition = 45; // (degrees)
+        public static final double kShoulderDrivingWithAlgaePosition = 80; // (degrees)
         public static final double kShoulderScoreCoralPosition = 95; // (degrees) TODO: Tune this value.
-        public static final double kShoulderScoreAlgaeInProcessorPosition = 25;  // (degrees) TODO: Tune this value.
-        public static final double kShoulderIntakeAlgaeFromGroundPosition = 10; // (degrees)
+        public static final double kShoulderScoreAlgaeInProcessorPosition = 30;  // (degrees) TODO: Tune this value.
+        public static final double kShoulderIntakeAlgaeFromGroundPosition = 20; // (degrees)
         public static final double kShoulderHookCagePosition = 90; // (degrees)
         public static final double kShoulderLeaveHighReefPosition = kShoulderHighAlgaePosition + 3.0; // (degrees) Slightly above the high algae position.
 

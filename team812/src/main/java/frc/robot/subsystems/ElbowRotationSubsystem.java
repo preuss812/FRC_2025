@@ -26,10 +26,11 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   private static double targetPosition;  
   private static double currentPosition;
   private static double analogPosition; 
-  private static boolean m_capturedLimitPosition = true; // This year absolute encoder so we do not need to home the arm.
+  private static boolean m_capturedLimitPosition = false; // This year absolute encoder so we do not need to home the arm.
   private boolean m_rotateStopped = true;
   private static boolean debug = true; // TODO: Set to false once the elbow is debugged.
-
+  private static boolean calibrating = false;
+  private static double voltageOffset = 0.0;
   // Note: This year's encoder is a Lamprey II which outputs from 0 to 360 degrees (Not sure about wrap around or minus)
 
   /** Creates a new ArmSubsystem. */
@@ -136,17 +137,18 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
   // Return elbow at home position
   public boolean isAtHome() {
-    return isFwdLimitSwitchClosed(); // TODO should this be forward or reverse?
+    return isRevLimitSwitchClosed(); // TODO should this be forward or reverse?
   }
 
   // Not needed due to absolute encoder
-  @Deprecated
   public void setHomed() {
-      if (isAtHome()) {
+      if (isRevLimitSwitchClosed()) {
         // Remeber that we are homed and set the encoder coordinates to the home position and try to hold it there.
         m_capturedLimitPosition = true;
-        m_elbowLeft.setSelectedSensorPosition(ElbowConstants.kElbowHomePosition, Constants.elbowMotor1.pidIdx, Constants.elbowMotor1.timeout);
-        setTargetPosition(Constants.ElbowConstants.kElbowHomePosition);
+        //m_elbowLeft.setSelectedSensorPosition(ElbowConstants.kElbowHomePosition, Constants.elbowMotor1.pidIdx, Constants.elbowMotor1.timeout);
+        //setTargetPosition(Constants.ElbowConstants.kElbowHomePosition);
+        voltageOffset = analogPosition-0.5;
+        
     }
   }
 
@@ -170,9 +172,9 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
   public void readCurrentPosition() {
     analogPosition = m_AnalogInput.getAverageVoltage();
-    double wrappedPosition = analogPosition + ElbowConstants.kElbowEncoderVoltageOffset ; // Wrap around the encoder
-    if (wrappedPosition >ElbowConstants.kElbowMaxEncoderVoltage) {
-      wrappedPosition = wrappedPosition - ElbowConstants.kElbowMaxEncoderVoltage;
+    double wrappedPosition = analogPosition - voltageOffset ; // Wrap around the encoder
+    if (wrappedPosition < ElbowConstants.kElbowMinEncoderVoltage) {
+      wrappedPosition = wrappedPosition  + ElbowConstants.kElbowMaxEncoderVoltage;
     }
     currentPosition=Utilities.scaleDouble(
        wrappedPosition
@@ -186,7 +188,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (!isHomed()) {
+    if (true || !isHomed()) {
       if (isAtHome()) {
         setHomed();
       }
@@ -194,7 +196,10 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     readCurrentPosition();
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ElbowConstants.kElbowPeakOutputReverse, ElbowConstants.kElbowPeakOutputForward);
+    if (calibrating) 
+      percentOutput = -0.3;
     m_elbowLeft.set(ControlMode.PercentOutput, percentOutput);
+    
     if (debug) {
       SmartDashboard.putNumber("Elbow Pos",    getCurrentPosition());
       SmartDashboard.putNumber("Elbow target", getTargetPosition());
@@ -205,6 +210,11 @@ public class ElbowRotationSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("Elbow output", percentOutput);
       //SmartDashboard.putNumber("Elbow input",  m_AnalogInput.getAverageVoltage());
       SmartDashboard.putNumber("Elbow encoder", analogPosition);
+      SmartDashboard.putNumber("Elbow offset", voltageOffset);
     }
+  }
+  public void calibrate(boolean enable) {
+    calibrating = enable;
+
   }
 }
