@@ -178,7 +178,7 @@ public final class Constants {
         public static final double kElbowRaiseTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowLowerTimeout = 2.0; // Seconds - for autonomous.
         public static final double kElbowHomeTimeout = 2.0; // Seconds - for autonomous.
-        public static final double kElbowHomeSpeed = 0.2;    // Percent
+        public static final double kElbowHomeSpeed = -0.3;    // Percent
 
         public static final double kElbowStartingPosition = 45;  // (degrees) Starting with the arm folded inside the robot perimeter. TODO tune this value.
         public static final double kElbowHomePosition = kElbowStartingPosition;    // This is not used due to absolute encoder.

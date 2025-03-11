@@ -132,7 +132,7 @@ public class RobotContainer {
   public static ElbowRotationSubsystem m_ElbowRotationSubsystem = new ElbowRotationSubsystem();
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
-  private static  boolean isSimulation = false;
+  private static  boolean isSimulation = (System.getProperty("os.name").equals("Mac OS X"));
   
   public static final boolean isDebug = true;
   private static boolean debug = true && isDebug(); // To enable debugging in this module, change false to true.
@@ -232,30 +232,6 @@ public class RobotContainer {
     m_ShoulderRotationSubsystem.setDefaultCommand(
       new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
-
-    SmartDashboard.putData("SH+", new RunCommand(()->m_ShoulderRotationSubsystem.runMotor(1.0)));
-    SmartDashboard.putData("SH-", new RunCommand(()->m_ShoulderRotationSubsystem.runMotor(-1.0)));
-    //SmartDashboard.putData("SH0",new InstantCommand(()->m_ShoulderRotationSubsystem.runMotor(0.0)));
-
-    //SmartDashboard.putData("EL+", new RunCommand(()->m_ElbowRotationSubsystem.runMotor(0.2), m_ElbowRotationSubsystem));
-    //SmartDashboard.putData("EL-", new RunCommand(()->m_ElbowRotationSubsystem.runMotor(-0.2), m_ElbowRotationSubsystem));
-    //SmartDashboard.putData("EL0",new InstantCommand(()->m_ElbowRotationSubsystem.runMotor(0.0), m_ElbowRotationSubsystem));
-    
-    //SmartDashboard.putData("ELm45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-45.0)));
-    //SmartDashboard.putData("ELp45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(45.0)));
-    
-    //SmartDashboard.putData("ELm90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-90.0)));
-    //SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(90.0)));
-    SmartDashboard.putData("ELi5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(5.0)));
-    SmartDashboard.putData("ELd5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(-5.0)));
-    SmartDashboard.putData("SHi5",new InstantCommand(()->m_ShoulderRotationSubsystem.incrementTargetPosition(5.0)));
-
-    /* Switched to TriggerButton
-    // Default is to expel Algaes based on the percentage pulled of the left trigger.
-    m_AlgaeIntakeSubsystem.setDefaultCommand(
-      new RunCommand(()->m_AlgaeIntakeSubsystem.runMotor(-m_driverController.getLeftTriggerAxis()), m_AlgaeIntakeSubsystem)
-    );
-    */
 
     // Default is to score Algaes based on the percentage pulled of the left trigger.
     m_AlgaeIntakeSubsystem.setDefaultCommand(
@@ -422,27 +398,31 @@ public class RobotContainer {
     );
 
     // Left Joystick button  puts the elbow and shoulder in the scoring position with the elbow rotated 90 degrees from optimal for testing only
-    new JoystickButton(leftJoystick, 5).whileTrue(
-      /*new CompoundArmMovementCommand(
-        m_ElbowRotationSubsystem
-        , m_ShoulderRotationSubsystem
-        , ElbowConstants.kElbowHomePosition // straight up
-        , 0.0
-      )*/
+    new JoystickButton(leftJoystick, 5).onTrue(
       new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(true))
     );
-    new JoystickButton(leftJoystick, 6).whileTrue(
-      /*new CompoundArmMovementCommand(
-        m_ElbowRotationSubsystem
-        , m_ShoulderRotationSubsystem
-        , ElbowConstants.kElbowHomePosition // straight up
-        , 0.0
-      )*/
+    new JoystickButton(leftJoystick, 6).onTrue(
       new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(false))
     );
 
     /* Debugging below */
-    if (debug) {
+    if (isSimulation()) {
+      SmartDashboard.putData("SH+", new RunCommand(()->m_ShoulderRotationSubsystem.runMotor(1.0)));
+      SmartDashboard.putData("SH-", new RunCommand(()->m_ShoulderRotationSubsystem.runMotor(-1.0)));
+      //SmartDashboard.putData("SH0",new InstantCommand(()->m_ShoulderRotationSubsystem.runMotor(0.0)));
+
+      //SmartDashboard.putData("EL+", new RunCommand(()->m_ElbowRotationSubsystem.runMotor(0.2), m_ElbowRotationSubsystem));
+      //SmartDashboard.putData("EL-", new RunCommand(()->m_ElbowRotationSubsystem.runMotor(-0.2), m_ElbowRotationSubsystem));
+      //SmartDashboard.putData("EL0",new InstantCommand(()->m_ElbowRotationSubsystem.runMotor(0.0), m_ElbowRotationSubsystem));
+      
+      //SmartDashboard.putData("ELm45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-45.0)));
+      //SmartDashboard.putData("ELp45",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(45.0)));
+      
+      //SmartDashboard.putData("ELm90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(-90.0)));
+      //SmartDashboard.putData("ELp90",new InstantCommand(()->m_ElbowRotationSubsystem.setTargetPosition(90.0)));
+      SmartDashboard.putData("ELi5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(5.0)));
+      SmartDashboard.putData("ELd5",new InstantCommand(()->m_ElbowRotationSubsystem.incrementTargetPosition(-5.0)));
+      SmartDashboard.putData("SHi5",new InstantCommand(()->m_ShoulderRotationSubsystem.incrementTargetPosition(5.0)));
       SmartDashboard.putData("T1", new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
@@ -503,8 +483,7 @@ public class RobotContainer {
        * for both red and blue alliances.
        */
       
-      if (debug) {
-        boolean relative = true;
+      if (isSimulation()) {
         //SmartDashboard.putData("Dance", TrajectoryPlans.robotDanceCommand(m_robotDrive, m_PoseEstimatorSubsystem, null /*=default*/) );
         SmartDashboard.putData("S2P", new SwerveToProcessorCommand(m_robotDrive, m_PoseEstimatorSubsystem));
         /*

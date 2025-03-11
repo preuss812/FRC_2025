@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.AnalogIOConstants;
 import frc.robot.Constants.ElbowConstants;
 import frc.robot.Constants.PidConstants;
@@ -187,7 +188,12 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // TODO: Delete this and the next 4 lines.
     // This method will be called once per scheduler run
+    if (RobotContainer.isSimulation()) {
+      m_capturedLimitPosition = true; // In simulation, we are always homed.
+      voltageOffset = 0.5;
+    }
     if (true || !isHomed()) {
       if (isAtHome()) {
         setHomed();
@@ -196,8 +202,9 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     readCurrentPosition();
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ElbowConstants.kElbowPeakOutputReverse, ElbowConstants.kElbowPeakOutputForward);
-    if (calibrating) 
-      percentOutput = -0.3;
+    if (calibrating) {
+      percentOutput = ElbowConstants.kElbowHomeSpeed;
+    }
     m_elbowLeft.set(ControlMode.PercentOutput, percentOutput);
     
     if (debug) {
