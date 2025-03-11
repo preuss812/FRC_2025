@@ -38,6 +38,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     private double maxdegrees = 360;
     private double lastdegrees;
     private double totaldegrees;
+    private double zdvoltage;
     
   // Note: This year's encoder is a Lamprey II which outputs from 0 to 360 degrees (Not sure about wrap around or minus)
 
@@ -52,6 +53,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
     totaldegrees = 0;		// Dan's code
     lastdegreees = null;
+    zdvoltage = m_AnalogInput.getAverageVoltage();
   }
 
   private final double incrementSize = 0.5; // 0.5*50 periods per second = 25 degrees per second = when joystick maxed out. TODO tune this
@@ -198,11 +200,21 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     // Dan's code
     // all work is done in degrees
 
-    double proportion = (analogPosition - minvoltage) / (maxvoltage - minvoltage);
+    // calculate the voltage we use to indicate zero based on what the
+    // voltage was at the time the elbow subsystem was created.
+    // this is all speculative for the moment as the elbow may not be
+    // in a zero position at the time it is initialized - ugh.
+    
+    double adjvolt = analogPosition - zdvoltage;
+    if( adjvolt < 0) {
+	adjvolt += (maxvoltage - minvoltage);
+    }
+    
+    double proportion = adjvolt / (maxvoltage - minvoltage);
     double degrees = proportion * maxdegrees;
 
     // Handle rotation through max and min voltage output
-    if (lastdegreees != null) {
+    if (lastdegrees != null) {
 	double delta = degrees - lastdegrees;
 	if(delta < -90) {
 	    delta += maxdegrees;
@@ -216,8 +228,12 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     }
     lastdegrees = totaldegrees;
 
+    SmartDashboard.putNumber("Elbow degrees",    totaldegrees);
+
     // totaldegrees contains the degrees of rotation even if the sensor
     // passes through min and max voltage
+    // this code does NOT update the global value of currentPosition
+    // because it isn't tested nor an agreed way forward.
   }
 
   @Override
