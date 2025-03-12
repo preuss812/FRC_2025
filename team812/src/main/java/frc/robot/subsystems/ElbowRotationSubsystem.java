@@ -32,6 +32,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   private static boolean debug = true; // TODO: Set to false once the elbow is debugged.
   private static boolean calibrating = false;
   private static double voltageOffset = 0.0;
+  private static boolean testRotationControl = false; // TODO set to true to enable/test rotation control.
 
     private double minvoltage = 0.0; // Dan's code
     private double maxvoltage = 3.3;
@@ -257,6 +258,15 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     if (calibrating) {
       percentOutput = ElbowConstants.kElbowHomeSpeed;
     }
+
+    // if enabled, prevent rotating the elbow upward if the shoulder angle is low
+    if (testRotationControl 
+    && RobotContainer.m_ShoulderRotationSubsystem.getCurrentPosition() < 30.0
+    && percentOutput < 0.0
+    && getCurrentPosition() < ElbowConstants.kElbowLowAlgaePosition) {
+      percentOutput = 0.0;  // Prevent exceeding the 18 inch limit.
+    }
+    
     m_elbowLeft.set(ControlMode.PercentOutput, percentOutput);
     
     if (debug) {

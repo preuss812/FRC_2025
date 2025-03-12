@@ -27,7 +27,10 @@ import frc.robot.Utilities;
 import frc.utils.PoseEstimatorCamera;
 import frc.utils.VisionResult;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.ElbowConstants;
+import frc.robot.Constants.ShoulderConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.RobotContainer;
 
 public class PoseEstimatorSubsystem extends SubsystemBase {
 
@@ -103,6 +106,15 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     int fiducialId = VisionConstants.NO_TAG_FOUND;
     for (PoseEstimatorCamera camera : cameras) {
       VisionResult visionMeasurement = camera.getNewVisionMeasurement();
+      // Dont use the lifecam in 2025 if the arm is not in a good position.
+      // This has not been tested.  The camera is on the arm so it's moving as the arm moves.
+      /*
+      if (camera.getName().equals("Microsoft_LifeCam_HD-3000") && 
+         (RobotContainer.m_ShoulderRotationSubsystem.getCurrentPosition() > ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition + 5.0
+          || RobotContainer.m_ElbowRotationSubsystem.getCurrentPosition() < ElbowConstants.kElbowScoreAlgaeInProcessorPosition + 0.5)) {
+        continue;
+      }
+      */
       if (visionMeasurement != null) {
         poseEstimator.addVisionMeasurement(visionMeasurement.pose().toPose2d(), visionMeasurement.timestamp());
         fiducialId = visionMeasurement.fiducialId();

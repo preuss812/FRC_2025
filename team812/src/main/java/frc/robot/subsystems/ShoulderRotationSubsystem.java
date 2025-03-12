@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.AnalogIOConstants;
 import frc.robot.Constants.PidConstants;
 import frc.robot.Constants.ShoulderConstants;
@@ -33,6 +34,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
   //private static AnalogEncoder m_encoder = new AnalogEncoder(m_analogInput);
   private static PIDController m_pidController = new PIDController(PidConstants.kShoulder_kP, PidConstants.kShoulder_kI, PidConstants.kShoulder_kD);
   private static boolean debug = true; // TODO: Set to false once the shoulder is debugged.
+  private static boolean testRotationControl = false; // TODO: Set to true to enable/test rotation control.
 
   /** Creates a new ArmSubsystem. */
   public ShoulderRotationSubsystem() { 
@@ -212,6 +214,12 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
     double error=getPositionError(); 
     double percentOutput=MathUtil.clamp(m_pidController.calculate(error), ShoulderConstants.kShoulderPeakOutputReverse, ShoulderConstants.kShoulderPeakOutputForward);
     //percentOutput = 0.0;
+
+    if (testRotationControl 
+    && RobotContainer.m_ElbowRotationSubsystem.getCurrentPosition() < 90.0
+    && percentOutput < 0.0) {
+      percentOutput = 0.0;
+    }
     m_shoulder.set(ControlMode.PercentOutput, percentOutput);
     if (debug) {
       SmartDashboard.putNumber("Shoulder Pos",    currentPosition);
