@@ -32,8 +32,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -337,11 +338,12 @@ public class RobotContainer {
       
     // Left Joystick button 9 puts the elbow and shoulder in postion to drive holding algae
     new JoystickButton(leftJoystick, 9).onTrue(
-      new CompoundArmMovementCommand(
-        m_ElbowRotationSubsystem
-        , m_ShoulderRotationSubsystem
-        , ElbowConstants.kElbowDrivingWithAlgaePosition
-        , ShoulderConstants.kShoulderDrivingWithAlgaePosition
+      new ParallelCommandGroup(
+        new ShoulderRotationCommand(m_ShoulderRotationSubsystem, ShoulderConstants.kShoulderDrivingWithAlgaePosition)
+        , new SequentialCommandGroup(
+          new WaitCommand(7.0),
+          new ElbowRotationCommand(m_ElbowRotationSubsystem, ElbowConstants.kElbowDrivingWithAlgaePosition)
+        )
       )
     );
 

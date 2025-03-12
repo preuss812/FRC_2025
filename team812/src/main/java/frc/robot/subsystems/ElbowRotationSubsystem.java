@@ -52,8 +52,10 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     targetPosition = currentPosition;  // initially hold the starting arm position.
 
     totaldegrees = 0;		// Dan's code
-    lastdegreees = null;
+    lastdegrees = -700; // somehting way out of bounds
     zdvoltage = m_AnalogInput.getAverageVoltage();
+    SmartDashboard.putNumber("Elbow zdv",    zdvoltage);
+
   }
 
   private final double incrementSize = 0.5; // 0.5*50 periods per second = 25 degrees per second = when joystick maxed out. TODO tune this
@@ -207,24 +209,24 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     
     double adjvolt = analogPosition - zdvoltage;
     if( adjvolt < 0) {
-	adjvolt += (maxvoltage - minvoltage);
+	    adjvolt += (maxvoltage - minvoltage);
     }
     
     double proportion = adjvolt / (maxvoltage - minvoltage);
     double degrees = proportion * maxdegrees;
 
     // Handle rotation through max and min voltage output
-    if (lastdegrees != null) {
-	double delta = degrees - lastdegrees;
-	if(delta < -90) {
-	    delta += maxdegrees;
-	}
-	else if (delta > 90) {
-	    delta -= maxdegrees;
-	}
-	totaldegrees = += delta;
+    if (lastdegrees < -500) {
+	    double delta = degrees - lastdegrees;
+	    if(delta < -90) {
+	      delta += maxdegrees;
+	    }
+	    else if (delta > 90) {
+	     delta -= maxdegrees;
+	    }
+	    totaldegrees += delta;
     } else {
-	totaldegrees = degrees;
+	    totaldegrees = degrees;
     }
     lastdegrees = totaldegrees;
 
