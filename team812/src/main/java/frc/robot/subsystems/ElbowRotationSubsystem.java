@@ -33,13 +33,6 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   private static boolean calibrating = false;
   private static double voltageOffset = 0.0;
   private static boolean testRotationControl = false; // TODO set to true to enable/test rotation control.
-
-    private double minvoltage = 0.0; // Dan's code
-    private double maxvoltage = 3.3;
-    private double maxdegrees = 360;
-    private double lastdegrees;
-    private double totaldegrees;
-    private double zdvoltage;
     
   // Note: This year's encoder is a Lamprey II which outputs from 0 to 360 degrees (Not sure about wrap around or minus)
 
@@ -51,11 +44,6 @@ public class ElbowRotationSubsystem extends SubsystemBase {
     readCurrentPosition();
     currentPosition = getCurrentPosition(); // Get the arm's current position and make that the target position.
     targetPosition = currentPosition;  // initially hold the starting arm position.
-
-    totaldegrees = 0;		// Dan's code
-    lastdegrees = -700; // somehting way out of bounds
-    zdvoltage = m_AnalogInput.getAverageVoltage();
-    SmartDashboard.putNumber("Elbow zdv",    zdvoltage);
 
   }
 
@@ -200,43 +188,6 @@ public class ElbowRotationSubsystem extends SubsystemBase {
       , ElbowConstants.kElbowMaxEncoderVoltage
     );
 
-    // Dan's code
-    // all work is done in degrees
-
-    // calculate the voltage we use to indicate zero based on what the
-    // voltage was at the time the elbow subsystem was created.
-    // this is all speculative for the moment as the elbow may not be
-    // in a zero position at the time it is initialized - ugh.
-    
-    double adjvolt = analogPosition - zdvoltage;
-    if( adjvolt < 0) {
-	    adjvolt += (maxvoltage - minvoltage);
-    }
-    
-    double proportion = adjvolt / (maxvoltage - minvoltage);
-    double degrees = proportion * maxdegrees;
-
-    // Handle rotation through max and min voltage output
-    if (lastdegrees < -500) {
-	    double delta = degrees - lastdegrees;
-	    if(delta < -90) {
-	      delta += maxdegrees;
-	    }
-	    else if (delta > 90) {
-	     delta -= maxdegrees;
-	    }
-	    totaldegrees += delta;
-    } else {
-	    totaldegrees = degrees;
-    }
-    lastdegrees = totaldegrees;
-
-    SmartDashboard.putNumber("Elbow degrees",    totaldegrees);
-
-    // totaldegrees contains the degrees of rotation even if the sensor
-    // passes through min and max voltage
-    // this code does NOT update the global value of currentPosition
-    // because it isn't tested nor an agreed way forward.
   }
 
   @Override
