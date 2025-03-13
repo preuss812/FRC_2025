@@ -198,7 +198,7 @@ public class ShoulderRotationSubsystem extends SubsystemBase {
       , ShoulderConstants.kShoulderMaxPosition
       , ShoulderConstants.kShoulderMinEncoderVoltage
       , ShoulderConstants.kShoulderMaxEncoderVoltage
-    ) + 41.0; 
+    ) + 54.0; 
   }
 
   @Override

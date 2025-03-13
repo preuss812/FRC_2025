@@ -183,13 +183,13 @@ public final class Constants {
         public static final double kElbowStartingPosition = 45;  // (degrees) Starting with the arm folded inside the robot perimeter. TODO tune this value.
         public static final double kElbowHomePosition = kElbowStartingPosition;    // This is not used due to absolute encoder.
         //public static final double kElbowGroundIntakePosition = 240.0;
-        public static final double kElbowLowAlgaePosition = 260; // degrees. TODO: Tune this value.
+        public static final double kElbowLowAlgaePosition = 270; // degrees. TODO: Tune this value.
         public static final double kElbowHighAlgaePosition = 180; // degrees. TODO: Tune this value.
         public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;  // (degrees) TODO: Tune this value.
         public static final double kElbowScoreCoralPosition = 95; // (degrees) TODO: Tune this value.
         public static final double kElbowDrivingWithAlgaePosition = 235; // (degrees) TODO: Tune this value.
         public static final double kElbowScoreAlgaeInProcessorPosition = 280;
-        public static final double kElbowIntakeAlgaeFromGroundPosition = 280;
+        public static final double kElbowIntakeAlgaeFromGroundPosition = 290;
         public static final double kElbowHookCagePosition = 280; // Ideally whis might rotate farther.
         public static final double kElbowLeaveHighReefPosition = kElbowHighAlgaePosition + 60;
         
@@ -457,7 +457,7 @@ public final class Constants {
         // Shoulder positions correspond closely to degrees in cartesian coordinate with 0 parallel to the ground and 90 vertical.
         public static final double kShoulderStartingPosition = 45;  // (degrees) Starting with arm within the robot perimeter.
         public static final double kShoulderHomePosition = kShoulderStartingPosition; // (degrees) Unused.
-        public static final double kShoulderLowAlgaePosition = 46; // (degrees) TODO: Tune this value.
+        public static final double kShoulderLowAlgaePosition = 49; // (degrees) TODO: Tune this value.
         public static final double kShoulderHighAlgaePosition = 95; // (degrees) TODO: Tune this value.
         public static final double kShoulderClimbingPosition = 15; // (degrees) TODO: Tune this value.
         public static final double kShoulderDrivingWithCoralPosition = kShoulderStartingPosition;
