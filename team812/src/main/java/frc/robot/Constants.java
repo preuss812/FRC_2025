@@ -465,7 +465,7 @@ public final class Constants {
         public static final double kShoulderScoreCoralPosition = 95; // (degrees) TODO: Tune this value.
         public static final double kShoulderScoreAlgaeInProcessorPosition = 30;  // (degrees) TODO: Tune this value.
         public static final double kShoulderIntakeAlgaeFromGroundPosition = 20; // (degrees)
-        public static final double kShoulderHookCagePosition = 90; // (degrees)
+        public static final double kShoulderHookCagePosition = 100; // (degrees)
         public static final double kShoulderLeaveHighReefPosition = kShoulderHighAlgaePosition + 3.0; // (degrees) Slightly above the high algae position.
 
         public static final double kShoulderMinLegalPosition = Utilities.least(

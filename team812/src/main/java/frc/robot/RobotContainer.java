@@ -230,6 +230,7 @@ public class RobotContainer {
     
     
     // The right joystick controls the rotation of the shoulder.
+    // Joystick forward is UP; backwards is DOWN
     m_ShoulderRotationSubsystem.setDefaultCommand(
       new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
