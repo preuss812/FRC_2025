@@ -232,7 +232,7 @@ public class RobotContainer {
     // The right joystick controls the rotation of the shoulder.
     // Joystick forward is UP; backwards is DOWN
     m_ShoulderRotationSubsystem.setDefaultCommand(
-      new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(-rightJoystick.getY()), m_ShoulderRotationSubsystem)
+      new RunCommand(() -> m_ShoulderRotationSubsystem.rotate(rightJoystick.getY()), m_ShoulderRotationSubsystem)
     );
 
     // Default is to score Algaes based on the percentage pulled of the left trigger.

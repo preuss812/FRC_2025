@@ -47,7 +47,7 @@ public class ElbowRotationSubsystem extends SubsystemBase {
 
   }
 
-  private final double incrementSize = 0.5; // 0.5*50 periods per second = 25 degrees per second = when joystick maxed out. TODO tune this
+  private final double incrementSize = 1.0; // 0.5*50 periods per second = 25 degrees per second = when joystick maxed out. TODO tune this
 
   // This function is used as the default command to run for arm control.
   // The input is presumed to be an analog input that ranges from -1 to +1.

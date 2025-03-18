@@ -443,8 +443,8 @@ public final class Constants {
         public static final double kShoulderEncoderCountPerRevolution = 360; 
         public static final double kShoulderDegreesPerTick = 360.0/ShoulderConstants.kShoulderEncoderCountPerRevolution;
         public static final double kShoulderTicksPerDegree = ShoulderConstants.kShoulderEncoderCountPerRevolution/360.0;
-        public static final double kShoulderPeakOutputForward =  0.6; // (percent) TODO: Tune this value.
-        public static final double kShoulderPeakOutputReverse = -0.6; // (percent) TODO: Tune this value.
+        public static final double kShoulderPeakOutputForward =  1.0; // (percent) TODO: Tune this value.
+        public static final double kShoulderPeakOutputReverse = -1.0; // (percent) TODO: Tune this value.
         public static final double kShoulderHomeTimeout = 3.0;        // (seconds) Wait for the shoulder to rotate to the home position.
         public static final double kShoulderTimeout = 3.0;            // (seconds) Wait for the shoulder to rotate to any position.  TODO: Tune this value.
         public static final double kShoulderMinEncoderVoltage = 0.0;  // (volts)
