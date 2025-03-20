@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
   public static NetworkTable nttable;
   static int i = 0;
   private static boolean debug = true;
-  private static boolean usingCameraServer = false; // Set to true to enable the usb camera plugged into the roboRIO.
+  private static boolean usingCameraServer = true; // Set to true to enable the usb camera plugged into the roboRIO.
   public static SendableChooser<Integer> autoChooser = new SendableChooser<>();
 
   /*

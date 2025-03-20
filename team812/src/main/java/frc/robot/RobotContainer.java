@@ -318,7 +318,7 @@ public class RobotContainer {
     //new JoystickButton(rightJoystick, 12).onTrue(new InstantCommand(()->m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderHighAlgaePosition)));
     
     // Left Joystick button 7 puts the elbow and shoulder in a legal starting position.
-    new JoystickButton(leftJoystick, 7).onTrue(
+    new JoystickButton(rightJoystick, 7).onTrue(
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem
           , m_ShoulderRotationSubsystem
@@ -328,7 +328,7 @@ public class RobotContainer {
       );
 
     // Left Joystick button 8 puts the elbow and shoulder in postion to intake algae from the ground.
-      new JoystickButton(leftJoystick, 8).onTrue(
+      new JoystickButton(leftJoystick, 7).onTrue(
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem
           , m_ShoulderRotationSubsystem
@@ -338,7 +338,7 @@ public class RobotContainer {
       );
       
     // Left Joystick button 9 puts the elbow and shoulder in postion to drive holding algae
-    new JoystickButton(leftJoystick, 9).onTrue(
+    new JoystickButton(leftJoystick, 10).onTrue(
       new ParallelCommandGroup(
         new ShoulderRotationCommand(m_ShoulderRotationSubsystem, ShoulderConstants.kShoulderDrivingWithAlgaePosition)
         , new SequentialCommandGroup(
@@ -349,7 +349,7 @@ public class RobotContainer {
     );
 
     // Left Joystick button 10 puts the elbow and shoulder to score in processor.
-    new JoystickButton(leftJoystick, 10).onTrue(
+    new JoystickButton(leftJoystick, 8).onTrue(
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
@@ -360,7 +360,7 @@ public class RobotContainer {
 
 
     // Left Joystick button 11 puts the elbow and shoulder in postion to hook onto the cage
-    new JoystickButton(leftJoystick, 11).onTrue(
+    new JoystickButton(rightJoystick, 3).onTrue(
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
@@ -371,7 +371,7 @@ public class RobotContainer {
 
 
     // Left Joystick button 12 puts the elbow and shoulder in position to intake low algae from the reef
-    new JoystickButton(leftJoystick, 12).onTrue(
+    new JoystickButton(leftJoystick, 9).onTrue(
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
@@ -381,7 +381,7 @@ public class RobotContainer {
     );
 
     // Left Joystick button 3 puts the elbow and shoulder in position to intake high algae from the reef
-    new JoystickButton(leftJoystick, 3).onTrue(
+    new JoystickButton(leftJoystick, 11).onTrue(
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
@@ -391,7 +391,7 @@ public class RobotContainer {
     );
 
     // Left Joystick button  puts the elbow and shoulder in position to intake high algae from the reef
-    new JoystickButton(leftJoystick, 4).onTrue(
+    new JoystickButton(leftJoystick, 12).onTrue(
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
@@ -401,12 +401,15 @@ public class RobotContainer {
     );
 
     // Left Joystick button  puts the elbow and shoulder in the scoring position with the elbow rotated 90 degrees from optimal for testing only
-    new JoystickButton(leftJoystick, 5).onTrue(
+    new JoystickButton(rightJoystick, 5).onTrue(
       new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(true))
     );
-    new JoystickButton(leftJoystick, 6).onTrue(
+    new JoystickButton(rightJoystick, 6).onTrue(
       new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(false))
     );
+
+    new JoystickButton(leftJoystick, 1)
+      .whileTrue(new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem));
 
     /* Debugging below */
     if (isSimulation()) {

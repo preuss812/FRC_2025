@@ -212,10 +212,10 @@ public class Autonomous extends SequentialCommandGroup {
     );
 
 
-    // If the algae is low, try to grab it.
-    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_FAR_SIDE
-    || getAutoMode() == TrajectoryPlans.AUTO_MODE_CENTER_STRAIGHT
-    || getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_FAR_SIDE
+    // If the algae is high, try to grab it.
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE
+    || getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_NEAR_SIDE
+    || getAutoMode() == TrajectoryPlans.AUTO_MODE_THEIR_BARGE_TO_NEAR_SIDE
     ) {
       // reposition arm to grab low algae and grab the algae.
       addCommands(
@@ -223,8 +223,8 @@ public class Autonomous extends SequentialCommandGroup {
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
-          ElbowConstants.kElbowLowAlgaePosition,
-          ShoulderConstants.kShoulderLowAlgaePosition
+          ElbowConstants.kElbowHighAlgaePosition,
+          ShoulderConstants.kShoulderHighAlgaePosition
         ).withTimeout(1.0),
         new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "IntakeAlgae")),
         new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem).withTimeout(AutoConstants.kAlgaeIntakeTime),
@@ -232,11 +232,19 @@ public class Autonomous extends SequentialCommandGroup {
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowLeaveHighReefPosition,
+          ShoulderConstants.kShoulderLeaveHighReefPosition
+        ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+        /*new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowDrivingWithAlgaePosition,
           ShoulderConstants.kShoulderDrivingWithAlgaePosition
         ).withTimeout(2.0) // Complete this command after 2 seconds regardless of completion.
+        */
       );
 
+      /*
       if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_FAR_SIDE)
       {
         addCommands(
@@ -278,6 +286,7 @@ public class Autonomous extends SequentialCommandGroup {
           new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "Done"))
         );
       }
+        */
     }
   }
 }

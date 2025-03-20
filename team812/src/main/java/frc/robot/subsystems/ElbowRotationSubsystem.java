@@ -235,6 +235,9 @@ public class ElbowRotationSubsystem extends SubsystemBase {
   }
   public void calibrate(boolean enable) {
     calibrating = enable;
+    if (!enable) {
+      targetPosition = currentPosition;
+    }
 
   }
 }
