@@ -11,45 +11,6 @@
         "vgap": 16.0,
         "titleType": 0,
         "tiles": {
-          "7,0": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/gyro_angle",
-              "_title": "SmartDashboard/gyro_angle",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "9,0": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/PE CurrentPose",
-              "_title": "SmartDashboard/PE CurrentPose",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "8,0": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/US cm",
-              "_title": "SmartDashboard/US cm",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
           "6,4": {
             "size": [
               3,
@@ -63,153 +24,85 @@
               "_showGlyph": false
             }
           },
-          "6,1": {
+          "1,1": {
             "size": [
               5,
-              3
+              4
             ],
             "content": {
-              "_type": "Field",
-              "_source0": "network_table:///SmartDashboard/Field",
-              "_title": "/SmartDashboard/Field",
+              "_type": "Camera Stream",
+              "_source0": "camera_server://USB Camera 0",
+              "_title": "USB Camera 0",
               "_glyph": 148,
               "_showGlyph": false,
-              "Game/Game": "k2025Reefscape",
-              "Visuals/Robot Icon Size": 50.0,
-              "Visuals/Show Outside Circles": false,
-              "Colors/trajectory": "#FFFFFFFF"
+              "Crosshair/Show crosshair": true,
+              "Crosshair/Crosshair color": "#FFFFFFFF",
+              "Controls/Show controls": true,
+              "Controls/Rotation": "NONE",
+              "compression": -1.0,
+              "fps": 8,
+              "imageWidth": 480,
+              "imageHeight": 320
             }
           },
-          "9,4": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Command",
-              "_source0": "network_table:///SmartDashboard/G2P",
-              "_title": "/SmartDashboard/G2P",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "3,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/G2A R",
-              "_title": "/SmartDashboard/G2A R",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "4,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/G2A X",
-              "_title": "/SmartDashboard/G2A X",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "4,2": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/G2A Y",
-              "_title": "/SmartDashboard/G2A Y",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "4,3": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/G2A rSpeed",
-              "_title": "/SmartDashboard/G2A rSpeed",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "4,4": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/G2A ySpeed",
-              "_title": "/SmartDashboard/G2A ySpeed",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "3,2": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/GAAX",
-              "_title": "/SmartDashboard/GAAX",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "3,3": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/GAAY",
-              "_title": "/SmartDashboard/GAAY",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
-          "5,1": {
+          "3,0": {
             "size": [
               1,
               1
             ],
             "content": {
               "_type": "Boolean Box",
-              "_source0": "network_table:///SmartDashboard/AutoDrive OnTarget",
-              "_title": "/SmartDashboard/AutoDrive OnTarget",
+              "_source0": "network_table:///SmartDashboard/Elbow revsw",
+              "_title": "SmartDashboard/Elbow revsw",
               "_glyph": 148,
               "_showGlyph": false,
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "3,0": {
+          "4,0": {
             "size": [
-              4,
+              1,
               1
             ],
             "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/AutoCommand",
-              "_title": "/SmartDashboard/AutoCommand",
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Elbow fwdsw",
+              "_title": "SmartDashboard/Elbow fwdsw",
               "_glyph": 148,
-              "_showGlyph": false
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "6,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Shoulder fwdsw",
+              "_title": "SmartDashboard/Shoulder fwdsw",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "5,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Shoulder revsw",
+              "_title": "SmartDashboard/Shoulder revsw",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
             }
           }
         }
