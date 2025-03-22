@@ -399,9 +399,9 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_FRONT_CAMERA = FRONT_CAMERA_TO_ROBOT.inverse();
 
 
-        public static double rearCameraXOffsetToRobot = Units.inchesToMeters(-17.5);
+        public static double rearCameraXOffsetToRobot = Units.inchesToMeters(-18.0);
         public static double rearCameraYOffsetToRobot = Units.inchesToMeters(0.0);
-        public static double rearCameraHeightToGround = Units.inchesToMeters(15.0);
+        public static double rearCameraHeightToGround = Units.inchesToMeters(13.0);
         public static double rearCameraRoll  = Units.degreesToRadians(0.0);
         public static double rearCameraPitch = Units.degreesToRadians(0.0); 
         public static double rearCameraYaw   = Units.degreesToRadians(180.0); // Rear facing camera.

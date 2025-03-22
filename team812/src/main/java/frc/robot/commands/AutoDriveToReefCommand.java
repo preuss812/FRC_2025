@@ -10,8 +10,10 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Autonomous;
+import frc.robot.Constants.ElbowConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.RobotContainer;
 import frc.robot.TrajectoryPlans;
 import frc.robot.Utilities;
 import frc.robot.subsystems.DriveSubsystemSRX;
@@ -71,8 +73,10 @@ public class AutoDriveToReefCommand extends SequentialCommandGroup {
       TrajectoryPlans.getReefFacingSwerveCommand(robotDrive, poseEstimatorSubsystem),
       //new StandStillCommand(robotDrive).withTimeout(0.1),
       //new WaitCommand(2.0),
+      new InstantCommand(() -> RobotContainer.m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowIntakeAlgaeFromGroundPosition)),
+
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "GotoReefPose")),
-      TrajectoryPlans.gotoFinalPoseCommand(robotDrive, poseEstimatorSubsystem).withTimeout(3.0),
+      TrajectoryPlans.gotoFinalPoseCommand(robotDrive, poseEstimatorSubsystem).withTimeout(5.0),
       //new StandStillCommand(robotDrive).withTimeout(0.1)
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "driveDone"))
 

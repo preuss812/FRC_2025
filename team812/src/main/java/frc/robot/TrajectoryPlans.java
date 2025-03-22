@@ -75,8 +75,8 @@ public class TrajectoryPlans {
         .setKinematics(DriveConstants.kDriveKinematics);
 
     public static final TrajectoryConfig m_reverseTrajectoryConfig = new TrajectoryConfig(
-        AutoConstants.kMaxSpeedMetersPerSecond*0.9,
-        AutoConstants.kMaxAccelerationMetersPerSecondSquared*0.9)
+        AutoConstants.kMaxSpeedMetersPerSecond*1.0,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared*1.0)
         .setKinematics(DriveConstants.kDriveKinematics)
         .setReversed(true);
     

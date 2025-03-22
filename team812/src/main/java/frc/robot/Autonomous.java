@@ -173,17 +173,21 @@ public class Autonomous extends SequentialCommandGroup {
     }
 
     // All other modes involve going to the reef and possibly more.
-    addCommands(   
+    /*addCommands(
       new CompoundArmMovementCommand(
         m_ElbowRotationSubsystem
         , m_ShoulderRotationSubsystem
         , ElbowConstants.kElbowDrivingWithCoralPosition
-        , ShoulderConstants.kShoulderDrivingWithCoralPosition
+        , ShoulderConstants.kShoulderScoreCoralPosition
       ).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
+    );*/
+    addCommands(
+      new InstantCommand(() -> m_ShoulderRotationSubsystem.setTargetPosition(ShoulderConstants.kShoulderScoreCoralPosition))
+      , new InstantCommand(() -> m_ElbowRotationSubsystem.setTargetPosition(ElbowConstants.kElbowDrivingWithCoralPosition))
     );
 
     // Perform the initial driving to get from the start line to the reef.
-    double timeout = 10;
+    double timeout = 15;
     if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE)
       timeout = 12;
     if (getAutoMode() == TrajectoryPlans.AUTO_MODE_CENTER_STRAIGHT)
@@ -197,14 +201,16 @@ public class Autonomous extends SequentialCommandGroup {
       //new ParallelRaceGroup(
         // TODO: Need to drive gently into the reef     
         new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "raiseArm")),
-
-        new CompoundArmMovementCommand(
-          m_ElbowRotationSubsystem, 
-          m_ShoulderRotationSubsystem, 
-          ElbowConstants.kElbowScoreCoralPosition,
-          ShoulderConstants.kShoulderScoreCoralPosition
-        //).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
-      )
+        new ParallelCommandGroup(
+          new CompoundArmMovementCommand(
+            m_ElbowRotationSubsystem, 
+            m_ShoulderRotationSubsystem, 
+            ElbowConstants.kElbowIntakeAlgaeFromGroundPosition,
+            ShoulderConstants.kShoulderScoreCoralPosition
+          //).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
+          ),
+          new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
+        )
     );
     //addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
     addCommands(
