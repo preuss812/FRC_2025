@@ -154,7 +154,7 @@ public class Autonomous extends SequentialCommandGroup {
     // Initialize the robot before moving.
     addCommands(new ParallelCommandGroup(
       new InstantCommand(() -> RobotContainer.setGyroAngleToStartMatch()),
-      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.PRECISION)) // TODO Should be SPEED, not PRECISION
+      new InstantCommand(() -> RobotContainer.m_robotDrive.setDrivingMode(DrivingMode.SPEED)) // TODO Should be SPEED, not PRECISION
       //new ElbowHomeCommand(m_ElbowRotationSubsystem),
       //new ShoulderHomeCommand(m_ShoulderRotationSubsystem),
       //new InstantCommand(() -> setReefCenter()),
@@ -189,18 +189,21 @@ public class Autonomous extends SequentialCommandGroup {
 
     // At the reef now so gently drive into the reef and raise the arm to score the coral
     addCommands(
-      new ParallelRaceGroup(
-        // TODO: Need to drive gently into the reef.
+      //new ParallelRaceGroup(
+        // TODO: Need to drive gently into the reef     
+        new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "raiseArm")),
+
         new CompoundArmMovementCommand(
           m_ElbowRotationSubsystem, 
           m_ShoulderRotationSubsystem, 
           ElbowConstants.kElbowScoreCoralPosition,
           ShoulderConstants.kShoulderScoreCoralPosition
-        ).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
+        //).withTimeout(1.0) // Complete this command after 2 seconds regardless of completion.
       )
     );
-    addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
+    //addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
 
+    /*
     addCommands(   
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToDriving")),
       new CompoundArmMovementCommand(
@@ -210,6 +213,7 @@ public class Autonomous extends SequentialCommandGroup {
         , ShoulderConstants.kShoulderDrivingWithCoralPosition
       ).withTimeout(1.0)
     );
+    */
 
 
     // If the algae is high, try to grab it.
