@@ -183,8 +183,13 @@ public class Autonomous extends SequentialCommandGroup {
     );
 
     // Perform the initial driving to get from the start line to the reef.
+    double timeout = 10;
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_MY_BARGE_TO_OPPOSITE)
+      timeout = 12;
+    if (getAutoMode() == TrajectoryPlans.AUTO_MODE_CENTER_STRAIGHT)
+      timeout = 8;
     addCommands(
-      new AutoDriveToReefCommand(m_robotDrive, m_PoseEstimatorSubsystem)
+      new AutoDriveToReefCommand(m_robotDrive, m_PoseEstimatorSubsystem).withTimeout(timeout)
     );
 
     // At the reef now so gently drive into the reef and raise the arm to score the coral
@@ -202,7 +207,14 @@ public class Autonomous extends SequentialCommandGroup {
       )
     );
     //addCommands(new WaitCommand(1.0)); // Wait one second for the coral to roll off the arms.
-
+    addCommands(
+      new CompoundArmMovementCommand(
+          m_ElbowRotationSubsystem, 
+          m_ShoulderRotationSubsystem, 
+          ElbowConstants.kElbowScoreAlgaeInProcessorPosition,
+          ShoulderConstants.kShoulderScoreAlgaeInProcessorPosition
+      )
+    );
     /*
     addCommands(   
       new InstantCommand(() ->SmartDashboard.putString("AutoCommand", "ArmToDriving")),

@@ -186,7 +186,7 @@ public final class Constants {
         public static final double kElbowLowAlgaePosition = 270; // degrees. TODO: Tune this value.
         public static final double kElbowHighAlgaePosition = 180; // degrees. TODO: Tune this value.
         public static final double kElbowDrivingWithCoralPosition = kElbowStartingPosition;  // (degrees) TODO: Tune this value.
-        public static final double kElbowScoreCoralPosition = kElbowStartingPosition; // (degrees) TODO: Tune this value.
+        public static final double kElbowScoreCoralPosition = kElbowStartingPosition + 45; // (degrees) TODO: Tune this value.
         public static final double kElbowDrivingWithAlgaePosition = 235; // (degrees) TODO: Tune this value.
         public static final double kElbowScoreAlgaeInProcessorPosition = 280;
         public static final double kElbowIntakeAlgaeFromGroundPosition = 290;
