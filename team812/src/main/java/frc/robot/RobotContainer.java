@@ -236,9 +236,9 @@ public class RobotContainer {
     );
 
     // Default is to score Algaes based on the percentage pulled of the left trigger.
-    m_AlgaeIntakeSubsystem.setDefaultCommand(
-      new RunCommand(()->m_AlgaeIntakeSubsystem.runMotor(m_driverController.getRightTriggerAxis()), m_AlgaeIntakeSubsystem)
-    );
+    //m_AlgaeIntakeSubsystem.setDefaultCommand(
+      //new RunCommand(()->m_AlgaeIntakeSubsystem.runMotor(m_driverController.getRightTriggerAxis()), m_AlgaeIntakeSubsystem)
+    //);
 
     Ultrasonic.setAutomaticMode(true);
   }
