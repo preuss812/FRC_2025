@@ -417,6 +417,16 @@ public class RobotContainer {
     new JoystickButton(rightJoystick, 6).onTrue(
       new InstantCommand(() -> m_ElbowRotationSubsystem.calibrate(false))
     );
+    // The next 2 buttons did not work with InstantCommand().onTrue().
+    //  They are not needed for game play.
+    // Nevertheless, I still want to understand how to perform these commands.
+    // Tring with RunCommand().whileTrue()...
+    new JoystickButton(leftJoystick, 5).whileTrue(
+      new RunCommand(() -> m_robotDrive.wheelsStraightAhead(), m_robotDrive)
+    );
+    new JoystickButton(leftJoystick, 6).whileTrue(
+      new RunCommand(() -> m_robotDrive.wheels45(), m_robotDrive)
+    );
 
     new JoystickButton(leftJoystick, 1)
       .whileTrue(new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem));
