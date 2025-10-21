@@ -39,7 +39,7 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
         m_AlgaeIntake.runMotor(AlgaeIntakeConstants.kExpelAlgaeSpeed);
   }
 
-  public void runMotor(double speed) {
+  public void  runMotor(double speed) {
     double clampedSpeed = MathUtil.clamp(speed,AlgaeIntakeConstants.kExpelAlgaeSpeed,AlgaeIntakeConstants.kPickUpAlgaeSpeed);
     m_AlgaeIntake.runMotor(clampedSpeed);
   } 

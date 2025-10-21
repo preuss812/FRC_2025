@@ -271,9 +271,17 @@ public class RobotContainer {
 
     // Xbox A button spits out the algae
     new JoystickButton(m_driverController, Button.kA.value)
-      .whileTrue(
+      .onTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoAprilTagCommand(m_robotDrive, m_PoseEstimatorSubsystem, Units.inchesToMeters(-2), null)
+        new GotoPoseCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(1, 0.5, new Rotation2d(0.0)),
+         false,m_robotDrive.debugAutoConfig ) .withTimeout(3.0)
+      );
+    // Xbox A button spits out the algae
+    new JoystickButton(m_driverController, Button.kB.value)
+      .onTrue(
+        //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
+        new DriveRobotCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(-1, -0.5, new Rotation2d(0.0)),
+         false,m_robotDrive.debugAutoConfig ) .withTimeout(3.0)
       );
     
       
