@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import java.lang.Math;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -78,7 +79,10 @@ public class MAXSRXSwerveModule {
     // controller to go through 0 to get to the setpoint i.e. going from 350 degrees
     // to 10 degrees will go through 0 rather than the other direction which is a
     // longer route.
-    m_turningPIDController.enableContinuousInput(ModuleConstants.kTurningEncoderPositionPIDMinInput,ModuleConstants.kTurningSRXEncoderPositionPIDMaxInput);
+    // Match the PID's continuous range to [-pi, pi] to align with normalized angle below
+    m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
+    // Reduce dithering near setpoint
+    m_turningPIDController.setTolerance(Units.degreesToRadians(2.0));
 
     // Configure the driving Spark Max
     m_drivingConfig
@@ -130,29 +134,18 @@ public class MAXSRXSwerveModule {
    * @return The current turning direction in radians
    */
   public double CANCoderPositionRadians() {
-    double CANCoderPosition;
-    StatusSignal<Angle> angleStatus;
-    
-    angleStatus = m_turningEncoder.getAbsolutePosition();
-    CANCoderPosition = angleStatus.getValueAsDouble();
+    // Read absolute position as rotations, convert to radians, then normalize to [-pi, pi)
+    StatusSignal<Angle> angleStatus = m_turningEncoder.getAbsolutePosition();
+    double rotations = angleStatus.getValueAsDouble();
+    double angleRadians = rotations * 2.0 * Math.PI;
+    double normalized = MathUtil.angleModulus(angleRadians);
 
-    /**
-     * Since we only care about the direction the wheel is pointing and not about how many times it has
-     * rotated away from the origin (= 0.0 == Straight ahead), make sure the value is in the range of 0.0
-     * to 1.0.  The CANCoder will count the number of rotations and that would just confuse our
-     * interpretation of the direction.
-     */
-    CANCoderPosition = CANCoderPosition % 1.0;
-     // Make sure the value is in the range of 00.0 to 1.0
-     if (CANCoderPosition < 0.0) CANCoderPosition += 1.0;
-    CANCoderPosition *= 2.0 * Math.PI; // Scale the the rotations into units of Radians.
-    // Some debug that should eventually be removed:
-    if (debug) SmartDashboard.putNumber("Absolute position"+m_turningEncoder.getDeviceID(), CANCoderPosition);
+    if (debug) SmartDashboard.putNumber("Absolute position"+m_turningEncoder.getDeviceID(), normalized);
     if (debug && (m_turningEncoder.getDeviceID() == CANConstants.kSwerveLeftFrontCANCoder)) {
-      SmartDashboard.putNumber("lf_angle_radians", CANCoderPosition);
-      SmartDashboard.putNumber("lf_angle_degrees", CANCoderPosition/(2*Math.PI)*360.0);
+      SmartDashboard.putNumber("lf_angle_radians", normalized);
+      SmartDashboard.putNumber("lf_angle_degrees", normalized/(2*Math.PI)*360.0);
     }
-    return CANCoderPosition;
+    return normalized;
   }
 
   /**
@@ -206,7 +199,12 @@ public class MAXSRXSwerveModule {
     m_turningPIDController.setSetpoint(optimizedDesiredState.angle.getRadians());
     
     double pidOutput = m_turningPIDController.calculate(currentTurningAngleInRadians);
-    m_turningSparkMax.set(pidOutput);
+    // Avoid dithering at the setpoint from encoder noise
+    if (m_turningPIDController.atSetpoint()) {
+      m_turningSparkMax.set(0.0);
+    } else {
+      m_turningSparkMax.set(pidOutput);
+    }
 
     if (debug && (m_turningEncoder.getDeviceID() == CANConstants.kSwerveLeftFrontCANCoder)) {
       SmartDashboard.putNumber("optimizedTurn", optimizedDesiredState.angle.getRadians());
