@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -82,9 +83,10 @@ public class DriveSubsystemSRX extends SubsystemBase {
   private double maxAngularSpeed;
   public DrivingConfig defaultAutoConfig;
   public DrivingConfig debugAutoConfig;
+  public DrivingConfig circleAutoConfig;
 
 
-  private final boolean debug = false;
+  private final boolean debug = true;
 
   /** Creates a new DriveSubsystemSRXSRX. */
   public DriveSubsystemSRX() {
@@ -110,6 +112,16 @@ public class DriveSubsystemSRX extends SubsystemBase {
       .setAngularP(0.5)
       .setAngularIZone(Units.degreesToRadians(10.0))
       .setAngularTolerance(Units.degreesToRadians(2.0));
+      
+      circleAutoConfig = new DrivingConfig()
+      .setMaxThrottle(0.8)
+      .setMaxRotation(0.8)
+      .setLinearP(10.0)
+      .setLinearIZone(Units.inchesToMeters(4.0))
+      .setLinearTolerance(Units.inchesToMeters(2.0))
+      .setAngularP(0.5)
+      .setAngularIZone(Units.degreesToRadians(10.0))
+      .setAngularTolerance(Units.degreesToRadians(2.0));
 
     // TODO Do we need to reset the gyro here?
   }
@@ -127,7 +139,7 @@ public class DriveSubsystemSRX extends SubsystemBase {
   public void periodic() {
     // Update the odometry in the periodic block
     if (debug) {
-      SmartDashboard.putNumber("gyro_angle", -m_gyro.getAngle());
+      SmartDashboard.putNumber("gyro_angle", MathUtil.inputModulus(m_gyro.getAngle(), -180, 180));
       Utilities.toSmartDashboard("DriveTrain", this.getPose()); 
       SmartDashboard.putNumber("Robot X", this.getPose().getX()); 
       SmartDashboard.putNumber("Robot Y", this.getPose().getY()); 

@@ -58,6 +58,7 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.CompoundArmMovementCommand;
+import frc.robot.commands.DriveCircle;
 import frc.robot.commands.GotoAprilTagCommand;
 import frc.robot.commands.GotoPoseCommand;
 //import frc.robot.subsystems.CameraVisionSubsystem;
@@ -271,11 +272,10 @@ public class RobotContainer {
 
     // Xbox A button spits out the algae
     new JoystickButton(m_driverController, Button.kA.value)
-      .onTrue(
-        //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
-        new GotoPoseCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(1, 0.5, new Rotation2d(0.0)),
-         false,m_robotDrive.debugAutoConfig ) .withTimeout(3.0)
-      );
+    .whileTrue(
+      new DriveCircle(m_robotDrive, m_PoseEstimatorSubsystem, m_robotDrive.circleAutoConfig));
+  
+      SmartDashboard.putData("Circle", new DriveCircle(m_robotDrive, m_PoseEstimatorSubsystem,m_robotDrive.debugAutoConfig ));
     // Xbox A button spits out the algae
     new JoystickButton(m_driverController, Button.kB.value)
       .onTrue(

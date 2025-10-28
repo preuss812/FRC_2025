@@ -27,7 +27,7 @@ public class GotoPoseCommand extends Command {
   final DrivingConfig config;
   private final PreussAutoDrive autoDrive;
   ;
-  private boolean onTarget;
+  protected boolean onTarget;
   private boolean controlRotation = true; // This is a holdover from when controlRotation was not working well.
   private boolean debug = true; // turn on/off SmartDashBoard feedback
   
