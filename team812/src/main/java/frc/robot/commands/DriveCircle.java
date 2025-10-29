@@ -16,6 +16,7 @@ public class DriveCircle extends GotoPoseCommand {
 
   private Integer count;
   private Pose2d circleCenter;
+  private Pose2d startingPose;
   private final static Pose2d dummy = new Pose2d(0.0, 0.0, new Rotation2d(0.0));
   private static Integer initcalls = 0;
   private static Integer executecalls = 0;
@@ -36,11 +37,11 @@ public class DriveCircle extends GotoPoseCommand {
   @Override
   public void initialize() {
     // Get the current pose of the robot as the center of the circle.
-    circleCenter = RobotContainer.m_PoseEstimatorSubsystem.getCurrentPose();
+    startingPose = RobotContainer.m_PoseEstimatorSubsystem.getCurrentPose();
 
     // Optional: Offset the center to define where the circle will start (if you want).
     // For example, moving the center by 1 meter on the X-axis:
-    circleCenter = new Pose2d(circleCenter.getX() - radius, circleCenter.getY(), circleCenter.getRotation());
+    circleCenter = new Pose2d(startingPose.getX() - radius, startingPose.getY(), startingPose.getRotation());
 
     count = 0;
     initcalls++;
@@ -53,17 +54,17 @@ public class DriveCircle extends GotoPoseCommand {
   @Override
   public void execute() {
     // Calculate the target position based on a circular trajectory
-    double angle = Units.degreesToRadians(count);  // Convert to radians
+    double angle = Units.degreesToRadians(count >= 720 ? 0.0 : count%360);  // Convert to radians
 
     // X and Y follow the parametric equations of a circle: X = r * cos(theta), Y = r * sin(theta)
     double targetX = circleCenter.getX() + radius * Math.cos(angle);
     double targetY = circleCenter.getY() + radius * Math.sin(angle);
 
     // Update the target pose (we can also add rotation for more realistic motion)
-    this.targetPose = new Pose2d(targetX, targetY, new Rotation2d(0));
+    this.targetPose = new Pose2d(targetX, targetY, startingPose.getRotation());
     onTarget = false;
     super.execute();
-    count++;  // Increment the angle
+    count+= 2;  // Increment the angle
 
     executecalls++;
     SmartDashboard.putNumber("executes", executecalls);
@@ -72,8 +73,11 @@ public class DriveCircle extends GotoPoseCommand {
   @Override
   public boolean isFinished() {
     isFinishedcalls++;
-
+    Pose2d pose = RobotContainer.m_PoseEstimatorSubsystem.getCurrentPose();
     // Finish when the angle has completed a full circle (360 degrees)
-    return count >= 360;
+    return count >= 720
+    && Math.abs(startingPose.getX() - pose.getX()) < Units.inchesToMeters(2.0)
+    && Math.abs(startingPose.getY() - pose.getY()) < Units.inchesToMeters(2.0)
+    && Math.abs(startingPose.getRotation().getDegrees() - pose.getRotation().getDegrees()) < 2.0;
   }
 }

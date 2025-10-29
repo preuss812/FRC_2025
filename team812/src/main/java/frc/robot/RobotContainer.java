@@ -58,6 +58,7 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.CompoundArmMovementCommand;
+import frc.robot.commands.DriveChoreoPathCommand;
 import frc.robot.commands.DriveCircle;
 import frc.robot.commands.GotoAprilTagCommand;
 import frc.robot.commands.GotoPoseCommand;
@@ -101,6 +102,7 @@ import frc.robot.commands.SwerveToProcessorCommand;
 import frc.robot.commands.PushTowardsWallUltrasonic;
 import frc.utils.TriggerButton;
 import frc.utils.PoseEstimatorCamera;
+import frc.utils.PreussDriveSimulation;
 
 
 
@@ -135,7 +137,7 @@ public class RobotContainer {
   public static ShoulderRotationSubsystem m_ShoulderRotationSubsystem = new ShoulderRotationSubsystem();
   public static AlgaeIntakeSubsystem m_AlgaeIntakeSubsystem = new AlgaeIntakeSubsystem(Constants.algaeMotorConfig);
   private static  boolean isSimulation = (System.getProperty("os.name").equals("Mac OS X"));
-  
+  public static PreussDriveSimulation m_preussDriveSimulation = new PreussDriveSimulation(m_PoseEstimatorSubsystem);
   public static final boolean isDebug = true;
   private static boolean debug = true && isDebug(); // To enable debugging in this module, change false to true.
 
@@ -270,13 +272,25 @@ public class RobotContainer {
     new TriggerButton(m_driverController, Axis.kRightTrigger)
       .whileTrue(new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem));
 
-    // Xbox A button spits out the algae
+    // Xbox A button drives in a circle
     new JoystickButton(m_driverController, Button.kA.value)
     .whileTrue(
       new DriveCircle(m_robotDrive, m_PoseEstimatorSubsystem, m_robotDrive.circleAutoConfig));
   
       SmartDashboard.putData("Circle", new DriveCircle(m_robotDrive, m_PoseEstimatorSubsystem,m_robotDrive.debugAutoConfig ));
-    // Xbox A button spits out the algae
+    /*new JoystickButton(m_driverController, Button.kA.value)
+      .onTrue(
+        //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
+        new GotoPoseCommand(m_robotDrive, m_PoseEstimatorSubsystem, new Pose2d(1, 0.5, new Rotation2d(0.0)),
+         false,m_robotDrive.debugAutoConfig ) .withTimeout(3.0)
+      );
+      */
+      SmartDashboard.putData("Circle", new DriveCircle(m_robotDrive, m_PoseEstimatorSubsystem, m_robotDrive.circleAutoConfig));
+      SmartDashboard.putData("Choreo1", new DriveChoreoPathCommand(m_robotDrive, m_PoseEstimatorSubsystem, "Blue Low to AT17", m_robotDrive.circleAutoConfig));
+      SmartDashboard.putData("Choreo2", new DriveChoreoPathCommand(m_robotDrive, m_PoseEstimatorSubsystem, "Low to AT22", m_robotDrive.circleAutoConfig));
+      SmartDashboard.putData("Choreo3", new DriveChoreoPathCommand(m_robotDrive, m_PoseEstimatorSubsystem, "PID test", m_robotDrive.circleAutoConfig));
+    
+    // Xbox B button drives -1 meter in X and -0.5 meter in Y
     new JoystickButton(m_driverController, Button.kB.value)
       .onTrue(
         //new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem)
@@ -287,6 +301,8 @@ public class RobotContainer {
       
       // Xbox Y button resets the robot coorinate system
     new JoystickButton(m_driverController, Button.kY.value).onTrue(new ResetDriveTrainCommand());
+    new JoystickButton(m_driverController, Button.kX.value).onTrue(new InstantCommand(()->m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(0,0, Rotation2d.kZero))));
+    SmartDashboard.putData("Z", new InstantCommand(()->m_PoseEstimatorSubsystem.setCurrentPose(new Pose2d(5.5,4, Rotation2d.kZero))));
 
     // Xbox start button puts thte robot in fast/speed driving mode.
     new JoystickButton(m_driverController, Button.kStart.value).onTrue(

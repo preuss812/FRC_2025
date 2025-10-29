@@ -25,7 +25,7 @@ public class GotoPoseCommand extends Command {
   protected Pose2d targetPose;
   protected final boolean driveFacingFinalPose;
   final DrivingConfig config;
-  private final PreussAutoDrive autoDrive;
+  protected final PreussAutoDrive autoDrive;
   ;
   protected boolean onTarget;
   private boolean controlRotation = true; // This is a holdover from when controlRotation was not working well.
@@ -156,16 +156,14 @@ public class GotoPoseCommand extends Command {
       // We are controlling rotation whether we use it for "onTarget" calculations or not.
       rotationSpeed = autoDrive.calculateClampedRotation(rotationError);
     }
-    if (debug) SmartDashboard.putNumber("AutoDrive xSpeed", xSpeed);
-    if (debug) SmartDashboard.putNumber("AutoDrive ySpeed", ySpeed);
-    if (debug) SmartDashboard.putNumber("AutoDrive rSpeed", rotationSpeed);
+    
     autoDrive.drive(xSpeed, ySpeed, rotationSpeed, true, true);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    robotDrive.drive(0, 0, 0, true, true);
+    autoDrive.drive(0, 0, 0, true, false);
   }
 
   // Returns true when the command should end.

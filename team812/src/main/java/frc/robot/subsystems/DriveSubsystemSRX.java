@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
+import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -21,7 +23,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.ModifiedSlewRateLimiter;
 import frc.robot.Utilities;
 import frc.utils.DrivingConfig;
+import frc.utils.PreussDriveSimulation;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.RobotContainer;
+
 
 public class DriveSubsystemSRX extends SubsystemBase {
   // Create MAXSRXSwerveModules
@@ -122,6 +127,16 @@ public class DriveSubsystemSRX extends SubsystemBase {
       .setAngularP(0.5)
       .setAngularIZone(Units.degreesToRadians(10.0))
       .setAngularTolerance(Units.degreesToRadians(2.0));
+
+  circleAutoConfig = new DrivingConfig()
+    .setMaxThrottle(0.8)
+    .setMaxRotation(0.8)
+    .setLinearP(20.00)
+    .setLinearIZone(Units.inchesToMeters(4.0))
+    .setLinearTolerance(Units.inchesToMeters(0.0))
+    .setAngularP(0.5)
+    .setAngularIZone(Units.degreesToRadians(10.0))
+    .setAngularTolerance(Units.degreesToRadians(2.0));
 
     // TODO Do we need to reset the gyro here?
   }
@@ -232,6 +247,13 @@ public class DriveSubsystemSRX extends SubsystemBase {
     double ySpeedDelivered = m_currentYSpeed * maxSpeedMetersPerSecond;
     double rotDelivered = m_currentRotation * maxAngularSpeed;
 
+    /*
+     * For simulation, update the position of the robot based on the requested speeds
+     */
+    if (RobotContainer.isSimulation()) {
+      RobotContainer.m_preussDriveSimulation.drive(xSpeedDelivered, ySpeedDelivered, rotDelivered);
+
+    }
     // Convert the inputs into chassis speeds, ie speeds and rotations for each wheel.
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
@@ -397,4 +419,35 @@ public class DriveSubsystemSRX extends SubsystemBase {
     return drivingMode;
   }
   
+  public void followTrajectory(SwerveSample sample) {
+    // Get the current pose of the robot
+    Pose2d pose = getPose();
+    pose = RobotContainer.m_preussDriveSimulation.getCurrentPose();
+    PIDController xController = new PIDController(10.0, 0.0, 0.0);
+    PIDController yController = new PIDController(10.0, 0.0, 0.0);
+    PIDController headingController = new PIDController(7.5, 0.0, 0.0);
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
+    var x = xController.calculate(pose.getX(), sample.x);
+    System.out.println(x);
+    // Generate the next speeds for the robot
+    ChassisSpeeds speeds = new ChassisSpeeds(
+      sample.vx + xController.calculate(pose.getX(), sample.x),
+      sample.vy + yController.calculate(pose.getY(), sample.y),
+      sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading)
+    );
+    var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
+    if (RobotContainer.isSimulation())
+      RobotContainer.m_preussDriveSimulation.drive(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+
+    // Enforce the maximum speed of the robot
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        swerveModuleStates, maxSpeedMetersPerSecond);
+    
+    // Set the swerve module states
+    m_frontLeft.setDesiredState(swerveModuleStates[0]);
+    m_frontRight.setDesiredState(swerveModuleStates[1]);
+    m_rearLeft.setDesiredState(swerveModuleStates[2]);
+    m_rearRight.setDesiredState(swerveModuleStates[3]);
+  }
+
 }

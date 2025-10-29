@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
@@ -23,6 +24,7 @@ public class PreussAutoDrive {
     private final PoseEstimatorSubsystem poseEstimatorSubsystem;
     private final DriveSubsystemSRX robotDrive;
     private Pose2d simulatedRobotPose;
+    private boolean debug = RobotContainer.isSimulation();
 
 
     public PreussAutoDrive(
@@ -92,17 +94,9 @@ public class PreussAutoDrive {
 
     public void drive(double xSpeed, double ySpeed, double rotationSpeed, boolean fieldRelative, boolean rateLimit) {
         robotDrive.drive(xSpeed, ySpeed, rotationSpeed, fieldRelative, rateLimit);
-        if (RobotContainer.isSimulation()) {
-            // For debug, update the forced robot location based on the x,y,theta applied.
-            double scale=0.06; // Rate that the simulation applies the changes to the robot's position.
-            simulatedRobotPose = poseEstimatorSubsystem.getCurrentPose();
-            simulatedRobotPose = new Pose2d(
-              simulatedRobotPose.getX()+xSpeed*scale
-            , simulatedRobotPose.getY()+ySpeed*scale
-            , simulatedRobotPose.getRotation().plus(new Rotation2d(rotationSpeed*scale)));
-
-            poseEstimatorSubsystem.setCurrentPose(simulatedRobotPose);
-        }
+        if (debug) SmartDashboard.putNumber("AutoDrive xSpeed", xSpeed);
+        if (debug) SmartDashboard.putNumber("AutoDrive ySpeed", ySpeed);
+        if (debug) SmartDashboard.putNumber("AutoDrive rSpeed", rotationSpeed);
     }
 
     public void setCurrentPose(Pose2d pose) {
