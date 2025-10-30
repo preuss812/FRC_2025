@@ -57,6 +57,7 @@ import frc.robot.subsystems.PingResponseUltrasonicSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.DriveSubsystemSRX;
 import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.BlackBoxDriveTestCommand;
 import frc.robot.commands.CompoundArmMovementCommand;
 import frc.robot.commands.DriveChoreoPathCommand;
 import frc.robot.commands.DriveCircle;
@@ -269,7 +270,7 @@ public class RobotContainer {
      */
     
     new JoystickButton(m_driverController, Button.kRightBumper.value)
-      .whileTrue(new AlgaeIntakeCommand(m_AlgaeIntakeSubsystem));
+      .whileTrue(new BlackBoxDriveTestCommand(m_robotDrive, m_BlackBox));
 
     new TriggerButton(m_driverController, Axis.kRightTrigger)
       .whileTrue(new ExpelAlgaeCommand(m_AlgaeIntakeSubsystem));
