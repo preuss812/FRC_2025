@@ -208,7 +208,7 @@ public class RobotContainer {
 
         // By default this is not a simulation.
 // For convenience, set the simulation mode to true if this is MacOS.
-    RobotContainer.isSimulation = (System.getProperty("os.name").equals("Mac OS X"));
+    RobotContainer.isSimulation = !(System.getProperty("os.name").equals("Linux"));
     TrajectoryPlans.buildAutoTrajectories(); 
 
     // Configure the button bindings
