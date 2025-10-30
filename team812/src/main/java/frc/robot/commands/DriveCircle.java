@@ -23,14 +23,15 @@ public class DriveCircle extends GotoPoseCommand {
   private static Integer isFinishedcalls = 0;
 
   // Define the radius of the circle (in meters)
-  private final double radius = 1.0;
+  private final double radius;
 
   /** Creates a new DriveCircleCommand. */
-  public DriveCircle(DriveSubsystemSRX robotDrive, PoseEstimatorSubsystem poseEstimatorSubsystem, DrivingConfig config) {
+  public DriveCircle(DriveSubsystemSRX robotDrive, PoseEstimatorSubsystem poseEstimatorSubsystem, DrivingConfig config, double radius) {
     super(robotDrive, poseEstimatorSubsystem, dummy, false, config); // The relative movePose will be overwritten in the initialize method.
     SmartDashboard.putNumber("inits", initcalls);
     SmartDashboard.putNumber("executes", executecalls);
     SmartDashboard.putNumber("isFinished", isFinishedcalls);
+    this.radius = radius;
   }
 
   // Called when the command is initially scheduled.
@@ -64,7 +65,7 @@ public class DriveCircle extends GotoPoseCommand {
     this.targetPose = new Pose2d(targetX, targetY, startingPose.getRotation());
     onTarget = false;
     super.execute();
-    count+= 2;  // Increment the angle
+    count+= 1;  // Increment the angle
 
     executecalls++;
     SmartDashboard.putNumber("executes", executecalls);

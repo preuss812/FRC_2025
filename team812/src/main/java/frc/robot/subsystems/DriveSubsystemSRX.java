@@ -131,7 +131,7 @@ public class DriveSubsystemSRX extends SubsystemBase {
   circleAutoConfig = new DrivingConfig()
     .setMaxThrottle(0.8)
     .setMaxRotation(0.8)
-    .setLinearP(20.00)
+    .setLinearP(1.00)
     .setLinearIZone(Units.inchesToMeters(4.0))
     .setLinearTolerance(Units.inchesToMeters(0.0))
     .setAngularP(0.5)

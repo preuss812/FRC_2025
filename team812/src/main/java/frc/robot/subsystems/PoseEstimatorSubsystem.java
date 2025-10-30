@@ -63,6 +63,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
   public final Field2d field2d = new Field2d();
   private int m_lastAprilTagSeen = VisionConstants.NO_TAG_FOUND;
+  private boolean debug = true;
 
   public PoseEstimatorSubsystem(PoseEstimatorCamera[] cameras, DriveSubsystemSRX drivetrainSubsystem) {
     
@@ -130,6 +131,10 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     // Update the Shuffleboard with the robot's position on the field
     field2d.setRobotPose(getCurrentPose());
     //publisher.set(getCurrentPose()); 
+    if (debug) {
+      SmartDashboard.putNumber("Pose X", getCurrentPose().getX());
+      SmartDashboard.putNumber("Pose Y", getCurrentPose().getY());
+    }
   }
 
   public String getFomattedPose() {
